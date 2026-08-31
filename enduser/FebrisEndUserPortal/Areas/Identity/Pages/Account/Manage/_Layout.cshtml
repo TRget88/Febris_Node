@@ -1,0 +1,39 @@
+﻿@{
+    //if (ViewData.TryGetValue("ParentLayout", out var parentLayout))
+    //{
+    //    Layout = (string)parentLayout;
+    //}
+    //else
+    //{
+    //    Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+    //}
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+}
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Febris Sign In</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.8.1/jquery.validate.min.js"></script>
+
+</head>
+
+<h2>Manage your account</h2>
+
+<div>
+    <h4>Change your account settings</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-3">
+            <partial name="_ManageNav" />
+        </div>
+        <div class="col-md-9">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

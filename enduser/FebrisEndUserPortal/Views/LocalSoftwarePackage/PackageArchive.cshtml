@@ -1,0 +1,86 @@
+﻿@*@model X.PagedList.IPagedList<Febris.ModelLibrary.Models.DataModels.LocalSoftwarePackage>
+    @using X.PagedList.Mvc.Core
+    @using X.PagedList.Mvc
+    @using X.PagedList
+    @using Febris.ModelLibrary.PartialViewModels*@
+@model IEnumerable<Febris.ModelLibrary.Models.DataModels.LocalSoftwarePackage>
+@using Febris.ModelLibrary.PartialViewModels
+@using Febris.SharedServices;
+
+@if (User.IsLocalAdmin())
+{
+    @*
+        ROADMAP 16: package ingest moved from the API (NodeAdmin-token curl) to the Portal, and the
+        button lives on the archive page rather than the navbar, matching the Cohort and Hardware
+        precedent of buttons on the index instead of nav entries. Admin-gated to match the Upload
+        action's own OrgAdmins gate, so nobody sees a button they cannot use.
+    *@
+    <div style="margin-bottom: 15px;">
+        <a asp-action="Upload" asp-route-input="@ViewBag.PackageType" class="btn btn-success"
+           title="Upload a new package of this kind, or replace an existing one by its UUID.">
+            <i class="fa fa-upload"></i> Upload a package
+        </a>
+    </div>
+}
+
+<div id="tablePartial">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Obsolete</th>
+                <th>Name</th>
+                <th>Version</th>
+                <th>Creation</th>
+                <th>Last Update</th>
+                <th>Package Type</th>
+                <th>Language</th>
+                <th>UUID</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox" checked="@item.Obsolete" disabled />
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Version)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TimeStamp)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.LastUpdateTimeStamp)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.LocalSoftwarePackageType)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Language)
+                        </td>
+                        <td style="word-break: break-all;">
+                            @* The Upload form's update-in-place field takes this value (ROADMAP 16). *@
+                            @item.UUID
+                        </td>
+
+                                @await Html.PartialAsync("Buttons/GenericButtons/LocalSoftwarePackage/_IndexButtonGroupPartial", new IndividualButtonPartial { Id = item.Id })
+
+                    </tr>
+                }}
+        </tbody>
+    </table>
+</div>
+@section scripts
+{
+    <script src="~/JSScriptLib/ButtonOperation/Specific/LocalSoftwarePackageButtonOperation.js"></script>
+}

@@ -1,0 +1,99 @@
+﻿@model Febris.ModelLibrary.ViewModels.XApiResultExtrasViewModel
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+
+@if (Model != null)
+{
+    <div class="row">
+        <div class="col-md-6">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>Notes <small>recorded during operation</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        @*<li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>*@
+                        <li>
+                            <a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <div class="dashboard-widget-content">
+                        <ul class="list-unstyled timeline widget">
+                            @if (Model.XApiResultExtras.NotesList != null)
+                            {
+                                @foreach (var item in Model.XApiResultExtras.NotesList)
+                                {
+                                    <li>
+                                        <div class="block">
+                                            <div class="block_content">
+
+                                                @*<h2 class="title">
+                                <a>@item.Subject</a>
+                            </h2>
+                            <div class="byline">
+                                <span>@item.TimeStamp</span> by <a>@item.UserName</a>
+                            </div>*@
+                                                <p class="excerpt">
+                                                    @item
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                }}
+                            </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>Visualized Results<small>recorded during operation</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        @*<li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>*@
+                        <li>
+                            <a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <canvas id="@Model.RadarChart.IdToUse"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    var chartdata = @Html.Raw(Json.Serialize(Model.RadarChart.ChartEntryList));
+    var labels = [];
+    var data = [];
+    $.each(chartdata, function (index, value) {
+        labels.push(value.label);
+        data.push(value.quantity);
+    });
+    var ctx = document.getElementById(@Html.Raw(Json.Serialize(Model.RadarChart.IdToUse))).getContext('2d');
+
+    var chart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgb(75, 192, 192)',
+                pointBackgroundColor: 'rgb(75, 192, 192)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(75, 192, 192)'
+            }]
+        }
+    });
+
+    </script>
+    <script src="~/js/site.js"></script>
+}

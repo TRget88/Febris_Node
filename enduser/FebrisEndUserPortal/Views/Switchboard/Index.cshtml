@@ -1,0 +1,212 @@
+@model Febris.ModelLibrary.ViewModels.DashboardViewModel
+@using Febris.SharedServices;
+
+
+<h3>Message boards</h3>
+<hr />
+<div class="row">
+
+    @* Element0 (AdminMiniMessageBoardPartial) removed with the hub-backed admin
+       messageboard. The local board below now owns the full row width. *@
+    <input type="hidden" id="Element0" value="MiniMessageBoardPartial" />
+    <div class="col-md-12 col-sm-12 " id="Division0">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div>
+
+</div>
+
+@if (User.IsLocalAdmin() || User.IsLocalFebrisAdmin())
+{
+    <h3> Usage Data </h3>
+    <hr />
+    <div class="row">
+
+        <input type="hidden" id="Element2" value="NewHardwareMixedChart" />
+        <div class="col-md-6 col-sm-6 " id="Division2">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+
+        <input type="hidden" id="Element3" value="DailyActiveUserChart" />
+        <div class="col-md-6 col-sm-6 " id="Division3">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <h3> Module Data </h3>
+    <hr />
+    <div class="row">
+
+        <input type="hidden" id="Element4" value="ModuleUsageAnalyticsMixedChart" />
+        <div class="col-md-6 col-sm-6 " id="Division4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+
+        @* Element6 (SeatPurchaseMixedChart) removed with commerce -- seat purchases are
+           hub-backed and the chart rendered an empty shell on a self-hosted node. *@
+
+    </div>
+
+    <h3>Testing Data</h3>
+    <hr />
+    <div class="row">
+
+
+        <input type="hidden" id="Element1" value="StatementDataMixedChart" />
+        <div class="col-md-12 col-sm-12" id="Division1">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+    </div>
+}
+@if (User.IsLocalEducator())
+{
+    <h3>Testing Data</h3>
+    <hr />
+    <div class="row">
+
+
+        <input type="hidden" id="Element1" value="StatementDataMixedChart" />
+        <div class="col-md-12 col-sm-12" id="Division1">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+    </div>
+}
+@if (User.IsLocalParent() || User.IsLocalUser())
+{
+    <h3>Testing Data</h3>
+    <hr />
+    <div class="row">
+
+
+        <input type="hidden" id="Element1" value="StatementDataMixedChart" />
+        <div class="col-md-12 col-sm-12" id="Division1">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+    </div>
+}
+
+
+
+@*<h3> Testing Data </h3>
+    <hr />
+    <div class="row">
+
+        <input type="hidden" id="Element2" value="ModuleUsageAnalyticsMixedChart" />
+        <div class="col-md-4 col-sm-4" id="Division2">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+
+        <input type="hidden" id="Element3" value="CompletionChart" />
+        <div class="col-md-4 col-sm-4" id="Division3">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <h3>Testing Data</h3>
+    <hr />
+    <div class="row">
+
+
+        <input type="hidden" id="Element1" value="StatementDataMixedChart" />
+        <div class="col-md-12 col-sm-12" id="Division1">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+    </div>*@
+
+@*<h3>Marketing</h3>
+    <hr />
+    <div class="row">
+
+        <input type="hidden" id="Element1" value="LeadQualityChart" />
+        <div class="col-md-4 col-sm-4" id="Division1">
+
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+
+        </div>
+
+        <input type="hidden" id="Element2" value="WorldGeoMapMarketingAnalytics" />
+        <div class="col-md-4 col-sm-4" id="Division2">
+
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+
+        </div>
+
+        <input type="hidden" id="Element3" value="MarketingChart3" />
+        <div class="col-md-4 col-sm-4" id="Division3">
+
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+
+        </div>
+
+
+    </div>*@
+
+@*<h3>Testing Data</h3>
+    <hr />
+    <div class="row">
+
+
+        <input type="hidden" id="Element1" value="DailyStatementSubmissionChart" />
+        <div class="col-md-4 col-sm-4" id="Division1">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+
+        <input type="hidden" id="Element2" value="DailyTimeSpentTestingChart" />
+        <div class="col-md-4 col-sm-4" id="Division2">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+
+        <input type="hidden" id="Element3" value="CompletionChart" />
+        <div class="col-md-4 col-sm-4" id="Division3">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+    </div>*@
+
+
+
+@section Scripts{
+    <script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>
+}

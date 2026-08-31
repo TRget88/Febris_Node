@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- NET8 Wave 2. Mvc.NewtonsoftJson +
+         Mvc.ViewFeatures pins dropped -> FrameworkReference; Newtonsoft made a DIRECT
+         ref (it only ever arrived transitively via Mvc.NewtonsoftJson on 3.1, the
+         Wave-1 hidden-transitive lesson applied proactively). -->
+    <TargetFramework>net8.0</TargetFramework>
+    <Configurations>Debug;Release;Staging</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="X.PagedList.Mvc.Core" Version="8.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Febris.EnumLibrary" Version="0.1.0" />
+    <PackageReference Include="Febris.ModelLibrary" Version="0.1.0" />
+    <PackageReference Include="Febris.SharedServices" Version="0.1.0" />
+    <ProjectReference Include="..\FebrisEndUserDAL\Febris.UserNode.DataAccessLayer.csproj" />
+  </ItemGroup>
+
+</Project>

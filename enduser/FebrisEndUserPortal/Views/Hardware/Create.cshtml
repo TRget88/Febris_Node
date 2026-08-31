@@ -1,0 +1,67 @@
+﻿@model Febris.ModelLibrary.ViewModels.LocalHardwareCreationViewModel
+@using Febris.EnumLibrary;
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h2>Create</h2>
+
+<h4>Hardware</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <div>
+                    <label class="switch">
+                        <input type="checkbox" asp-for="Hardware.IsLockedOut" /> @Html.DisplayNameFor(model => model.Hardware.IsLockedOut)
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Hardware.HardwareCondition" class="control-label"></label>
+                <select asp-for="Hardware.HardwareCondition" class="form-control" asp-items="Html.GetEnumSelectList<HardwareCondition>()"></select>
+                <span asp-validation-for="Hardware.HardwareCondition" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Hardware.HardwareKind" class="control-label"></label>
+                <select asp-for="Hardware.HardwareKind" class="form-control" asp-items="@Html.GetEnumSelectList<HardwareKind>()"></select>
+                <span asp-validation-for="Hardware.HardwareKind" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Hardware.DescriptiveName" class="control-label"></label>
+                <input asp-for="Hardware.DescriptiveName" class="form-control" />
+                <span asp-validation-for="Hardware.DescriptiveName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Hardware.Description" class="control-label"></label>
+                <textarea asp-for="Hardware.Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Hardware.Description" class="text-danger"></span>
+            </div>
+            @* The device credential is NOT entered here (audit T9). The node mints it with 256
+               bits of entropy on save, stores only its hash, and shows the plaintext ONCE on the
+               next page. An admin-chosen credential would be low entropy, and hashing one would make
+               it unrecoverable as well -- the worst of both. *@
+            <div class="alert alert-info">
+                <strong>The device credential is generated for you.</strong>
+                It will be shown <strong>once</strong>, immediately after you save. Copy it into the
+                device before navigating away: it is stored only as a hash and cannot be retrieved
+                afterwards. If it is lost, use <em>Regenerate Credential</em> to issue a new one.
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

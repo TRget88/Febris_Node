@@ -1,0 +1,93 @@
+@model Febris.ModelLibrary.ViewModels.SoftwarePackageUploadViewModel
+
+@{
+    ViewData["Title"] = "Upload Package";
+}
+
+<h1>Upload Package</h1>
+<hr />
+
+@*
+    ROADMAP 16: the node's client-software ingest form. It posts to the SAME ingest logic the old
+    API endpoint used -- the .zip streams to IStorageProvider, its SHA-256 is recorded on a
+    PackageArtifact row, and the LocalSoftwarePackage catalog row is upserted -- rather than a
+    hand-authored multipart POST carrying a NodeAdmin token minted from a route with no UI.
+
+    Supplying an existing package UUID updates that package in place. Leaving it empty creates a
+    new catalog row, which is the normal shape for a new release: the archive keeps every version
+    and GetLatestVersion resolves the newest non-obsolete row.
+*@
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Upload" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="File" class="control-label">Software package (.zip)</label>
+                <input asp-for="File" type="file" accept=".zip" class="form-control" />
+                <span asp-validation-for="File" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="LocalSoftwarePackageType" class="control-label"></label>
+                <select asp-for="LocalSoftwarePackageType" asp-items="Html.GetEnumSelectList<Febris.EnumLibrary.LocalSoftwarePackageType>()" class="form-control"></select>
+                <span asp-validation-for="LocalSoftwarePackageType" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Version" class="control-label"></label>
+                <input asp-for="Version" class="form-control" />
+                <span asp-validation-for="Version" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Language" class="control-label"></label>
+                <select asp-for="Language" asp-items="Html.GetEnumSelectList<Febris.EnumLibrary.LanguageMapTypeEnum>()" class="form-control"></select>
+                <span asp-validation-for="Language" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="UUID" class="control-label">Existing package UUID (optional)</label>
+                <input asp-for="UUID" class="form-control" placeholder="Leave empty for a new package" />
+                <span asp-validation-for="UUID" class="text-danger"></span>
+                <small class="text-muted">
+                    Supply an existing package's UUID to update its catalog row and replace its
+                    stored .zip in place. The Archive page lists every package with its UUID.
+                </small>
+            </div>
+
+            <div class="form-group form-check">
+                <input asp-for="Obsolete" class="form-check-input" />
+                <label asp-for="Obsolete" class="form-check-label"></label>
+                <small class="text-muted d-block">
+                    An obsolete package stays in the archive but is skipped when clients ask for the
+                    latest version.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Upload Package" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="PackageArchive" asp-route-input="@Model.LocalSoftwarePackageType">Back to Archive</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

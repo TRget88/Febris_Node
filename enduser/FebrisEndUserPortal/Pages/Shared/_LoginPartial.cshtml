@@ -1,0 +1,64 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Febris.ModelLibrary.Models.UserModels
+@using Febris.SharedServices;
+@inject SignInManager<LocalApplicationUser> SignInManager
+@inject UserManager<LocalApplicationUser> UserManager
+
+<ul class=" navbar-right">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item dropdown open" style="padding-left: 15px;">
+
+            <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true" id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">
+                @if (User.HasProfilePicture())
+                {
+                    <img src="@Url.Action("LoadProfilePicture", "Widget", new { path = User.ProfilePicturePath() })" alt="Profile picture">
+                }
+                else
+                {
+                    <img src="~/images/DefaultMedia/DefaultPerson.png" alt="Default Picture">
+                }
+                @*<img src="~/images/DefaultMedia/DefaultPerson.png" alt="">*@
+
+                @User.Identity.Name
+            </a>
+
+            <div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Settings</a>
+                @*<a class="dropdown-item" href="javascript:;" title="Manage">Help</a>*@
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="dropdown-item">Logout</button>
+                </form>
+            </div>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </li>
+    }
+</ul>
+
+@*<ul class="navbar-nav">*@
+@*@if (SignInManager.IsSignedIn(User))
+    {*@
+@*<li class="nav-item">
+            <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
+        </li>
+        <li class="nav-item">
+            <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button id="logout" type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </li>
+    }*@
+@*else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </li>
+    }
+    </ul>*@

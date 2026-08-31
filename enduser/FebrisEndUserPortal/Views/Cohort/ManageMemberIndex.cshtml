@@ -1,0 +1,140 @@
+﻿@model Febris.ModelLibrary.Models.DataModels.Cohort
+
+@{
+    ViewData["Title"] = "ManageCohortMemberIndex";
+}
+
+<h1>Manage Cohort Members </h1>
+<input type="hidden" value="@Model.Id" id="inputVariable" />
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6">
+            <div id="IndexPartial">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div id="SecondPartial">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts
+{
+    <script>
+        var inputVariable = document.getElementById("inputVariable");
+        function loadSecond() {
+            var url = window.location.pathname.split("/");
+            var controller = url[1];
+            $("#IndexPartial").load("/" + controller + "/ManageMemberIndexPartial?id=" + inputVariable.value)
+            $("#SecondPartial").load("/" + controller + "/AccessableMemberIndexPartial")
+        }
+
+        window.onload = loadSecond();
+    </script>
+    <script>
+        // ROADMAP 20: these used confirm("Item added.") / confirm("Item removed.") on the SUCCESS
+        // callback only. Three defects in one line. It fired only when the call succeeded, so a
+        // refusal or a dropped request said nothing at all. It asked a yes/no question about
+        // something that had already happened, which is not a decision the user can make. And
+        // answering Cancel skipped loadSecond(), leaving the two lists showing membership the
+        // database no longer had -- so declining a pointless prompt silently desynced the screen.
+        //
+        // Success is announced by a toast and the lists always refresh. Failure is reported by the
+        // global net in StatusMessage.js, which is why there is no .fail() here: adding one would
+        // show two messages for one failure.
+        function AddItem(data) {
+            var itemId = $(data).attr('userId');
+            var url = window.location.pathname.split("/");
+            var controller = url[1];
+            $.post("/" + controller + "/AddMember", { cohortId: inputVariable.value, userId: itemId, __RequestVerificationToken: AntiForgeryToken() }, function (data) {
+                window.StatusMessage.ok("Member added.");
+                loadSecond();
+            });
+        }
+
+        function RemoveItem(data) {
+            var linkId = $(data).attr('linkId');
+            var url = window.location.pathname.split("/");
+            var controller = url[1];
+            $.post("/" + controller + "/RemoveMember", { id: linkId, __RequestVerificationToken: AntiForgeryToken() }, function (data) {
+                window.StatusMessage.ok("Member removed.");
+                loadSecond();
+            });
+        }
+
+
+
+            //function AddItemListSafetySwitch(data) {
+            //    var btn = document.getElementById('AddMemberListButton')
+
+            //    if (data.checked) {
+            //        btn.removeAttribute('disabled');
+            //    }
+            //    else {
+            //        btn.setAttribute('disabled', '');
+            //    }
+            //}
+
+            //function AddItemList() {
+            //    var url = window.location.pathname.split("/");
+            //    var controller = url[1];
+            //    //data to add. Get search string campaign
+            //    var searchString = document.getElementById("searchBox").value;
+            //    var campaign = document.getElementById('inputVariable').value;
+            //    $.get("/" + controller + "/AddMemberList?searchString=" + searchString + "&campaignId=" + campaign, function (data) {
+            //        if (confirm("Member added.") == true) {
+            //            loadSecond();
+            //        };
+            //    }).done();
+            //}
+
+
+
+            //function RemoveMemberListSafetySwitch(data) {
+            //    var btn = document.getElementById('RemoveMemberListButton')
+
+            //    if (data.checked) {
+            //        btn.removeAttribute('disabled');
+            //    }
+            //    else {
+            //        btn.setAttribute('disabled', '');
+            //    }
+            //}
+
+            //function RemoveMemberList() {
+            //    var url = window.location.pathname.split("/");
+            //    var controller = url[1];
+            //    var searchString = document.getElementById("searchBox2").value;
+            //    var campaign = document.getElementById('inputVariable').value;
+            //    $.get("/" + controller + "/RemoveMemberList?searchString=" + searchString + "&campaignId=" + campaign, function (data) {
+            //        if (confirm("Member list removed.") == true) {
+            //            loadSecond();
+            //        };
+            //    }).done();
+
+            //}
+
+    </script>
+            
+    <script src="~/JSScriptLib/ButtonOperation/Specific/CohortButtonOperation.js"></script>
+
+}
+    <script>
+        // Audit C-07: these actions are now [HttpPost] + [ValidateAntiForgeryToken], so the
+        // request carries the token. Previously a bare $.get, which meant any page a logged-in
+        // admin visited could trigger the same state change with an image tag.
+        function AntiForgeryToken() {
+            return $('#antiForgeryHolder input[name="__RequestVerificationToken"]').val();
+        }
+    </script>
+    @* Token holder for the tokenised POSTs above. Never submitted; the helper reads the value. *@
+    <form id="antiForgeryHolder">
+        @Html.AntiForgeryToken()
+    </form>

@@ -1,0 +1,150 @@
+﻿@model X.PagedList.IPagedList<Febris.ModelLibrary.Models.DataModels.MessageBoard>
+
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc
+@using X.PagedList
+@using Febris.ModelLibrary.PartialViewModels
+
+<div id="tablePartial">
+    <div id="search">
+        @using (Html.BeginForm())
+        {
+            <p>
+                @Html.TextBox("SearchString", null, new { id = "searchBox", type = "text" })
+                <input type="submit" value="Search" class="fa fa-search btn btn-primary" />
+            </p>
+        }
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Archive
+                </th>
+                <th>
+                    TimeStamp
+                </th>
+                <th>
+                    Last Update TimeStamp
+                </th>
+                <th>
+                    User Email
+                </th>
+                <th>
+                    Subject
+                </th>
+                <th>
+                    Message
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox" checked="@item.Archive" onchange="OnToggle('@item.Id')"/>
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TimeStamp)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.LastUpdateTimeStamp)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.UserEmail)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Subject)
+                        </td>
+                        <td class="line-breaks">
+                            @Html.DisplayFor(modelItem => item.Message)
+                        </td>
+                        @await Html.PartialAsync("Buttons/GenericButtons/MessageBoard/_IndexButtonGroupPartial", new IndividualButtonPartial { Id = item.Id })
+
+                    </tr>
+                }}
+        </tbody>
+    </table>
+    <div id="pagedList">
+        @if (TempData.ContainsKey("CurrentFilter"))
+        {
+            @Html.PagedListPager(Model, page => Url.Action("IndexPartial", new { page = page, currentFilter = TempData["CurrentFilter"].ToString() }));
+        }
+        else
+        {
+            @Html.PagedListPager(Model, page => Url.Action("IndexPartial", new { page = page }));
+        }
+    </div>
+</div>
+<script>
+    // Audit C-07: ToggleArchive is now [HttpPost] + [ValidateAntiForgeryToken].
+    //
+    // Converted THIS call site rather than the shared SubmitFollowing helper
+    // (ButtonActions.js:76), which does a bare $.get(route + id) and serves six other sites --
+    // several targeting actions not converted here, and one (the Hardware IsLockedOut toggle)
+    // passing its arguments in the wrong order at a route that does not exist. Changing the shared
+    // helper would silently break those rather than fix them.
+    // ROADMAP 20: this reported failure to the CONSOLE and success not at all, so from the
+    // operator's side an archive that worked and an archive that was refused looked identical.
+    // The failure now surfaces through the global net in StatusMessage.js; the success message is
+    // here because only this call site knows what was archived.
+    //
+    // The endpoint does not return the resulting state, so the message says what was asked for
+    // rather than what was stored. That is honest as far as it goes: a 2xx from this action means
+    // it was applied.
+    function OnToggle(id) {
+        $.post("../MessageBoard/ToggleArchive/", {
+            Id: id,
+            __RequestVerificationToken: $('#messageBoardToken input[name="__RequestVerificationToken"]').val()
+        }).done(function () {
+            window.StatusMessage.ok("Archive state changed.");
+        });
+    }
+
+    $(function () {
+        $('#pagedList').on('click', 'a', function () {
+            $.ajax({
+                url: this.href,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                }
+            });
+            return false;
+        });
+    });
+    $(function () {
+        $('#search').submit(function (event) {
+            event.preventDefault();
+            var searchString = document.getElementById("searchBox").value;
+            $.ajax({
+                url: "../MessageBoard/IndexPartial",
+                async: true,
+                data: 'searchString=' + searchString,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                },
+                error: function (xhr, param) {
+                    console.log(xhr);
+                    console.log(param);
+                }
+            });
+            return false;
+        });
+    });
+</script>
+
+@* Token holder for the tokenised POST above. Never submitted; OnToggle reads the value. *@
+<form id="messageBoardToken">
+    @Html.AntiForgeryToken()
+</form>

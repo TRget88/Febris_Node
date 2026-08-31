@@ -1,0 +1,24 @@
+﻿@model string
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />   
+</head>
+
+<div class="col-sm-12" align="center"  style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">Status Message</h1>
+    </div>
+</div>
+
+<br />
+
+<div align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+    <p>@Model.ToString()</p>
+</div>
+
+<br />
+
+@*<div class="modal-footer">    
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>    
+</div>*@

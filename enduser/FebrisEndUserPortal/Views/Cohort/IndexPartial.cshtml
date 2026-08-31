@@ -1,0 +1,220 @@
+﻿@model X.PagedList.IPagedList<Febris.ModelLibrary.Models.DataModels.Cohort>
+
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc
+@using X.PagedList
+@using Febris.ModelLibrary.PartialViewModels
+
+<div id="tablePartial">
+    <div id="search">
+        @using (Html.BeginForm())
+        {
+            <p>
+                @Html.TextBox("SearchString", null, new { id = "searchBox", type = "text" })
+                <input type="submit" value="Search" class="fa fa-search btn btn-primary" />
+            </p>
+        }
+    </div>
+    @{ bool includeArchived = ViewData["IncludeArchived"] as bool? ?? false; }
+    <input id="includeArchivedFlag" type="hidden" value="@includeArchived.ToString().ToLower()" />
+    @* ROADMAP 19. Deliberately the SAME control as Views/Curriculum/IndexPartial.cshtml -- one
+       archived-visibility idiom across the app, not two. Without this, archiving is a one-way
+       door: the un-archive switch is on the row that archiving removes. *@
+    <p>
+        <label>
+            <input type="checkbox" id="showArchived" onchange="reloadCohortIndex()" checked="@includeArchived" />
+            Show archived cohorts
+        </label>
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Archived
+                </th>
+                <th>
+                    @* ROADMAP 22: the educator's recording policy. Unlike the Archived switch
+                       beside it, this flag is ENFORCED from the day it ships -- the node derives
+                       every launch's record decision from it. *@
+                    Records
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Description
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @* Audit C-07 / reachability sweep: this switch was rendered `disabled`
+                               in every generation of this codebase, leaving ArchiveToggle
+                               unreachable. Enabled here and posting with an antiforgery token.
+                               Archive IS enforced (corrected 2026-08-25, this comment used to say
+                               it was not): CohortQueries.Get() filters `!Archive` and
+                               GetIncludingArchived() is the include path the checkbox above
+                               selects, so archiving removes a finished term from the lists and
+                               pickers. The LockMembers switch that sat beside this one was removed
+                               instead, because nobody could say what "locked" should mean. *@
+                            <label class="switch">
+                                <input type="checkbox" checked="@item.Archive"
+                                       onchange="CohortToggle(this, '@item.Id')" />
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td>
+                            @* ROADMAP 22: sessions launched for this cohort are recorded when this
+                               is on. The learner sees nothing about it -- the decision belongs to
+                               the educator, and the node enforces it server-side. *@
+                            <label class="switch">
+                                <input type="checkbox" checked="@item.RecordSessions"
+                                       onchange="CohortRecordSessionsToggle(this, '@item.Id')" />
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Description)
+                        </td>
+                        @await Html.PartialAsync("Buttons/GenericButtons/Cohort/_IndexButtonGroupPartial", new IndividualButtonPartial { Id = item.Id })
+
+                    </tr>
+                }}
+        </tbody>
+    </table>
+    <div id="pagedList">
+        @if (TempData.ContainsKey("CurrentFilter"))
+        {
+            @Html.PagedListPager(Model, page => Url.Action("IndexPartial", new { page = page, currentFilter = TempData["CurrentFilter"].ToString() }));
+        }
+        else
+        {
+            @Html.PagedListPager(Model, page => Url.Action("IndexPartial", new { page = page }));
+        }
+    </div>
+</div>
+<script>
+    $(function () {
+        $('#pagedList').on('click', 'a', function () {
+            $.ajax({
+                url: this.href,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                }
+            });
+            return false;
+        });
+    });
+    $(function () {
+        $('#search').submit(function (event) {
+            event.preventDefault();
+            var searchString = document.getElementById("searchBox").value;
+            $.ajax({
+                url: "../Cohort/IndexPartial",
+                async: true,
+                data: 'searchString=' + searchString,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                },
+                error: function (xhr, param) {
+                    console.log(xhr);
+                    console.log(param);
+                }
+            });
+            return false;
+        });
+    });
+
+    // Audit C-07: the toggle actions are [HttpPost] + [ValidateAntiForgeryToken], so the token has
+    // to travel with the request. This partial is AJAX-loaded, so the token is rendered INSIDE it
+    // (below) rather than relying on a form in the host page.
+    //
+    // On failure the checkbox is reverted, because the flag it displays is the ONLY record of
+    // archived/locked state -- leaving the UI showing a state the database does not have would be
+    // the same silent-success defect the audit found elsewhere.
+    // Declared on window so the inline onchange handlers keep working after the partial replaces
+    // its own markup -- same reason as Views/Curriculum/IndexPartial.cshtml.
+    window.reloadCohortIndex = function () {
+        var showArchived = document.getElementById("showArchived").checked;
+        $('#tablePartial').load("/Cohort/IndexPartial?includeArchived=" + showArchived);
+    };
+
+    // Audit C-07: ArchiveToggle is [HttpPost] + [ValidateAntiForgeryToken], so the token travels
+    // with the request. The token is rendered inside this partial because the partial is
+    // AJAX-loaded.
+    //
+    // On failure the checkbox is reverted -- leaving the UI showing a state the database does not
+    // have is the same silent-success defect this audit removed elsewhere. On success, reload when
+    // the row would drop out of the current view: archiving while "show archived" is off means the
+    // cohort is no longer part of this list.
+    window.CohortToggle = function (checkbox, id) {
+        var desired = checkbox.checked;
+        var showArchived = document.getElementById("includeArchivedFlag").value === "true";
+        $.ajax({
+            url: "/Cohort/ArchiveToggle",
+            type: "POST",
+            data: {
+                Id: id,
+                __RequestVerificationToken: $('#cohortToggleForm input[name="__RequestVerificationToken"]').val()
+            },
+            success: function () {
+                window.StatusMessage.ok(desired ? "Cohort archived." : "Cohort restored.");
+                if (desired && !showArchived) {
+                    window.reloadCohortIndex();
+                }
+            },
+            // ROADMAP 20: reverting the checkbox was already right, and stays. What is gone is the
+            // console.log, which told the operator nothing -- the failure is now reported on screen
+            // by the global net in StatusMessage.js. This handler repairs state and says nothing,
+            // because announcing here as well would show two messages for one failure.
+            error: function () {
+                checkbox.checked = !desired;
+            }
+        });
+    };
+
+    // ROADMAP 22: the educator's recording policy. Same shape as CohortToggle above -- POST with
+    // the antiforgery token, revert the checkbox on failure and say nothing (the global net in
+    // StatusMessage.js owns failure), announce success here.
+    //
+    // No reload on success: unlike archiving, turning recording on or off never removes the row
+    // from the current view.
+    window.CohortRecordSessionsToggle = function (checkbox, id) {
+        var desired = checkbox.checked;
+        $.ajax({
+            url: "/Cohort/RecordSessionsToggle",
+            type: "POST",
+            data: {
+                Id: id,
+                __RequestVerificationToken: $('#cohortToggleForm input[name="__RequestVerificationToken"]').val()
+            },
+            success: function () {
+                window.StatusMessage.ok(desired
+                    ? "Sessions for this cohort will be recorded."
+                    : "Sessions for this cohort will no longer be recorded.");
+            },
+            error: function () {
+                checkbox.checked = !desired;
+            }
+        });
+    };
+</script>
+
+@* Token holder for the toggles above. A bare form so the tag helper emits the hidden input; it is
+   never submitted -- CohortToggle reads the value out of it and posts via AJAX. *@
+<form id="cohortToggleForm">
+    @Html.AntiForgeryToken()
+</form>

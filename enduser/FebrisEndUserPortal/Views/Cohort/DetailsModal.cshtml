@@ -1,0 +1,89 @@
+﻿@model Febris.ModelLibrary.Models.DataModels.Cohort
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">@Model.Name Details</h1>
+    </div>
+</div>
+
+<input type="hidden" id="modelId" value="@Model.Id" />
+<br />
+<div>
+    <div class="row">
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+            <div class="row">
+                <div class="col-sm-6" align="center" style="font-weight:bold">
+                    <label class="switch">
+                        <input type="checkbox" checked="@Model.Archive" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                    @Html.DisplayNameFor(model => model.Archive)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Name)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Name)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Description)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+            </div>
+            @*<div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.InstructorId)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.InstructorId)
+                </div>
+            </div>*@
+        </div>
+        <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">            
+            <input type="hidden" id="Element0" value="MemberList" />
+            <div id="Division0" align="center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<hr />
+<br />
+<div>
+    <div align="center">
+        @await Html.PartialAsync("Buttons/GenericButtons/Cohort/_ManagementButtonGroupPartial", new IndividualButtonPartial { Id = Model.Id })
+    </div>
+</div>
+
+<br />
+<hr />
+
+
+<div align="center">    
+    <input type="hidden" id="Element1" value="CurriculumAccessListing" />
+    <div id="Division1" align="center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div>
+
+</div>
+<br />
+
+<script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>
+

@@ -1,0 +1,220 @@
+﻿
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+    <style>
+        .codesnippet {
+            background: darkslategray;
+            margin-bottom: 0;
+        }
+
+            .codesnippet p {
+                color: white;
+                margin-bottom: 0;
+            }
+
+            .codesnippet span {
+                color: cornflowerblue;
+            }
+
+            .codesnippet span2 {
+                color: palegreen;
+            }
+
+        /*This does work but is not needed*/
+        /*.codesnippet span.green {
+                color: palegreen;
+            }*/
+
+    </style>
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">Mobile Server Documentation</h1>
+    </div>
+</div>
+<br />
+
+@*Background*@
+<div class="col-sm-12" style="border-radius:20px; padding:10px; align-items:center;">
+    <h3>Background</h3>
+    <hr />
+    <p>
+        This is documentation on how to use the Febris Mobile Server. Start by downloading the Febris Mobile Server directly from the Febris Portal.
+    </p>
+    <p style="font-weight:bold">
+        Not every aspect of the Febris mobile server is currently online. This will change in future releases.
+    </p>
+    <p style="font-weight:bold">
+        If you violate your hardware's EULA by installing the Febris Mobile Suite, Febris takes no responsibility.
+    </p>
+</div>
+
+@*Requirements*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Requirements</h3>
+    <hr />
+    <p>
+        Needed Items:
+    </p>
+    <ol>
+        <li>
+            Android based Tablet (Android 10 [API 29] is optimal and minimum required OS, a phone can work but it's size can make operation a challenge.)
+        </li>
+        <li>
+            Android based headset
+        </li>
+        <li>
+            OTG cable and second USB cable (optional but sometimes required for headsets that have removed the normal installer)
+        </li>
+    </ol>
+    <p>
+        If your Android device does not support the installation of software outside of their tightly controlled marketplace,
+        you may not be able to install the Febris software and we appologize for the inconvience but there is nothing we can do about that situtation.
+    </p>
+</div>
+
+@*Registering Device*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Registering a device</h3>
+    <hr />
+    <p>
+        Registration of the device in the Febris system manages the automation of module distribution and data collection.
+        The software needs to be running on the new mobile server before attempting to register it in your hardware system.
+    </p>
+</div>
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <p>
+        Go to the configuration page and find the hardware license.
+        This series of letters a numbers will be used when creating hardware on the Febris portal.
+    </p>
+</div>
+@*Image*@
+<div class="container-fluid" align="center">
+    <img src="~/images/DocumentationImages/MobileServer/Config/MobileServerConfig_HardwareLicense.jpeg" alt="Hardware License" width="50%" />
+    <p class="italic">Mobile Server Registration</p>
+</div>
+
+
+@*Setup*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Setting up your device</h3>
+    <hr />
+    <p>
+        Currently there is no need to provide log in credentials for mobile server operations. So please do not feel any need to provide them.
+    </p>
+    <p>
+        If you are a developer setup is as simple as selecting the developer option and saving the selection.
+        From here on the device should be connected to your company’s account.
+    </p>
+    <p>
+        If you are not a developer than the proper URL needs to be setup.
+        Your IT administrator will have set up a private URL for your Febris operations.
+        The URL can vary from a prefix, path, or port.
+        If you do not know what these are please ask your IT Administrator.
+        If the category does not exist, leave the section blank.
+    </p>
+    <p>
+        Pressing update settings saves your new configuration.
+    </p>
+</div>
+@*Image*@
+<div class="container-fluid" align="center">
+
+    <img src="~/images/DocumentationImages/MobileServer/Config/MobileServerConfig_SaveSettings.jpeg" alt="Mobile Server Config" width="50%" />
+    <p class="italic">Mobile Server Config</p>
+</div>
+
+
+
+@*Adding a headset*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Adding a headset</h3>
+    <hr />
+    <p>
+        A headset has to be registered via bluetooth. Please only register one device at a time.
+    </p>
+    <p>
+        Configuration > Pair New Device > Scan
+    </p>
+</div>
+@*Image*@
+<div class="container-fluid" align="center">
+    <img src="~/images/DocumentationImages/MobileServer/Config/MobileServerConfig_PairNewDevice.jpeg" alt="Pairing Page" width="50%" />
+    <p class="italic">Pairing Page</p>
+</div>
+@*Image*@
+<div class="container-fluid" align="center">
+    <img src="~/images/DocumentationImages/MobileServer/Pairing/MobileServer_Pairing_Scan.jpeg" alt="Pairing Scan" width="50%" />
+    <p class="italic">Pairing Scan</p>
+</div>
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <p>
+        Once the device you would like to pair is found it will be added to your device list.
+    </p>
+    <p>
+        Now that the device is on your list you can either send the apk via Bluetooth or use the built in USB installer
+    </p>
+    <p>
+        If you are using Bluetooth select the upload button on the right of that device and tell the tablet to upload the file over Bluetooth.
+        You will then need to select the .apk file sent to the headset to install the companion application.
+    </p>
+</div>
+@*Image*@
+<div class="container-fluid" align="center">
+    <img src="~/images/DocumentationImages/MobileServer/Pairing/MobileServer_Pairing_BTUpload.jpeg" alt="Bluetooth upload" width="50%" />
+    <p class="italic">Bluetooth upload</p>
+</div>
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <p>
+        If you are using USB OTG, first put the two devices in development mode.
+        Plug the OTG cable into the device running the mobile server.
+        Plug the other end of the OTG cable into the headset/companion device.
+        If the connection is made a few trust question may pop up on the screen.
+        Approve all of the options.
+        Two buttons will appear at the top of the Device Pairing Page.
+        One will say “push and install” and the other will say “install”. First press “push and install”.
+        This will upload the different apk variations of the companion software.
+        If the push somehow fails in the middle of uploading some of the .apk files you can still try the install command.
+        More than likely the needed file is already on your headset. If it works, there is no need to try to push the files again.
+    </p>
+</div>
+@*Image*@
+<div class="container-fluid" align="center">
+    <img src="~/images/DocumentationImages/MobileServer/Pairing/MobileServer_Pairing_USBPushAndInstall.jpeg" alt="USB push and install" width="50%" />
+    <p class="italic">USB push and install</p>
+</div>
+
+@*Removing a headset*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Removing a headset</h3>
+    <hr />
+    <p>
+        A headset can be removed by pressing the trashcan icon on the left side of the device on the list.
+    </p>
+</div>
+@*Image*@
+<div class="container-fluid" align="center">
+    <img src="~/images/DocumentationImages/MobileServer/Pairing/MobileServer_Pairing_DeviceRemoval.jpeg" alt="Device Removal" width="50%" />
+    <p class="italic">Device Removal</p>
+</div>
+
+
+@*Potential certification issues*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Api connection issues</h3>
+    <hr />
+    <p>
+        The R3 Certification lead to issues with some systems. Previously working applications stopped working in September of 2022. If you are facing it and cannot get a new certificate. There are a few easy steps you can take for a temporary workaround.
+    </p>
+    <p>
+        Settings > Security > Encryption & Credentials > Trusted Credentials > Digital Signature Trust Co. (toggle)
+    </p>
+</div>

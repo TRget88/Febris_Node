@@ -1,0 +1,127 @@
+﻿
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+    <style>
+        .codesnippet {
+            background: darkslategray;
+            margin-bottom: 0;
+        }
+
+            .codesnippet p {
+                color: white;
+                margin-bottom: 0;
+            }
+
+            .codesnippet span {
+                color: cornflowerblue;
+            }
+
+            .codesnippet span2 {
+                color: palegreen;
+            }
+
+        /*This does work but is not needed*/
+        /*.codesnippet span.green {
+                color: palegreen;
+            }*/
+
+    </style>
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">PC Launcher Documentation</h1>
+    </div>
+</div>
+<br />
+
+@*Background*@
+<div class="col-sm-12" style="border-radius:20px; padding:10px; align-items:center;">
+    <h3>Background</h3>
+    <hr />
+    <p>
+        This is documentation on how to use the Febris PC Launcher. Start by downloading the PC package from the Febris Portal.
+    </p>
+    <p style="font-weight:bold">
+        Not every aspect of the Febris PC Launcher is optimal.
+        The PC software does not currently have a signing certificate.
+        This will change in future releases.
+    </p>
+</div>
+
+@*Requirements*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Requirements</h3>
+    <hr />
+    <p>
+        Needed Items:
+    </p>
+    <ol>
+        <li>
+            VR ready PC running Windows 10 (Windows 11 may work but is untested)
+        </li>
+        <li>
+            Compatible headset and accompanying hardware
+        </li>
+    </ol>
+</div>
+
+@*Registering Device*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Registering a device</h3>
+    <hr />
+    <p>
+        Registration of the device in the Febris system manages the automation of module distribution and data collection.
+        The software needs to be running on the new PC before attempting to register it in your hardware system.
+    </p>
+    <p>
+        Go to the configuration page and find the hardware license.
+        This series of letters a numbers will be used when creating hardware on the Febris portal.
+    </p>
+</div>
+@*Image*@
+<div class="container-fluid" align="center">
+
+    <img src="~/images/DocumentationImages/PCLauncher/PCConfig_License.png" alt="Device Registration" width="50%" />
+    @*<div>
+            <img src="@Url.Action("DocumentationImageLoader","Widget",new {path=Model.ScreenShot1})" alt="Device Setup" />
+        </div>*@
+    <p class="italic">PC Registration</p>
+</div>
+
+@*Setup*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Setting up your device</h3>
+    <hr />
+    <p>
+        Currently there is no need to provide log in credentials for launcher operations. So please do not feel any need to provide them.
+    </p>
+    <p>
+        If you are a developer setup is as simple as selecting the developer option and saving the selection.
+        From here on the device should be connected to your company’s account.
+    </p>
+    <p>
+        If you are not a developer than the proper URL needs to be setup.
+        Your IT administrator will have set up a private URL for your Febris operations.
+        The URL can vary from a prefix, path, or port.
+        If you do not know what these are please ask your IT Administrator.
+        If the category does not exist, leave the section blank.
+    </p>
+</div>
+@*Image*@
+<div class="container-fluid" align="center">
+
+    <img src="~/images/DocumentationImages/PCLauncher/PCConfig_Save.png" alt="Launcher Config" width="50%" />
+
+    @*<div>
+            <img src="@Url.Action("DocumentationImageLoader","Widget",new {path=Model.ScreenShot1})" alt="Device Setup" />
+        </div>*@
+    <p class="italic">Launcher Config</p>
+</div>
+
+
+

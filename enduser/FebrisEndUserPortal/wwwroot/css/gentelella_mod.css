@@ -1,0 +1,139 @@
+﻿
+/*.profile_info h2 {
+    font-size: 14px;
+    color: #ECF0F1;
+    margin: 0;
+    font-weight: 300;
+    overflow:hidden;*/
+/*overflow-wrap: break-word !important;
+    max-width: auto !important;*/
+/*}*/
+
+/*.nav-md .container.body .col-md-3.left_col {
+    min-height: 100%;
+    width: 230px;
+    padding: 0;
+    position: absolute;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: block !important;
+    z-index: 1;
+}*/
+
+.nav-sm span.fa, .nav-sm .menu_section h3 {
+    display: inline !important;
+    text-rendering: auto;
+}
+
+.nav-sm .left_col span.fa, .nav-sm .left_col .menu_section h3 {
+    display: none !important;
+}
+
+.line-breaks {
+    white-space: pre-line;
+}
+
+.sidebar-footer a {
+    padding: 7px 0 3px;
+    text-align: center;
+    width: 50%;
+    font-size: 17px;
+    display: block;
+    float: left;
+    background: #172D44;
+}
+
+.sidebar-footer form {
+    padding: 7px 0 3px;
+    text-align: center;
+    width: 50%;
+    font-size: 17px;
+    display: block;
+    float: left;
+    background: #172D44;
+}
+
+.panel_toolbox {
+    float: right;
+    min-width: 20px;
+}
+
+td img {
+    max-width: 10rem;
+}
+
+/*Added a mod form images because they area a little crazy*/
+.image-container {
+    max-height: 150px; /* Adjust this value as per your requirement */
+    max-width: 150px;
+    /*position: relative;*/
+    /*overflow: hidden;*/
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .image-container img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+    }
+
+
+
+.flex-table {
+    table-layout: auto;
+    width: 100%;
+}
+    
+    .flex-table tbody tr td canvas {    
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible;        
+    }
+
+        .flex-table tbody tr td canvas .tooltip {
+            overflow: visible;
+            z-index: 9999;
+        }
+
+.rating {
+    float: left;
+    display: inline-flex;
+    flex-direction: row-reverse;
+}
+
+    .rating span {
+        float: right;
+        position: relative;
+    }
+
+        .rating span input {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            opacity: 0;
+        }
+
+        .rating span label {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            text-align: center;
+            color: #FFF;
+            background: #ccc;
+            font-size: 12px;
+            margin-right: 2px;
+            line-height: 12px;
+            border-radius: 50%;
+            -webkit-border-radius: 50%;
+        }
+
+        .rating span:hover ~ span label,
+        .rating span:hover label,
+        .rating span.checked label,
+        .rating span.checked ~ span label {
+            background: #F90;
+            color: #FFF;
+        }

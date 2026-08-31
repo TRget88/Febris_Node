@@ -1,0 +1,101 @@
+﻿@model X.PagedList.IPagedList<Febris.ModelLibrary.Models.DataModels.MessageBoard>
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc
+@using X.PagedList
+@using Febris.ModelLibrary.PartialViewModels
+
+<div id="tablePartial">
+    <div id="search">
+        @using (Html.BeginForm())
+        {
+            <p>
+                @Html.TextBox("SearchString", null, new { id = "searchBox", type = "text" })
+                <input type="submit" value="Search" class="fa fa-search btn btn-primary" />
+            </p>
+        }
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    TimeStamp
+                </th>
+                <th>
+                    Subject
+                </th>
+                <th>
+                    Message
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TimeStamp)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Subject)
+                        </td>
+                        <td class="line-breaks">
+                            @Html.DisplayFor(modelItem => item.Message)
+                        </td>
+                    </tr>
+                }}
+        </tbody>
+    </table>
+    <div id="pagedList">
+        @if (TempData.ContainsKey("CurrentFilter"))
+        {
+            @Html.PagedListPager(Model, page => Url.Action("MessageIndexPartial", new { page = page, currentFilter = TempData["CurrentFilter"].ToString() }));
+        }
+        else
+        {
+            @Html.PagedListPager(Model, page => Url.Action("MessageIndexPartial", new { page = page }));
+        }
+    </div>
+</div>
+
+
+<script>
+
+
+    $(function () {
+        $('#pagedList').on('click', 'a', function () {
+            $.ajax({
+                url: this.href,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                }
+            });
+            return false;
+        });
+    });
+    $(function () {
+        $('#search').submit(function (event) {
+            event.preventDefault();
+            var searchString = document.getElementById("searchBox").value;
+            $.ajax({
+                url: "../MessageBoard/MessageIndexPartial",
+                async: true,
+                data: 'searchString=' + searchString,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                },
+                error: function (xhr, param) {
+                    console.log(xhr);
+                    console.log(param);
+                }
+            });
+            return false;
+        });
+    });
+</script>

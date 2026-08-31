@@ -1,0 +1,44 @@
+﻿@model IEnumerable<Febris.ModelLibrary.Models.DataModels.Cohort>
+    <h4>Cohort Index</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Archived
+            </th>
+            @*<th>
+                Members Locked
+            </th>*@
+            <th>
+                Name
+            </th>
+            <th>
+                Description
+            </th>
+            @*<th></th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null)
+        {
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <label class="switch">
+                            <input type="checkbox" checked="@item.Archive" disabled />
+                            <span class="slider round"></span>
+                        </label>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    @*@await Html.PartialAsync("Buttons/GenericButtons/Cohort/_IndexButtonGroupPartial", new IndividualButtonPartial { Id = item.Id })*@
+
+                </tr>
+            }}
+    </tbody>
+</table>

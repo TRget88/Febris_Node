@@ -1,0 +1,109 @@
+﻿@model Febris.ModelLibrary.Models.XApiModels.Actor
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+
+<head>
+    <meta name="viewport" content="width=device-width" />    
+    <link href="~/css/Modal.css" rel="stylesheet" />    
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">@Model.Name</h1>
+    </div>
+</div>
+<br />
+<input type="hidden" id="modelId" value="@Model.Id" />
+<div class="row">
+    <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @*@Html.DisplayNameFor(model => model.UUID)*@
+                Id
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.UUID)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.ObjectType)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.ObjectType)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Name)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Name)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Mbox)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Mbox)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Mbox_sha1sum)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Mbox_sha1sum)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.OpenId)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.OpenId)
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+        @* ROADMAP 17 owner ruling 2026-08-24 was "fix the image renders". For Actor it cannot be
+        fixed and has been removed instead: the commented block referenced Model.Image, and Actor
+        carries no image property at all -- no Image, Photo, Logo or Picture field exists on it. It was
+        hub-era markup that could never have compiled here, which is why it was commented rather than
+        working. Widget/ImageLoader is reachable through the Test User modal, which has a real photo
+        field. If Actor images are ever wanted, the model needs the field first. *@
+    </div>
+</div>
+<br />
+<hr />
+<br />
+<div align="center">
+
+    <div class="row">
+        <div class="col-md-6">
+
+            <br />
+            <input type="hidden" id="Element0" value="ActorStatementChart" />
+            <div id="Division0">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+
+            <br />
+            <input type="hidden" id="Element1" value="ActorTimeChart" />
+            <div id="Division1">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+
+</div>
+
+<script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>

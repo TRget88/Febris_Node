@@ -1,0 +1,310 @@
+﻿@model Febris.ModelLibrary.ViewModels.LocalHardwareDetailsViewModel
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />    
+</head>
+
+<div class="col-sm-12" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">@Model.Hardware.DescriptiveName</h1>
+    </div>
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold">
+        <label class="switch">
+            @* Audit C-09: this checkbox called SubmitFollowing('@ID','@LOCK') -- but the helper's
+               signature is (route, id) and it does $.get(route + id), so the arguments landed in the wrong
+               slots and produced a GET to a relative URL like "5False". There is no ToggleLockOut action in
+               the node's HardwareController for it to have hit either. It never worked.
+               Made a read-only indicator: locking a device is done on the Edit screen
+               (Views/Hardware/Edit.cshtml:20, asp-for="Hardware.IsLockedOut"), which DOES work now that
+               HardwareLogic.Update persists the edit instead of inserting a duplicate row. A one-click
+               toggle here would need its own [HttpPost] action and token -- worth doing, but it is new
+               surface for a capability that already has a working path (ROADMAP 17). *@
+            <input checked="@Model.Hardware.IsLockedOut" type="checkbox" disabled />
+            <span class="slider round"></span>
+        </label>
+        @Html.DisplayNameFor(model => model.Hardware.IsLockedOut)
+    </div>
+</div>
+
+<input type="hidden" id="modelId" value="@Model.Hardware.Id" />
+<br />
+<div>
+    <div class="row">
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+            @*<div class="row">
+                    <div class="col-sm-6" align="center" style="font-weight:bold">
+                        <label class="switch">
+                            <input type="checkbox" checked="@Model.IsLockedOut" disabled />
+                            <span class="slider round"></span>
+                        </label>
+                        @Html.DisplayNameFor(model => model.IsLockedOut)
+                    </div>
+                </div>*@
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Hardware.DescriptiveName)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Hardware.DescriptiveName)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Hardware.Description)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Hardware.Description)
+                </div>
+            </div>
+            @* The credential itself is NEVER displayed (audit T9). It used to be rendered here in
+               cleartext to every Educator, Admin and ITAdmin who could open this modal. Only its
+               presence is shown now -- the stored value is a hash and there is nothing readable to
+               reveal. *@
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    Credential
+                </div>
+                <div class="col-sm-7" align="left">
+                    @(string.IsNullOrEmpty(Model.Hardware.PhysicalLicense)
+                        ? "Not set -- this device cannot authenticate"
+                        : "Set (stored as a hash, not retrievable)")
+                </div>
+            </div>
+            @* Regenerating is the incident-response action, so when it last happened is part of the
+               device's story. It is also the moment every token minted before it stopped working. *@
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    Credential replaced
+                </div>
+                <div class="col-sm-7" align="left">
+                    @(Model.Hardware.CredentialRegeneratedAt.HasValue
+                        ? Model.Hardware.CredentialRegeneratedAt.Value.ToString("u") +
+                          " (sessions older than this were ended)"
+                        : "Never")
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Hardware.HardwareCondition)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Hardware.HardwareCondition)
+                </div>
+            </div>
+
+        </div>
+        <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+
+            <input type="hidden" id="Element0" value="ModuleAccessList" />
+            <div id="Division0" align="center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+
+
+
+            <input type="hidden" id="Element1" value="CohortList" />
+            <div id="Division1" align="center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+
+
+
+            @*<a asp-area="" asp-controller="Hardware" asp-action="ManageModuleIndex" asp-route-id="@Model.Id" class="btn bg-green">Manage Modules</a>*@
+
+        </div>
+    </div>
+</div>
+<hr />
+
+@* ------------------------------------------------------------------------------------------
+   Statements SUBMITTED by this device.
+
+   This is the read side of LocalStatement.SubmittedByHardwareUUID. The column was added so a
+   forged learning record would be investigable rather than indistinguishable from a real one,
+   and it shipped with two writers and no reader anywhere in the application -- so the only way
+   to ask the question was direct database access.
+
+   Rendered SERVER-SIDE rather than through the Element0..N spinner mechanism above, because
+   LoadViewDetails.js walks those indexes and stops at the first gap, so a partial added there
+   is one renumbering away from silently disappearing.
+
+   AN OPERATIONS VIEW, like the recordings panel below it. The device is the SUBMITTER, never the
+   actor: a shared classroom device submits for a whole class in sequence, so a long list of
+   distinct learners here is ordinary and the panel says so plainly rather than highlighting it.
+   ------------------------------------------------------------------------------------------ *@
+<div>
+    <div align="center">
+        <h3>Statements submitted by this device</h3>
+    </div>
+
+    @if (Model.Submissions == null)
+    {
+        <div align="center">
+            <em>The statement store could not be reached, so this device's submissions are unavailable.
+                The device details above are unaffected.</em>
+        </div>
+    }
+    else if (Model.Submissions.TotalCount == 0)
+    {
+        <div align="center">
+            <em>This device has not submitted any statements.</em>
+        </div>
+    }
+    else
+    {
+        <div align="center">
+            <p>
+                <strong>@Model.Submissions.TotalCount</strong> submitted in total.
+                Showing the most recent <strong>@Model.Submissions.Statements.Count</strong>,
+                covering <strong>@Model.Submissions.DistinctActorCount</strong>
+                @(Model.Submissions.DistinctActorCount == 1 ? "learner" : "distinct learners")
+                on this page.
+                @if (Model.Submissions.IsTruncated)
+                {
+                    <text>This is a partial view of the device's history.</text>
+                }
+            </p>
+            <p style="font-size: smaller;">
+                <em>
+                    A device submits on behalf of whoever is using it, so several learners here is
+                    normal for a shared device. Voided statements are not shown or counted.
+                </em>
+            </p>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Recorded</th>
+                        <th>Learner</th>
+                        <th>Statement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var statement in Model.Submissions.Statements)
+                    {
+                        <tr>
+                            <td>@statement.Timestamp.ToString("u")</td>
+                            <td>
+                                @(statement.Actor == null
+                                    ? "(actor unavailable)"
+                                    : (string.IsNullOrWhiteSpace(statement.Actor.Name)
+                                        ? statement.Actor.UUID.ToString()
+                                        : statement.Actor.Name))
+                            </td>
+                            <td style="word-break: break-all;">@statement.UUID</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<hr />
+
+@* ------------------------------------------------------------------------------------------
+   Video MINTED BY this device.
+
+   AN OPERATIONS VIEW, NOT A SECURITY CONTROL. "What has this device done" is a routine admin
+   question: a headset attributing to the wrong roster, a device that stopped recording, a
+   support call about a missing video, a device being retired.
+
+   A recording carries the LEARNER, which arrives from the launch context, and the DEVICE, which
+   the token proves. That split is the shared-kiosk design: a classroom device cannot prove which
+   learner is standing at it, and one headset serves a whole class in sequence. Several learners
+   on one device is ordinary, which is why the panel says so rather than highlighting it.
+
+   Nothing here refuses, hides or flags a recording.
+   ------------------------------------------------------------------------------------------ *@
+<div>
+    <div align="center">
+        <h3>Video minted by this device</h3>
+    </div>
+
+    @if (Model.Recordings == null)
+    {
+        <div align="center">
+            <em>The recording store could not be reached, so this device's video is unavailable.
+                The device details above are unaffected.</em>
+        </div>
+    }
+    else if (Model.Recordings.TotalCount == 0)
+    {
+        <div align="center"><em>This device has not minted any video.</em></div>
+    }
+    else
+    {
+        <div align="center">
+            <p>
+                <strong>@Model.Recordings.TotalCount</strong> minted in total.
+                Showing the most recent <strong>@Model.Recordings.Recordings.Count</strong>,
+                attributed to <strong>@Model.Recordings.DistinctActorCount</strong>
+                @(Model.Recordings.DistinctActorCount == 1 ? "learner" : "distinct learners")
+                on this page.
+                @if (Model.Recordings.IsTruncated)
+                {
+                    <text>This is a partial view of the device's history.</text>
+                }
+            </p>
+            <p style="font-size: smaller;">
+                <em>
+                    The learner on a recording is supplied by whoever launched the module and is not
+                    verified against the device. The device is the part that is proven. Several
+                    learners here is normal for a shared device.
+                </em>
+            </p>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Recorded</th>
+                        <th>Attributed learner</th>
+                        <th>Recording</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var recording in Model.Recordings.Recordings)
+                    {
+                        <tr>
+                            <td>@recording.TimeStamp.ToString("u")</td>
+                            <td style="word-break: break-all;">@recording.ActorUUID</td>
+                            <td style="word-break: break-all;">
+                                @* Widget/VideoLoader is the entitlement-checked stream (MayView then
+                                   MediaPathGuard). Until ROADMAP 17 nothing in the Portal linked it. *@
+                                <a href="@Url.Action("VideoLoader", "Widget", new { videoName = recording.Name })" target="_blank" rel="noopener">@recording.Name</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<hr />
+<br />
+<div>
+    <div align="center">
+        @await Html.PartialAsync("Buttons/GenericButtons/Hardware/_DetailsButtonGroupPartial", new IndividualButtonPartial { Id = Model.Hardware.Id })
+    </div>
+</div>
+
+
+
+
+
+
+<script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>
+
+

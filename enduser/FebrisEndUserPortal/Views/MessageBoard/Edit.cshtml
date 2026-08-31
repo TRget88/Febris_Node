@@ -1,0 +1,47 @@
+﻿@model Febris.ModelLibrary.Models.DataModels.MessageBoard
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2>Edit</h2>
+
+<h4>MessageBoard</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="UUID" />
+            <input type="hidden" asp-for="TimeStamp" />
+            <input type="hidden" asp-for="LastUpdateTimeStamp" />
+            <div class="form-group">
+                <div style="font-weight:bold">
+                    <label class="switch">
+                        <input type="checkbox" asp-for="Archive" /> @Html.DisplayNameFor(model => model.Archive)
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Subject" class="control-label"></label>
+                <input asp-for="Subject" class="form-control" />
+                <span asp-validation-for="Subject" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Message" class="control-label"></label>
+                <input asp-for="Message" class="form-control" />
+                <span asp-validation-for="Message" class="text-danger"></span>
+            </div>           
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

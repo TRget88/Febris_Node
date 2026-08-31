@@ -1,0 +1,187 @@
+@model Febris.ModelLibrary.ViewModels.RegistrationSettingsViewModel
+@using Febris.UserNode.Portal.IdentityPolicy
+@using Febris.UserNode.Portal.Controllers
+
+@{
+    ViewData["Title"] = "Registration";
+    string saveMessage = ViewBag.SaveMessage as string;
+}
+
+<h1>Registration</h1>
+
+<p class="text-muted">
+    Who may create an account on this node. This node does <strong>not</strong> need open
+    registration to be set up: the bootstrap administrator is created when the node is provisioned,
+    and that account can create every other one. Opening self-registration is a choice, not a step.
+</p>
+
+@if (!string.IsNullOrEmpty(saveMessage))
+{
+    <div class="alert alert-success">@saveMessage</div>
+}
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h3>Status</h3>
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th scope="row">Effective mode</th>
+                    <td>
+                        @if (Model.EffectiveSelfRegistrationEnabled)
+                        {
+                            <span class="badge badge-warning">@Model.EffectiveMode &ndash; anyone admitted by this mode can sign themselves up</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">@Model.EffectiveMode &ndash; no self sign-up</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Policy source</th>
+                    <td>
+                        @if (Model.HasStoredSettings)
+                        {
+                            <text>stored on this node (saved @(Model.UpdatedAtUtc?.ToString("u"))@(string.IsNullOrEmpty(Model.UpdatedByEmail) ? "" : " by " + Model.UpdatedByEmail))</text>
+                        }
+                        else
+                        {
+                            <text>deployment configuration (nothing saved here yet)</text>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Configuration fallback</th>
+                    <td>
+                        <code>@Model.ConfiguredMode</code>
+                        <small class="form-text text-muted">
+                            What this node falls back to if the stored policy is reset.
+                        </small>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Auto-close</th>
+                    <td>
+                        @if (Model.OpenUntilUtc.HasValue)
+                        {
+                            @if (Model.OpenWindowExpired)
+                            {
+                                <span class="badge badge-secondary">expired @Model.OpenUntilUtc.Value.ToString("u")</span>
+                                <small class="form-text text-muted">
+                                    The window has closed on its own, so the effective mode above is
+                                    Admin only regardless of the stored mode.
+                                </small>
+                            }
+                            else
+                            {
+                                <span class="badge badge-info">closes @Model.OpenUntilUtc.Value.ToString("u")</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">none (the mode stays until it is changed)</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Require confirmed email</th>
+                    <td>
+                        @(Model.RequireConfirmedEmailConfigured ? "yes" : "no")
+                        <small class="form-text text-muted">
+                            Configuration only (<code>Identity:Registration:RequireConfirmedEmail</code>).
+                            It is also applied to sign-in when the host starts, so changing it here
+                            would move the sign-up page without moving sign-in.
+                        </small>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        @if (Model.HasStoredSettings)
+        {
+            <form asp-controller="RegistrationSettings" asp-action="ResetToConfigured" method="post" class="mb-3">
+                <button type="submit" class="btn btn-outline-secondary">Reset to configuration</button>
+                <small class="form-text text-muted">
+                    Sets the policy back to <code>@Model.ConfiguredMode</code>, the value in this
+                    deployment's configuration.
+                </small>
+            </form>
+        }
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">What changing the mode does not do</h5>
+                <p class="card-text">
+                    Changing the mode affects who may create an account from now on. It does not
+                    touch accounts that already exist: closing registration never disables anyone,
+                    and opening it never approves anyone retroactively.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <h3>Policy</h3>
+        <form asp-controller="RegistrationSettings" asp-action="Save" method="post">
+            <div class="form-group">
+                <label for="Mode">Registration mode</label>
+                @foreach (var option in RegistrationSettingsController.SelectableModes())
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Mode" id="Mode_@option.Key"
+                               value="@option.Key" @(string.Equals(Model.Mode, option.Key.ToString(), StringComparison.OrdinalIgnoreCase) ? "checked" : "") />
+                        <label class="form-check-label" for="Mode_@option.Key">
+                            <strong>@option.Key</strong>
+                            <small class="form-text text-muted">@option.Value</small>
+                        </label>
+                    </div>
+                }
+            </div>
+
+            <div class="form-group">
+                <label for="AllowedEmailDomains">Allowed email domains</label>
+                <textarea class="form-control" id="AllowedEmailDomains" name="AllowedEmailDomains" rows="3"
+                          placeholder="acme.com, school.edu">@Model.AllowedEmailDomains</textarea>
+                <small class="form-text text-muted">
+                    Used by <strong>DomainAllowlist</strong> only. Comma or newline separated, with
+                    or without a leading "@@". An empty list admits nobody.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="OpenForHours">Close automatically after (hours)</label>
+                <input type="number" min="1" max="@Febris.UserNode.LogicLayer.Logic.IdentityLogic.NodeRegistrationSettingsLogic.MaxOpenForHours"
+                       class="form-control" id="OpenForHours" name="OpenForHours" value="" placeholder="leave blank for no automatic close" />
+                <small class="form-text text-muted">
+                    Applies to <strong>Open</strong> and <strong>DomainAllowlist</strong>. After
+                    this many hours the node returns to Admin only on its own, so an onboarding
+                    window cannot be left open by forgetting about it. Blank means it stays until
+                    you change it. Saving again restarts the clock.
+                </small>
+            </div>
+
+            <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="RequireAdminApproval" name="RequireAdminApproval" value="true" @(Model.RequireAdminApproval ? "checked" : "") />
+                <label class="form-check-label" for="RequireAdminApproval">
+                    Require admin approval for self-registered accounts
+                </label>
+            </div>
+
+            <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="AutoProvisionJit" name="AutoProvisionJit" value="true" @(Model.AutoProvisionJit ? "checked" : "") />
+                <label class="form-check-label" for="AutoProvisionJit">
+                    Create an account automatically on first external (SSO) login
+                </label>
+                <small class="form-text text-muted">
+                    Off means closed SSO: an unknown user the identity provider authenticates is
+                    still turned away until an admin creates their account.
+                </small>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+</div>

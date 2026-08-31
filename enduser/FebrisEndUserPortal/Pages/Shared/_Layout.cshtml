@@ -1,0 +1,160 @@
+﻿@*@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Mvc.ViewEngines*@
+@*@inject IWebHostEnvironment Environment
+@inject ICompositeViewEngine Engine*@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Febris Sign In</title>
+    @*<link rel="stylesheet" href="~/css/site.css" />*@
+        
+
+    <!-- Bootstrap -->
+    <link href="~/gentelella-master/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    @*<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />*@
+    <!-- Font Awesome -->
+    <link href="~/gentelella-master/vendors/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    @*<link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />*@
+    @*<link href="~/css/animate.min.css" rel="stylesheet">*@
+
+    <!-- NProgress -->
+    @*<link href="~/gentelella-master/vendors/nprogress/nprogress.css" rel="stylesheet" />*@
+    <!-- iCheck -->
+    <link href="~/gentelella-master/vendors/iCheck/skins/flat/green.css" rel="stylesheet" />
+    <!-- bootstrap-wysiwyg -->
+    @*<link href="~/gentelella-master/vendors/google-code-prettify/bin/prettify.min.css" rel="stylesheet"/>*@
+    <!-- Select2 -->
+    @*<link href="~/gentelella-master/vendors/select2/dist/css/select2.min.css" rel="stylesheet" />*@
+    <!-- Switchery -->
+    @*<link href="~/gentelella-master/vendors/switchery/dist/switchery.min.css" rel="stylesheet" />*@
+    <!-- bootstrap-daterangepicker -->
+    @*<link href="~/gentelella-master/vendors/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet" />*@
+
+    <!-- Custom Theme Style -->
+    <link href="~/gentelella-master/build/css/custom.min.css" rel="stylesheet" />
+    <link href="~/css/SliderForPartials.css" rel="stylesheet" />
+    <link href="~/css/gentelella_mod.css" rel="stylesheet" />
+        
+
+</head>
+
+<body class="nav-md">
+    <div class="container body">
+        <div class="main_container">
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    <div class="navbar nav_title" style="border: 0;">
+                        <a asp-controller="Home" asp-action="" class="site_title">
+                            @*<img src="~/images/Logo/Febris-Logo-recolored_white_gimp_Cropped.png" alt="Febris logo" class="img-fluid" style="height:30px; width:30px" />*@
+                            <img alt="Febris logo" class="img-fluid" style="height:30px; width:30px" src="~/images/Logo/FebrisIcon_White.png" />                            
+                            <span>
+                                <img src="~/images/Logo/Febris_white_gimp.png" alt="Febris logo" class="img-fluid" style="width:130px" />
+                            </span>
+                        </a>
+                    </div>
+                    <div class="clearfix"></div>
+                    <br />
+                    <hr />
+                </div>
+            </div>
+
+            <!-- top navigation -->
+            <div class="top_nav">
+                <div class="nav_menu">
+                    <div class="nav toggle">
+                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                    </div>
+                    <nav class="nav navbar-nav">
+                        <partial name="_LoginPartial" />
+                    </nav>
+                </div>
+            </div>
+            <!-- /top navigation -->
+            <!-- page content -->
+            <div class="right_col" role="main">
+                <main>
+
+                    <!-- The Modal -->
+                    <div id="Modal" class="modal">
+                        <!-- Modal content -->
+                        <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <div id="modalContent"></div>
+                        </div>
+                        <!-- /Modal content -->
+                    </div>
+                    <!-- /The Modal -->
+                    <!-- TempData check accross all pages -->
+                    @if (TempData.ContainsKey("StatusMessage"))
+                    {
+                        <input type="hidden" id="statusMessage" value="@TempData["StatusMessage"].ToString()" />
+                    }
+                    <!-- /TempData check accross all pages -->
+
+                    @RenderBody()
+
+                </main>
+                <br />
+                <br />
+            </div>
+            <!-- /page content -->
+            <!-- footer content -->
+            <footer>
+                @*class="border-top footer text-muted">*@
+                <div class="container">
+                    <div class="pull-right">
+                        &copy; @DateTime.Now.Year - Febris Node - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+            <!-- /footer content -->
+
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="~/gentelella-master/vendors/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="~/gentelella-master/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FastClick -->
+    @*<script src="~/gentelella-master/vendors/fastclick/lib/fastclick.js"></script>*@
+    <!-- NProgress -->
+    @*<script src="~/gentelella-master/vendors/nprogress/nprogress.js"></script>*@
+    <!-- bootstrap-progressbar -->
+    @*<script src="~/gentelella-master/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>*@
+    <!-- iCheck -->
+    @*<script src="~/gentelella-master/vendors/iCheck/icheck.min.js"></script>*@
+    <!-- bootstrap-daterangepicker -->
+    @*<script src="~/gentelella-master/vendors/moment/min/moment.min.js"></script>
+    <script src="~/gentelella-master/vendors/bootstrap-daterangepicker/daterangepicker.js"></script>*@   
+    <!-- jQuery Tags Input -->
+    @*<script src="~/gentelella-master/vendors/jquery.tagsinput/src/jquery.tagsinput.js"></script>*@   
+    <!-- Select2 -->
+    <script src="~/gentelella-master/vendors/select2/dist/js/select2.full.min.js"></script>
+    <!-- Parsley -->
+    @*<script src="~/gentelella-master/vendors/parsleyjs/dist/parsley.min.js"></script>*@
+    <!-- Autosize -->
+    <script src="~/gentelella-master/vendors/autosize/dist/autosize.min.js"></script>
+    <!-- jQuery autocomplete -->
+    @*<script src="~/gentelella-master/vendors/devbridge-autocomplete/dist/jquery.autocomplete.min.js"></script>*@
+    <!-- Custom Theme Scripts -->
+    <script src="~/gentelella-master/build/js/custom.min.js"></script>
+
+
+    <!-- Detail buttons -->
+    @*<script src="~/lib/ButtonOperations/GenericButtonOperation.js"></script>*@
+
+    @RenderSection("Scripts", required: false)
+
+    <!-- Status Message Updates -->
+    @*<script src="~/lib/Widget/StatusMessageModal.js"></script>*@
+
+
+    <!-- Generic Button Actions -->
+    @*<script src="~/lib/ButtonOperations/ButtonActions.js"></script>*@
+
+</body>
+</html>

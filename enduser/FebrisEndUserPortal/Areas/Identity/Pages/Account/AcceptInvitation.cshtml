@@ -1,0 +1,97 @@
+@page
+@model AcceptInvitationModel
+@{
+    ViewData["Title"] = "Accept your invitation";
+    bool showForm = Model.Redeemable || Model.AwaitingCode;
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (!showForm)
+{
+    <div class="row">
+        <div class="col-md-6">
+            <div class="alert alert-warning">@Model.UnavailableMessage</div>
+            <p>
+                <a asp-page="./Login">Go to sign in</a>
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-6">
+            <p>
+                @if (Model.AwaitingCode)
+                {
+                    <text>
+                        Enter the invitation code you were sent, confirm the email address it was
+                        sent to, and choose a password.
+                    </text>
+                }
+                else
+                {
+                    @if (!string.IsNullOrWhiteSpace(Model.InvitedName))
+                    {
+                        <text>Hello @Model.InvitedName. </text>
+                    }
+                    <text>
+                        An account has been set aside for you on this Febris node. Confirm the email
+                        address this invitation was sent to, choose a password, and the account is
+                        yours.
+                    </text>
+                }
+            </p>
+
+            <form method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                @if (Model.AwaitingCode)
+                {
+                    <div class="form-group">
+                        <label for="Code">Invitation code</label>
+                        @* Visible only when the page was reached WITHOUT a code, i.e. from the
+                           login page's "have an invitation?" link. Posting it here rather than
+                           bouncing through a query string keeps the code out of the address bar
+                           and out of browser history. *@
+                        <input type="text" class="form-control" id="Code" name="Code"
+                               autocomplete="off" required />
+                    </div>
+                }
+                else
+                {
+                    @* The token travels in a hidden field so the POST goes to a clean URL, and so
+                       the invitation is spent by a deliberate submit rather than by anything that
+                       merely fetches the link. *@
+                    <input type="hidden" asp-for="Code" />
+                }
+
+                <div class="form-group">
+                    <label asp-for="Input.Email"></label>
+                    @* Deliberately NOT prefilled and deliberately not carried in the link. This
+                       field is the recipient-binding control: prefilling it would hand the answer
+                       to whoever holds the link and turn a forwarded email back into account
+                       transfer. The invitee knows the address, since that is where it arrived. *@
+                    <input asp-for="Input.Email" class="form-control" autocomplete="off" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.Password"></label>
+                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.ConfirmPassword"></label>
+                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary">Create my account</button>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

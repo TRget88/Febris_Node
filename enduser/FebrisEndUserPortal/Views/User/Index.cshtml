@@ -1,0 +1,23 @@
+﻿@model IEnumerable<Febris.ModelLibrary.Models.UserModels.LocalApplicationUser>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+
+@await Html.PartialAsync("Buttons/GenericButtons/User/_AddUsersButtonGroupPartial", true)
+<div class="container">  
+<div id="IndexPartial">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div> 
+    
+</div>
+@section scripts
+{    
+    <script src="~/JSScriptLib/PartialViewCalls/LoadIndexPartial.js"></script>    
+    <script src="~/JSScriptLib/ButtonOperation/Specific/UserButtonOperation.js"></script>    
+}

@@ -1,0 +1,63 @@
+@model Febris.UserNode.Portal.ViewModels.CurriculumAuthoringViewModel
+
+@{
+    ViewData["Title"] = "New Curriculum";
+}
+
+<h1>New Curriculum</h1>
+<hr />
+
+@*
+    Node-local authoring form. No ContentDeveloper hidden input and no Industry/Category/Focus/Tag
+    fieldset: both are hub/marketplace concepts.
+    Module membership is NOT set here -- Save writes the Curriculum row only, so a module picker
+    on this form would be silently dropped. Modules are attached on the linking screen once the
+    curriculum exists.
+*@
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Curriculum.Name" class="control-label"></label>
+                <input asp-for="Curriculum.Name" class="form-control" />
+                <span asp-validation-for="Curriculum.Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Curriculum.Version" class="control-label"></label>
+                <input asp-for="Curriculum.Version" class="form-control" />
+                <span asp-validation-for="Curriculum.Version" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Curriculum.Description" class="control-label"></label>
+                <textarea asp-for="Curriculum.Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Curriculum.Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SelectedCurriculumClassification" class="control-label"></label>
+                <select asp-for="SelectedCurriculumClassification"
+                        asp-items="@Model.CurriculumClassificationList"
+                        class="form-control">
+                    <option value="">[None]</option>
+                </select>
+                <span asp-validation-for="SelectedCurriculumClassification" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

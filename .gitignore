@@ -1,0 +1,91 @@
+## ---- Build output ----
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+*.log
+
+## ---- Prebuilt client artifacts (WPF/Xamarin build output; never committed) ----
+## Installer output and prebuilt client binaries are build artifacts, not source,
+## and are never committed. The patterns below are kept in every repo in the set so
+## that a client binary cannot be added by accident in one of them.
+pc/Febris_PC_Installer/[Rr]elease/
+*.msi
+*.apk
+*.aab
+*.ipa
+
+## The ffmpeg binary the screen recorder shells out to. It is a build/release input, fetched
+## with pc/tools/fetch-ffmpeg.ps1 and copied beside the executable by the csproj, never committed
+## (it is a large third-party GPL binary). Air-gapped builds supply it with -Path.
+pc/tools/ffmpeg/
+
+## ---- IDE / tooling ----
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+*_i.c
+*.rsuser
+
+## ---- Secrets & local config ----
+## v4 principle: NO secrets in the repo. Real values come from environment
+## variables, user-secrets, or a secret manager. Only *.template / *.example
+## config is tracked.
+appsettings.Development.json
+appsettings.Staging.json
+appsettings.*.local.json
+appsettings.Local.json
+secrets.json
+.env
+.env.*
+!.env.example
+*.pfx
+*.pem
+*.key
+*.p12
+## Keystore formats. tools/status.sh has always used *.jks and *.keystore as its SIGN-1
+## tripwire, so the project already treated those two as the formats that must never be
+## tracked, yet neither was ignored here until 2026-08-31. The real signing keystore is a
+## .p12 and lives off-tree, so nothing was ever exposed, but a .jks or .keystore dropped in
+## the tree was stageable with no guard at any layer. .bks is the legacy Android Bouncy
+## Castle form and carries the same material.
+*.jks
+*.keystore
+*.bks
+*.pubxml
+
+## ASP.NET DataProtection key rings. AppKeys:KeyRingPath is the RELATIVE path "keys" in
+## the enduser api and portal, so running either app from a clone mints an UNENCRYPTED
+## master key beside the binaries. On 2026-08-29 a broad `git add` swept one into the
+## public node repo. The *.key rule above does NOT cover it: a key ring is an XML file
+## named key-<guid>.xml, not a .key file. Both forms are listed because the ring
+## directory and a loose ring file each carry the same material.
+## The directory rule is anchored to a path component named EXACTLY "keys". Do not
+## loosen it to a substring match such as *keys*: the tracked vendored asset
+## wwwroot/gentelella-master/vendors/jquery.hotkeys/ would be swallowed by that.
+keys/
+key-*.xml
+
+## ---- OS ----
+.DS_Store
+Thumbs.db
+
+## ---- Python ----
+## The repo is .NET, but tests/mutation/run-mutations.py is Python, and running it
+## leaves bytecode beside itself.
+__pycache__/
+*.py[cod]
+
+## The 149.5 MB Default_video.mp4 lived here and exceeded GitHub's 100 MB hard
+## limit, blocking the public push. Its only consumers were broken fallbacks.
+enduser/FebrisEndUserPortal/wwwroot/images/DefaultMedia/*.mp4
+simulationintegration/FebrisCpp/packages/
+simulationintegration/FebrisCpp/x64/
+simulationintegration/FebrisCpp/Febris.C.*/
+simulationintegration/parity/out/
+simulationintegration/parity/probe/build/
+simulationintegration/parity/probe-abi/build/

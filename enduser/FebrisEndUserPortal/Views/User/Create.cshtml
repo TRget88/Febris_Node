@@ -1,0 +1,76 @@
+﻿@model Febris.ModelLibrary.ViewModels.LocalUserCreation
+@using Febris.EnumLibrary
+@using Febris.SharedServices
+@using System.Linq
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Create";
+
+    // Audit C-06, the second escalation door: this select rendered an UNFILTERED
+    // GetEnumSelectList, so an Educator could create an Admin or ITAdmin outright. Offer only
+    // roles the signed-in operator outranks. UX narrowing only -- UserLogic.Create enforces
+    // RoleRankPolicy.CanAssign, so a crafted POST is refused regardless of what this page showed.
+    var actorRoles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+    var assignableRoles = Enum.GetValues(typeof(InstitutionUserAccountType))
+        .Cast<InstitutionUserAccountType>()
+        .Where(t => RoleRankPolicy.CanAssign(actorRoles, new string[0], t.ToString()))
+        .Select(t => new SelectListItem(t.ToString(), ((int)t).ToString()))
+        .ToList();
+}
+
+<h2>Create</h2>
+
+<h4>User</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create"> @*enctype="multipart/form-data">*@
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserAccountType" class="control-label"></label>
+                <select asp-for="UserAccountType" asp-items="assignableRoles" class="form-control">
+                    <option selected="selected" value=""></option>
+                </select>
+                <span asp-validation-for="UserAccountType" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EmailAddress" class="control-label"></label>
+                <input asp-for="EmailAddress" class="form-control" />
+                <span asp-validation-for="EmailAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="control-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+    <div class="col-md-4">
+        @*<div align="center" class="jumbotron">
+            <img id="profilePic" height="150" />
+        </div>*@
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+@*@section scripts
+{
+    <script src="~/JSScriptLib/PartialViewCalls/ImagePreview.js"></script>
+}*@

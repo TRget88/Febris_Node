@@ -1,0 +1,204 @@
+﻿@model Febris.ModelLibrary.Models.DataModels.Module
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+@using Febris.SharedServices;
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+</head>
+
+<div class="col-sm-12" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">@Model.Name</h1>
+    </div>
+</div>
+<br />
+<input type="hidden" id="modelId" value="@Model.Id" />
+<div>
+    <h3>Module</h3>
+    <hr />
+    <div class="row">
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+
+
+            <h4>Generic Information</h4>
+
+            <div class="row">
+                <div class="col-sm-6" align="left" style="font-weight:bold">
+                    <label class="switch">
+                        <input type="checkbox" checked="@Model.Obsolete" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                    @Html.DisplayNameFor(model => model.Obsolete)
+                </div>
+                @*<div class="col-sm-6" align="left" style="font-weight:bold">
+                        <label class="switch">
+                            <input type="checkbox" checked="@Model.IsTest" disabled />
+                            <span class="slider round"></span>
+                        </label>
+                        @Html.DisplayNameFor(model => model.IsTest)
+                    </div>*@
+            </div>
+            @*<div class="form-group">
+                    <div style="font-weight:bold">
+                        <label class="switch">
+                            <input asp-for="@Model.Obsolete" type="checkbox" disabled />
+                            <span class="slider round"></span>
+                        </label>
+                        @Html.DisplayNameFor(model => model.Obsolete)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div style="font-weight:bold">
+                        <label class="switch">
+                            <input asp-for="@Model.IsTest" type="checkbox" disabled />
+                            <span class="slider round"></span>
+                        </label>
+                        @Html.DisplayNameFor(model => model.IsTest)
+                    </div>
+                </div>*@
+
+
+
+
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.TimeStamp)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.TimeStamp)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.LastUpdateTimeStamp)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.LastUpdateTimeStamp)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Name)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Name)
+                </div>
+            </div>
+            @* The Add Module form's update-in-place field takes this value (ROADMAP 16). *@
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.UUID)
+                </div>
+                <div class="col-sm-7" align="left" style="word-break: break-all;">
+                    @Html.DisplayFor(model => model.UUID)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Version)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Version)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Description)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+            </div>
+
+            <hr />
+            <h4>Length Estimates</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.MainSectionCount)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.MainSectionCount)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.TotalSectionCount)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.TotalSectionCount)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.EstimatedCompletionTime)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.EstimatedCompletionTime)
+                </div>
+            </div>
+
+            <hr />
+            <h4>xAPI Information</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Language)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Language)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.XApiInteractionType)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.XApiInteractionType)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.InteractionComponents)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.InteractionComponents)
+                </div>
+            </div>
+
+
+            <hr />
+            <h4>Catagorization Information</h4>
+        </div>
+
+
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+            @* ROADMAP 17 owner ruling 2026-08-24 was "fix the image renders". For Module it cannot be
+            fixed and has been removed instead: the commented block referenced Model.Image, and Module
+            carries no image property at all -- no Image, Photo, Logo or Picture field exists on it. It was
+            hub-era markup that could never have compiled here, which is why it was commented rather than
+            working. Widget/ImageLoader is reachable through the Test User modal, which has a real photo
+            field. If Module images are ever wanted, the model needs the field first. *@
+        </div>
+    </div>
+</div>
+<br />
+<div>
+    @* ROADMAP 17 owner ruling 2026-08-24: node educators and admins DO edit content created
+       inside the node, because nobody else can -- there is no content-developer tier here. The gate
+       was User.IsContentDeveloper(), a claim LocalApplicationUser has no property to populate, so it
+       was never true and the Edit button was unreachable while Create sat on the navbar. This matches
+       the controller, which already allows EducatorAndOrgAdmins. *@
+    @if (User.IsLocalEducator() || User.IsLocalAdmin() || User.IsLocalFebrisAdmin())
+    {
+        <div align="center">
+            @await Html.PartialAsync("Buttons/GenericButtons/Module/_DetailsButtonGroupPartial", new IndividualButtonPartial { Id = Model.Id })
+        </div>
+    }
+</div>
+
+<br />
+@*<input type="hidden" id="modelId" value="@Model.Id" />*@
+
+
+

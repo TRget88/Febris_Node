@@ -1,0 +1,232 @@
+﻿@model Febris.ModelLibrary.Models.DataModels.Location
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">DetailsModal</h1>
+    </div>
+</div>
+
+<input type="hidden" id="modelId" value="@Model.Id" />
+<br />
+<div>
+    <div class="row">
+        <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Name)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Name)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Address)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Address)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.City)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.City)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.ZipCode)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.ZipCode)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.State)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.State)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Country)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Country)
+                </div>
+            </div>
+            @*<div class="row">
+                    <div class = "col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Longitude)
+                    </div>
+                    <div class = "col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Longitude)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class = "col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Latitude)
+                    </div>
+                    <div class = "col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Latitude)
+                    </div>
+                </div>*@
+            @*<div class="row">
+                    <div class = "col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.UUID)
+                    </div>
+                    <div class = "col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.UUID)
+                    </div>
+                </div>*@
+            @*<div class="row">
+                    <div class = "col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.TimeStamp)
+                    </div>
+                    <div class = "col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.TimeStamp)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class = "col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.LastUpdateTimeStamp)
+                    </div>
+                    <div class = "col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.LastUpdateTimeStamp)
+                    </div>
+                </div>*@
+        </div>
+        <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+            <input type="hidden" id="Element0" value="Map" />
+            <div id="Division0" align="center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr />
+<br />
+<div>
+    <div align="center">
+        @await Html.PartialAsync("Buttons/GenericButtons/Location/_DetailsButtonGroupPartial", new IndividualButtonPartial { Id = Model.Id })
+    </div>
+</div>
+
+<br />
+<hr />
+
+
+<div align="center">
+
+    <h3>Associations</h3>
+
+
+    
+
+    <h4>Associations 2</h4>
+
+    <input type="hidden" id="Element1" value="SOME_VARIABLE" />
+    <div id="Division1" align="center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div>
+
+</div>
+<br />
+
+<div align="center">
+    <h3>Module info</h3>
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            <div><b>Chart One</b></div>
+            <br />
+            <input type="hidden" id="Element2" value="SOME_VARIABLE" />
+            <div id="Division2">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div><b>Chart Two</b></div>
+            <br />
+            <input type="hidden" id="Element3" value="SOME_VARIABLE" />
+            <div id="Division3">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            <div><b>Chart Three</b></div>
+            <br />
+            <input type="hidden" id="Element4" value="SOME_VARIABLE" />
+            <div id="Division4">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div><b>Chart Four</b></div>
+            <br />
+            <input type="hidden" id="Element5" value="SOME_VARIABLE" />
+            <div id="Division5">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            <div><b>Chart Five</b></div>
+            <br />
+            <input type="hidden" id="Element6" value="SOME_VARIABLE" />
+            <div id="Division6">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div><b>Chart Six</b></div>
+            <br />
+            <input type="hidden" id="Element7" value="SOME_VARIABLE" />
+            <div id="Division7">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>
+

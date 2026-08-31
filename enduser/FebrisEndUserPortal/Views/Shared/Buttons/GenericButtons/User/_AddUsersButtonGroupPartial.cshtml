@@ -1,0 +1,80 @@
+@*
+    The ways to add people to this node, presented together (2026-08-21).
+
+    MODEL: true to offer bulk import, false to leave it out.
+
+    FALSE ON PURPOSE for EducatorIndex and AdminIndex. Owner-confirmed 2026-08-21: educator and
+    admin accounts carry more control than a learner account, so they are created ONE AT A TIME,
+    deliberately, rather than pasted in from a spreadsheet. Those two pages had the bulk button
+    commented out in their own markup with no explanation, which is exactly how a deliberate
+    decision gets "tidied" back on by the next person. It is written down now, here and there.
+*@
+@model bool
+@using Febris.SharedServices;
+@*
+
+    Invitations used to be a separate navbar entry, which put the newest way of adding a user
+    somewhere you would never look while adding a user. It belongs here, next to the other two, so
+    the decision reads as one choice with three answers rather than two buttons and a menu item.
+
+    This partial also replaces four copies of the same markup across Index, StudentIndex,
+    EducatorIndex and AdminIndex. Those copies had already drifted: two of them had lost the tooltip
+    on the bulk button, so the only thing distinguishing "one plus" from "two pluses" was the number
+    of identical green icons. The buttons are labelled now.
+
+    Gating: all three targets are [Authorize(Roles = EducatorAndOrgAdmins)] at the controller, and
+    every page that renders this partial already sits behind the same gate, so there is nothing to
+    branch on here. WHICH roles an operator may grant is a separate question that RoleRankPolicy
+    answers inside each flow.
+*@
+<div class="row" style="margin-bottom: 15px;">
+    <div class="col-md-12">
+        <div class="btn-group" role="group" aria-label="Add users">
+            <a asp-controller="User" asp-action="Create" class="btn btn-success"
+               title="Create one account now. They are emailed a link to set their own password.">
+                <i class="fa fa-user-plus"></i> Add a user
+            </a>
+            @if (Model)
+            {
+                <a asp-controller="User" asp-action="BulkCreate" class="btn btn-success"
+                   title="Import many accounts at once from a spreadsheet.">
+                    <i class="fa fa-users"></i> Import a list
+                </a>
+            }
+            <a asp-controller="Invitations" asp-action="Index" class="btn btn-outline-success"
+               title="Email someone a one-time link. The account is created when they accept.">
+                <i class="fa fa-envelope-o"></i> Send an invitation
+            </a>
+            @if (User.IsLocalAdmin())
+            {
+                @* Guardian links joined this group in ROADMAP 17. The whole ParentLink surface
+                   (controller, views, BLL, tests) shipped with no entry point anywhere in the
+                   Portal -- docs/BUGS.md recorded it as invisible-unless-you-know-the-URL and the
+                   System-nav fix that followed skipped it. Same reasoning as Invitations above:
+                   it belongs next to the other people-management actions, not on the navbar.
+                   Gated to admins here because ParentLinkController is [Authorize(OrgAdmins)],
+                   which is narrower than the EducatorAndOrgAdmins gate on the hosting pages. *@
+                <a asp-controller="ParentLink" asp-action="Index" class="btn btn-outline-success"
+                   title="Link a parent or guardian account to a learner. Admins only.">
+                    <i class="fa fa-link"></i> Guardian links
+                </a>
+            }
+        </div>
+        <div>
+            <small class="text-muted">
+                @if (Model)
+                {
+                    <text><strong>Add a user</strong> and <strong>Import a list</strong> create the account
+                    straight away and email a password-setup link.</text>
+                }
+                else
+                {
+                    <text><strong>Add a user</strong> creates the account straight away and emails a
+                    password-setup link.</text>
+                }
+                <strong>Send an invitation</strong> creates nothing until the person accepts, so an
+                invitation nobody takes up leaves no account behind.
+            </small>
+        </div>
+    </div>
+</div>

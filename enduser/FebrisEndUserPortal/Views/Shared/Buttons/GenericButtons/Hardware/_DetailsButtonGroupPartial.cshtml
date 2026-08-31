@@ -1,0 +1,36 @@
+﻿@model Febris.ModelLibrary.PartialViewModels.IndividualButtonPartial
+@using Febris.ModelLibrary.PartialViewModels;
+
+
+<td style="width:500px;">
+    <div class="btn-group" role="group">
+        @await Html.PartialAsync("Buttons/_HardwareIndividualButtonPartial",
+             new IndividualButtonPartial
+             {
+                 Action = "Edit",
+                 ButtonType = "btn-primary",
+                 Glyph = "edit",
+                 Id = Model.Id,
+                 Tooltip = "Edit Location",
+             })
+        @await Html.PartialAsync("Buttons/_HardwareIndividualButtonPartial",
+            new IndividualButtonPartial
+            {
+                Action = "ManageCohorts",
+                ButtonType = "btn-primary",
+                Glyph = "users",
+                Id = Model.Id,
+                Tooltip = "Manage Cohorts",
+            })
+        @await Html.PartialAsync("Buttons/_HardwareIndividualButtonPartial",
+                new IndividualButtonPartial
+                {
+                    Action = "ManageModules",
+                    ButtonType = "btn-primary",
+                    Glyph = "book",
+                    Id = Model.Id,
+                    Tooltip = "Manage Modules",
+                })
+    </div>
+</td>
+

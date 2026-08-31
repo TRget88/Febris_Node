@@ -1,0 +1,772 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Febris.Portal</title>
+    @*<link rel="stylesheet" href="~/css/site.css" />*@
+    @using Febris.SharedServices;
+    @*This does not seem like the best idea. I am unsure how much data is being shown at this point.*@
+    @using Microsoft.Extensions.Options;
+    @using Febris.ModelLibrary.ViewModels;
+    @using Febris.EnumLibrary;
+
+
+    @*@inject IOptions<LocalUserAPIConfig> UserAPIConfigs*@
+    <!-- Bootstrap -->
+    <link href="~/gentelella-master/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    @*<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />*@
+    <!-- Font Awesome -->
+    <link href="~/gentelella-master/vendors/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    @*<link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />*@
+    @*<link href="~/css/animate.min.css" rel="stylesheet">*@
+
+    <!-- NProgress -->
+    @*<link href="~/gentelella-master/vendors/nprogress/nprogress.css" rel="stylesheet" />*@
+    <!-- iCheck -->
+    <link href="~/gentelella-master/vendors/iCheck/skins/flat/green.css" rel="stylesheet" />
+    <!-- bootstrap-wysiwyg -->
+    @*<link href="~/gentelella-master/vendors/google-code-prettify/bin/prettify.min.css" rel="stylesheet"/>*@
+    <!-- Select2 -->
+    @*<link href="~/gentelella-master/vendors/select2/dist/css/select2.min.css" rel="stylesheet" />*@
+    <!-- Switchery -->
+    @*<link href="~/gentelella-master/vendors/switchery/dist/switchery.min.css" rel="stylesheet" />*@
+    <!-- bootstrap-daterangepicker -->
+    <link href="~/gentelella-master/vendors/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet" />
+
+    <!-- I think this will make the close button work. -->
+    <!-- Custom Theme Style -->
+    <link href="~/gentelella-master/build/css/custom.min.css" rel="stylesheet" />
+    <link href="~/css/SliderForPartials.css" rel="stylesheet" />
+    <link href="~/css/gentelella_mod.css" rel="stylesheet" />
+    <link href="~/css/StatusMessage.css" rel="stylesheet" />
+    @*This is the loading Queue no idea if it will work*@
+    @*<script src="~/JSScriptLib/PartialViewCalls/LoadQueue.js"></script>*@
+
+
+    <!-- jQuery -->
+    <script src="~/gentelella-master/vendors/jquery/dist/jquery.min.js"></script>
+    @* ROADMAP 20. Loaded HERE, in <head> immediately after jQuery, rather than at the bottom with
+       the other custom scripts: it installs a global ajaxError net, and the net has to be armed
+       before any page script gets a chance to fire a request. A page's @@section scripts block runs
+       before the bottom-of-body tags, so loading it down there would leave the first request of
+       some pages unreported. It needs no DOM beyond document.body, which it looks up lazily. *@
+    <script src="~/JSScriptLib/Feedback/StatusMessage.js"></script>
+    <!-- Bootstrap -->
+    <script src="~/gentelella-master/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+</head>
+
+<body class="nav-md">
+
+
+    <div class="container body">
+        <div class="main_container">
+
+            <!-- Side nav bar -->
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    <div class="navbar nav_title" style="border: 0;">
+                        <a asp-controller="Home" asp-action="" class="site_title">
+                            @*<img src="~/images/Logo/Febris-Logo-recolored_white_gimp_Cropped.png" alt="Febris logo" class="img-fluid" style="height:30px; width:30px" />*@
+                            <img alt="Febris logo" class="img-fluid" style="height:30px; width:30px" src="~/images/Logo/FebrisIcon_White.png" />
+                            <span>
+                                <img src="~/images/Logo/Febris_white_gimp.png" alt="Febris logo" class="img-fluid" style="width:130px" />
+                            </span>
+                        </a>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    @if (User != null)
+                    {
+                        <!-- menu profile quick info -->
+                        <div class="profile clearfix">
+                            <div class="profile_pic">
+
+                                @if (User.HasProfilePicture() != null)
+                                {
+                                    @if (User.HasProfilePicture())
+                                    {
+                                        <a asp-controller="User" asp-action="SelfEdit">
+                                            <img id="NavBarPicture" src="@Url.Action("LoadProfilePicture", "Widget", new { path = User.ProfilePicturePath() })" alt="Profile picture" class="img-circle profile_img">
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="User" asp-action="SelfEdit">
+                                            <img id="NavBarPicture" src="~/images/DefaultMedia/DefaultPerson.png" alt="Default Picture" class="img-circle profile_img">
+                                        </a>
+                                    }
+                                }
+                                else
+                                {
+                                    <a asp-controller="User" asp-action="SelfEdit">
+                                        <img id="NavBarPicture" src="~/images/DefaultMedia/DefaultPerson.png" alt="Default Picture" class="img-circle profile_img">
+                                    </a>
+                                }
+                            </div>
+                            <div class="profile_info">
+                                <span>Welcome,</span>
+                                <h2>
+                                    @if (!string.IsNullOrEmpty(User.LastName()) || !string.IsNullOrEmpty(User.FirstName()))
+                                    {
+                                        @if (!string.IsNullOrEmpty(User.LastName()))
+                                        {
+                                            @User.FirstName();
+                                        }
+                                        <br />
+                                        @if (!string.IsNullOrEmpty(User.FirstName()))
+                                        {
+                                            @User.LastName()
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @User.Identity.Name.Replace('_', ' ')
+                                    }
+                                </h2>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <!-- /menu profile quick info -->
+                    }
+
+
+                    <br />
+                    <hr />
+
+                    <!-- sidebar menu -->
+                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+                        @*Operations*@
+                        <div class="menu_section">
+                            <ul class="nav side-menu">
+                                @*Home*@
+                                <li>
+                                    <a asp-controller="Switchboard" asp-action="Index">
+                                        <i class="fa fa-home"></i> Home
+                                    </a>
+                                </li>
+                            </ul>
+                            @if (User.IsLocalAdmin() || User.IsLocalEducator() || User.IsLocalFebrisAdmin())
+                            {
+                                <h3>Operations</h3>
+                                <ul class="nav side-menu">
+
+                                    @*Users*@
+                                    @if (User.IsLocalAdmin() || User.IsLocalEducator() || User.IsLocalFebrisAdmin())
+                                    {
+                                        <li>
+                                            <a><i class="fa fa-users"></i>Users<span class="fa fa-chevron-down"></span></a>
+                                            <ul class="nav child_menu">
+
+                                                @* Invitations used to be a nav entry here. It MOVED into the
+                                                   add-users button group on the user index pages
+                                                   (Buttons/GenericButtons/User/_AddUsersButtonGroupPartial),
+                                                   next to Add a user and Import a list, because the newest
+                                                   way of adding a user does not belong somewhere you would
+                                                   never look while adding one. Reached from any of the four
+                                                   user indexes below. *@
+
+                                                @*Users*@
+                                                <li>
+                                                    <a>User Accounts<span class="fa fa-chevron-down"></span></a>
+                                                    <ul class="nav child_menu">
+                                                        @if (User.IsLocalAdmin() || User.IsLocalFebrisAdmin())
+                                                        {
+                                                            <li>
+                                                                <a>Comprehensive<span class="fa fa-chevron-down"></span></a>
+                                                                <ul class="nav child_menu">
+                                                                    <li class="sub_menu">
+                                                                        <a asp-area="" asp-controller="User" asp-action="Index">User Index</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </li>
+                                                        }
+                                                        <li>
+                                                            <a>Learners<span class="fa fa-chevron-down"></span></a>
+                                                            <ul class="nav child_menu">
+                                                                <li class="sub_menu">
+                                                                    <a asp-area="" asp-controller="User" asp-action="StudentIndex">User Index</a>
+                                                                </li>
+                                                                <li class="sub_menu">
+                                                                    <a asp-area="" asp-controller="Actor" asp-action="Index">Actor Index</a>
+                                                                </li>
+                                                            </ul>
+                                                        </li>
+                                                        <li>
+                                                            <a>Educators<span class="fa fa-chevron-down"></span></a>
+                                                            <ul class="nav child_menu">
+                                                                <li class="sub_menu">
+                                                                    <a asp-area="" asp-controller="User" asp-action="EducatorIndex">User Index</a>
+                                                                </li>
+                                                            </ul>
+                                                        </li>
+                                                        @if (User.IsLocalAdmin() || User.IsLocalFebrisAdmin())
+                                                        {
+                                                            <li>
+                                                                <a>Admin<span class="fa fa-chevron-down"></span></a>
+                                                                <ul class="nav child_menu">
+                                                                    <li class="sub_menu">
+                                                                        <a asp-area="" asp-controller="User" asp-action="AdminIndex">User Index</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </li>
+
+                                                @*Test Users*@
+                                                @* RESTORED 2026-08-18. TestUser is a facade for generating and testing xAPI
+                                                   records, not a real user, and its controller, logic and queries are all live
+                                                   again. It was unreachable only because this block was commented out, which is
+                                                   also what made an audit sweep read it as dead surface.
+
+                                                   The "Test Actor Index" sub-item stays commented: ActorController.TestIndex
+                                                   and TestIndexPartial are still commented out, so linking it would produce a
+                                                   dead nav entry. Restore that link with that action, not before. *@
+                                                <li>
+                                                    <a>Test Users<span class="fa fa-chevron-down"></span></a>
+                                                    <ul class="nav child_menu">
+                                                        <li class="sub_menu">
+                                                            <a asp-area="" asp-controller="TestUser" asp-action="Index">User Index</a>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+
+                                                @*Cohort*@
+                                                <li>
+                                                    <a>Cohort<span class="fa fa-chevron-down"></span></a>
+                                                    <ul class="nav child_menu">
+                                                        <li>
+                                                            <a asp-area="" asp-controller="Cohort" asp-action="Index">Index</a>
+                                                        </li>
+                                                        @* "New" removed: creating a cohort is done from a button on the
+                                                           index, so a second nav entry to the same capability is just a
+                                                           wider surface to keep correct. Same for Hardware below. *@
+                                                    </ul>
+                                                </li>
+
+                                                @* "Febris User" removed (owner ruling 2026-08-01): there is no vendor
+                                                   support account on a self-hosted node, and the toggle behind this
+                                                   entry locked out the node's OWN admin role permanently. *@
+
+                                            </ul>
+                                        </li>
+                                    }
+
+                                    @*Hardware*@
+                                    @if (User.IsLocalAdmin() || User.IsLocalEducator() || User.IsLocalFebrisAdmin())
+                                    {
+
+                                        <li>
+                                            <a><i class="fa fa-laptop"></i>Hardware <span class="fa fa-chevron-down"></span></a>
+                                            <ul class="nav child_menu">
+                                                <li>
+                                                    <a asp-area="" asp-controller="Hardware" asp-action="Index">Index</a>
+                                                </li>
+                                                @* "New" removed: registering a device is done from a button on the
+                                                   index. See the note on the Cohort block above. *@
+                                            </ul>
+                                        </li>
+                                    }
+
+                                    @* Billing removed with the commerce teardown (owner ruling
+                                       2026-08-01): InvoiceController no longer exists in the node,
+                                       so these entries 404'd. Commerce is a hub capability. *@
+
+                                </ul>
+
+                            }
+                        </div>
+                        @*Messaging*@
+                        <div class="menu_section">
+                            <h3>Messaging</h3>
+                            <ul class="nav side-menu">
+                                @*Messaging*@
+                                <li>
+                                    <a><i class="fa fa-envelope"></i>Messaging<span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+
+                                        @* "Message Febris" (MessageController) and "Febris
+                                           Messageboard" (AdminMessageBoardController) removed: both
+                                           are hub-backed. They did not 404 -- the controllers
+                                           existed and the federation gate is closed, so they
+                                           rendered a blank page forever, which is worse. The
+                                           local Messageboard below is node-owned and stays. *@
+
+                                        @*Messageboard*@
+                                        <li>
+                                            <a>Messageboard<span class="fa fa-chevron-down"></span></a>
+                                            <ul class="nav child_menu">
+                                                @if (User.IsLocalAdmin() || User.IsLocalEducator() || User.IsLocalFebrisAdmin())
+                                                {
+                                                    <li>
+                                                        <a asp-area="" asp-controller="Messageboard" asp-action="Index">Admin Index</a>
+                                                    </li>
+                                                }
+                                                <li>
+                                                    <a asp-area="" asp-controller="Messageboard" asp-action="MessageIndex">Index</a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+
+                            </ul>
+                        </div>
+                        @* The old "Content" menu_section held only Public/Private Marketplace and
+                           Purchases/Seats -- its sub-menu labelled "Content Management" contained
+                           NO content management. Removed with the marketplace and commerce
+                           teardown (owner ruling 2026-08-01) and REPLACED below by node-owned
+                           content authoring, which is what that heading always should have meant. *@
+                        @*Content*@
+                        @if (User.IsLocalEducator() || User.IsLocalAdmin() || User.IsLocalFebrisAdmin())
+                        {
+                            <div class="menu_section">
+                                <h3>Content</h3>
+                                <ul class="nav side-menu">
+                                    <li>
+                                        <a><i class="fa fa-book"></i>Curriculum <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            <li>
+                                                <a asp-area="" asp-controller="Curriculum" asp-action="Index">Index</a>
+                                            </li>
+                                            <li>
+                                                <a asp-area="" asp-controller="Curriculum" asp-action="Create">New</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <a><i class="fa fa-cube"></i>Modules <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            <li>
+                                                <a asp-area="" asp-controller="Module" asp-action="Index">Index</a>
+                                            </li>
+                                            <li>
+                                                <a asp-area="" asp-controller="Module" asp-action="Create">Add</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+
+                        @*Data*@
+                        <div class="menu_section">
+                            <h3>Data</h3>
+                            <ul class="nav side-menu">
+
+                                @*XAPI*@
+                                <li>
+                                    <a><i class="fa fa-graduation-cap"></i>Learning Data <span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+                                        @*Statement Data*@
+                                        <li>
+                                            <a>Statements<span class="fa fa-chevron-down"></span></a>
+                                            <ul class="nav child_menu">
+                                                <li>
+                                                    <a asp-area="" asp-controller="Statement" asp-action="Index">Index</a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+
+                                @*Data*@
+                                @if (User.IsLocalAdmin() || User.IsLocalFebrisAdmin())
+                                {
+                                    <li>
+                                        <a><i class="fa fa-bar-chart-o"></i>Usage<span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            @*Website Analytics*@
+                                            <li>
+                                                <a>Analytics <span class="fa fa-chevron-down"></span></a>
+                                                <ul class="nav child_menu">
+                                                    @*General*@
+                                                    <li>
+                                                        <a>General<span class="fa fa-chevron-down"></span></a>
+                                                        <ul class="nav child_menu">
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalAnalytics" asp-action="Charts">Charts</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalAnalytics" asp-action="Index">Raw Index</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+
+                                                    @*Hardware*@
+                                                    @*<li>
+                                                            <a>Hardware<span class="fa fa-chevron-down"></span></a>
+                                                            <ul class="nav child_menu">
+                                                                <li>
+                                                                    <a asp-area="" asp-controller="HardwareAnalytics" asp-action="Charts">Charts</a>
+                                                                </li>
+                                                                <li>
+                                                                    <a asp-area="" asp-controller="HardwareAnalytics" asp-action="SortedIndex">Index</a>
+                                                                </li>
+                                                                <li>
+                                                                    <a asp-area="" asp-controller="HardwareAnalytics" asp-action="Index">Raw Index</a>
+                                                                </li>
+                                                            </ul>
+                                                        </li>*@
+
+                                                </ul>
+                                            </li>
+
+
+                                        </ul>
+                                    </li>
+                                }
+
+                            </ul>
+                        </div>
+                        @*Miss*@
+                        <div class="menu_section">
+                            <h3>Miss</h3>
+                            <ul class="nav side-menu">
+                                @*Software Repository*@
+                                @if (User.IsLocalAdmin() || User.IsLocalEducator() || User.IsLocalFebrisAdmin())
+                                {
+                                    <li>
+                                        <a><i class="fa fa-code"></i> Software Repository <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            <li>
+                                                <a>PC<span class="fa fa-chevron-down"></span></a>
+                                                <ul class="nav child_menu">
+                                                    <li>
+                                                        <a>Launcher Package<span class="fa fa-chevron-down"></span></a>
+                                                        <ul class="nav child_menu">
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageDownload" asp-route-input="@LocalSoftwarePackageType.PC.ToString()">Download</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="Documentation" asp-route-input="@LocalSoftwarePackageType.PC.ToString()">Documentation</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageArchive" asp-route-input="@LocalSoftwarePackageType.PC.ToString()">Archive</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+
+                                            <li>
+                                                <a>Mobile<span class="fa fa-chevron-down"></span></a>
+                                                <ul class="nav child_menu">
+                                                    <li>
+                                                        <a>Controller<span class="fa fa-chevron-down"></span></a>
+                                                        <ul class="nav child_menu">
+                                                            <li class="sub_menu">
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageDownload" asp-route-input="@LocalSoftwarePackageType.AndroidMobileServer.ToString()">Download</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="Documentation" asp-route-input="@LocalSoftwarePackageType.AndroidMobileServer.ToString()">Documentation</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageArchive" asp-route-input="@LocalSoftwarePackageType.AndroidMobileServer.ToString()">Archive</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li>
+                                                        <a>Companion<span class="fa fa-chevron-down"></span></a>
+                                                        <ul class="nav child_menu">
+                                                            <li class="sub_menu">
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageDownload" asp-route-input="@LocalSoftwarePackageType.AndroidMobileCompanion.ToString()">Download</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="Documentation" asp-route-input="@LocalSoftwarePackageType.AndroidMobileCompanion.ToString()">Documentation</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageArchive" asp-route-input="@LocalSoftwarePackageType.AndroidMobileCompanion.ToString()">Archive</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+
+                                            @* Integration Libraries. The enum already carried CSharp and CPP, and
+                                               PackageDownload/Documentation/PackageArchive all take a
+                                               LocalSoftwarePackageType and query by it, so these worked on the node
+                                               all along -- the nav simply never offered them. Modelled on the
+                                               developer portal's Integration Library block. *@
+                                            <li>
+                                                <a>Integration Library<span class="fa fa-chevron-down"></span></a>
+                                                <ul class="nav child_menu">
+                                                    <li>
+                                                        <a>C#<span class="fa fa-chevron-down"></span></a>
+                                                        <ul class="nav child_menu">
+                                                            <li class="sub_menu">
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageDownload" asp-route-input="@LocalSoftwarePackageType.CSharp.ToString()">Download</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="Documentation" asp-route-input="@LocalSoftwarePackageType.CSharp.ToString()">Documentation</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageArchive" asp-route-input="@LocalSoftwarePackageType.CSharp.ToString()">Archive</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li>
+                                                        <a>C++<span class="fa fa-chevron-down"></span></a>
+                                                        <ul class="nav child_menu">
+                                                            <li class="sub_menu">
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageDownload" asp-route-input="@LocalSoftwarePackageType.CPP.ToString()">Download</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="Documentation" asp-route-input="@LocalSoftwarePackageType.CPP.ToString()">Documentation</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageArchive" asp-route-input="@LocalSoftwarePackageType.CPP.ToString()">Archive</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+
+                                    @*<li>
+                                        <a><i class="fa fa-code"></i> Software Repository <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+
+                                            <li>
+                                                <a>PC<span class="fa fa-chevron-down"></span></a>
+                                                <ul class="nav child_menu">
+                                                    <li>
+                                                        <a>Launcher Package<span class="fa fa-chevron-down"></span></a>
+                                                        <ul class="nav child_menu">
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageDownload" asp-route-input="@LocalSoftwarePackageType.PC.ToString()">Download</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageArchive" asp-route-input="@LocalSoftwarePackageType.PC.ToString()">Archive</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+
+                                            <li>
+                                                <a>Mobile<span class="fa fa-chevron-down"></span></a>
+                                                <ul class="nav child_menu">
+                                                    <li>
+                                                        <a>Controller<span class="fa fa-chevron-down"></span></a>
+                                                        <ul class="nav child_menu">
+                                                            <li class="sub_menu">
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageDownload" asp-route-input="@LocalSoftwarePackageType.AndroidMobileServer.ToString()">Download</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageArchive" asp-route-input="@LocalSoftwarePackageType.AndroidMobileServer.ToString()">Archive</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li>
+                                                        <a>Companion<span class="fa fa-chevron-down"></span></a>
+                                                        <ul class="nav child_menu">
+                                                            <li class="sub_menu">
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageDownload" asp-route-input="@LocalSoftwarePackageType.AndroidMobileCompanion.ToString()">Download</a>
+                                                            </li>
+                                                            <li>
+                                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="PackageArchive" asp-route-input="@LocalSoftwarePackageType.AndroidMobileCompanion.ToString()">Archive</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+
+                                        </ul>
+                                    </li>*@
+                                }
+                            </ul>
+                        </div>
+                        @* System. Node Status, Hub Federation and Registration are all
+                           [Authorize(Roles = OrgAdmins)] node-configuration screens, and until now
+                           NONE of the three had a nav entry -- they existed only if you knew the
+                           URL. Grouping them here rather than adding a top-level item per setting
+                           is the deliberate siting the node initialization design called for: the
+                           next node-wide setting belongs in this section, not in a new one. The
+                           gate matches OrgAdmins exactly (IsLocalAdmin covers Admin and ITAdmin,
+                           IsLocalFebrisAdmin covers SuperAdmin), so nothing renders that the
+                           controller would then refuse. *@
+                        @if (User.IsLocalAdmin() || User.IsLocalFebrisAdmin())
+                        {
+                            <div class="menu_section">
+                                <h3>System</h3>
+                                <ul class="nav side-menu">
+                                    <li>
+                                        <a><i class="fa fa-cogs"></i>Node <span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                            <li>
+                                                <a asp-area="" asp-controller="NodeStatus" asp-action="Index">Status</a>
+                                            </li>
+                                            <li>
+                                                <a asp-area="" asp-controller="RegistrationSettings" asp-action="Index">Registration</a>
+                                            </li>
+                                            <li>
+                                                <a asp-area="" asp-controller="HubFederation" asp-action="Index">Hub Federation</a>
+                                            </li>
+                                            <li>
+                                                @* ROADMAP 16: the feed-sync trigger, moved off the
+                                                   API (NodeAdmin-token curl) into a Portal form.
+                                                   Node-wide OrgAdmins operation, so it belongs in
+                                                   this section per the siting note above. *@
+                                                <a asp-area="" asp-controller="LocalSoftwarePackage" asp-action="FeedSync">Package Feed</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        @*Miss*@
+                        <!--<div class="menu_section">
+                            <h3>Miss</h3>
+                            <ul class="nav side-menu">
+                            </ul>
+                        </div>
+                        <div class="menu_section">-->                        
+                    </div>
+                </div>
+                <!-- /sidebar menu -->
+                <!-- /menu footer buttons -->
+                <div class="sidebar-footer hidden-small">
+                    <a data-toggle="tooltip" data-placement="top" title="Settings" asp-area="Identity" asp-page="/Account/Manage/Index">
+                        <span class="fa fa-cog" aria-hidden="true"></span>
+                    </a>
+                    @*<form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action(" Index", "Home" , new { area="" })">
+                        <button type="submit" class="dropdown-item">Logout</button>
+                    </form>*@
+
+
+                    <a data-toggle="tooltip" data-placement="top" title="Logout" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action(" Index", "Home" , new { area="" })">
+                        <span class="fa fa-power-off" aria-hidden="true"></span>
+                    </a>
+                </div>
+                <!-- /menu footer buttons -->
+            </div>
+        @*</div>*@
+        <!-- /Side nav bar -->
+        <!-- top navigation -->
+        <div class="top_nav">
+            <div class="nav_menu">
+                <div class="nav toggle">
+                    <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                </div>
+                <nav class="nav navbar-nav">
+                    <partial name="_LoginPartial" />
+                </nav>
+            </div>
+        </div>
+        <!-- /top navigation -->
+        <!-- jQuery -->
+        <!--<script src="~/gentelella-master/vendors/jquery/dist/jquery.min.js"></script>-->
+        <!-- Bootstrap -->
+        <!--<script src="~/gentelella-master/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>-->
+        <!-- page content -->
+        <div class="right_col" role="main">
+            <main>
+
+                <!-- The Modal -->
+                <div id="Modal" class="modal">
+                    <!-- Modal content -->
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <div id="modalContent"></div>
+                    </div>
+                    <!-- /Modal content -->
+                </div>
+
+                <!-- /The Modal -->
+                <!-- TempData check accross all pages -->
+                @* The lookup key here used to be " StatusMessage" -- with a LEADING SPACE -- while
+                   the guard above it checked "StatusMessage". The key never matched, so the
+                   indexer returned null and .ToString() threw. Because this is the layout, ANY
+                   page rendered after ANY controller set a StatusMessage died with an unhandled
+                   NullReferenceException: the error-reporting mechanism itself took the site down,
+                   and it presented as a random 500 on whatever page happened to be next. Null
+                   check retained regardless -- TempData values are object and nullable. *@
+                @if (TempData.ContainsKey("StatusMessage") && TempData["StatusMessage"] != null)
+                {
+                    <input type="hidden" id="statusMessage" value="@TempData["StatusMessage"]" />
+                }
+                <!-- /TempData check accross all pages -->
+                @RenderBody()
+
+
+            </main>
+            <br />
+            <br />
+        </div>
+        <!-- /page content -->
+        <!-- footer content -->
+        <footer>
+            @*class="border-top footer text-muted">*@
+            <div class="container">
+                <div class="pull-right">
+                    &copy; @DateTime.Now.Year - Local Febris Portal - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </footer>
+        <!-- /footer content -->
+
+    </div>
+    </div>
+
+
+
+    <!-- jQuery -->
+    <!--<script src="~/gentelella-master/vendors/jquery/dist/jquery.min.js"></script>-->
+    <!-- Bootstrap -->
+    <!--<script src="~/gentelella-master/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>-->
+    <!-- FastClick -->
+    <script src="~/gentelella-master/vendors/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="~/gentelella-master/vendors/nprogress/nprogress.js"></script>
+    <!-- bootstrap-progressbar -->
+    <script src="~/gentelella-master/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+    <!-- iCheck -->
+    <script src="~/gentelella-master/vendors/iCheck/icheck.min.js"></script>
+    <!-- bootstrap-daterangepicker -->
+    <script src="~/gentelella-master/vendors/moment/min/moment.min.js"></script>
+    <script src="~/gentelella-master/vendors/bootstrap-daterangepicker/daterangepicker.js"></script>
+    <!-- bootstrap-wysiwyg -->
+    @*
+    <script src="~/gentelella-master/vendors/bootstrap-wysiwyg/js/bootstrap-wysiwyg.min.js"></script>
+    <script src="~/gentelella-master/vendors/jquery.hotkeys/jquery.hotkeys.js"></script>
+    <script src="~/gentelella-master/vendors/google-code-prettify/src/prettify.js"></script>*@
+    <!-- jQuery Tags Input -->
+    <script src="~/gentelella-master/vendors/jquery.tagsinput/src/jquery.tagsinput.js"></script>
+    <!-- Switchery -->
+    @*
+    <script src="~/gentelella-master/vendors/switchery/dist/switchery.min.js"></script>*@
+    <!-- Select2 -->
+    <script src="~/gentelella-master/vendors/select2/dist/js/select2.full.min.js"></script>
+    <!-- Parsley -->
+    @*
+    <script src="~/gentelella-master/vendors/parsleyjs/dist/parsley.min.js"></script>*@
+    <!-- Autosize -->
+    <script src="~/gentelella-master/vendors/autosize/dist/autosize.min.js"></script>
+    <!-- jQuery autocomplete -->
+    <script src="~/gentelella-master/vendors/devbridge-autocomplete/dist/jquery.autocomplete.min.js"></script>
+    <!-- Chart.js -->
+    <script src="~/gentelella-master/vendors/Chart.js/dist/Chart.js"></script>
+
+    <!-- Custom Theme Scripts -->
+    <script src="~/gentelella-master/build/js/custom.min.js"></script>
+
+
+    <!-- Detail buttons -->
+    <script src="~/JSScriptLib/ButtonOperation/Generic/GenericButtonOperation.js"></script>
+
+    @RenderSection("Scripts", required: false)
+
+    <!-- Status Message Updates -->
+    <script src="~/JSScriptLib/PartialViewCalls/StatusMessageModal.js"></script>
+    <script src="~/JSScriptLib/WidgetOps/GenericMixedChartPartialScript.js"></script>
+    <!-- Generic Button Actions -->
+    <script src="~/JSScriptLib/ButtonOperation/Generic/ButtonActions.js"></script>
+
+</body>
+</html>

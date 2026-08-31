@@ -1,0 +1,133 @@
+﻿@model X.PagedList.IPagedList<Febris.ModelLibrary.ViewModels.LocalUserViewModel>
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc
+@using X.PagedList
+@using Febris.ModelLibrary.PartialViewModels
+
+<div id="tablePartial">
+    <div id="search">
+        @using (Html.BeginForm())
+        {
+            <p>
+                @Html.TextBox("SearchString", null, new { id = "searchBox", type = "text" })
+                <input type="submit" value="Search" class="fa fa-search btn btn-primary" />
+            </p>
+        }
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Locked Out
+                </th>
+                <th>
+                    FirstName
+                </th>
+                <th>
+                    LastName
+                </th>
+                <th>
+                    IdentificationNumber
+                </th>
+                <th>
+                    Email Confirmed
+                </th>
+                <th>
+                    TwoFactorEnabled
+                </th>
+                <th>
+                    AccessFailedCount
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <label class="switch">
+                                    <input type="checkbox" checked="@item.IsLockedOut" disabled />
+                                    <span class="slider round"></span>
+                                </label>                            
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ApplicationUser.FirstName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ApplicationUser.LastName)
+                        </td>
+
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ApplicationUser.IdentificationNumber)
+                        </td>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox" checked="@item.ApplicationUser.EmailConfirmed" disabled />
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox" checked="@item.ApplicationUser.TwoFactorEnabled" disabled />
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ApplicationUser.AccessFailedCount)
+                        </td>
+                        @await Html.PartialAsync("Buttons/GenericButtons/User/_IndexButtonGroupPartial", new IndividualUUIDButtonPartial { Id = item.ApplicationUser.Id })
+
+                    </tr>
+                }}
+        </tbody>
+    </table>
+    <div id="pagedList">
+        @if (TempData.ContainsKey("CurrentFilter"))
+        {
+            @Html.PagedListPager(Model, page => Url.Action("EducatorIndexPartial", new { page = page, currentFilter = TempData["CurrentFilter"].ToString() }));
+        }
+        else
+        {
+            @Html.PagedListPager(Model, page => Url.Action("EducatorIndexPartial", new { page = page }));
+        }
+    </div>
+</div>
+<script>
+    $(function () {
+        $('#pagedList').on('click', 'a', function () {
+            $.ajax({
+                url: this.href,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                }
+            });
+            return false;
+        });
+    });
+    $(function () {
+        $('#search').submit(function (event) {
+            event.preventDefault();
+            var searchString = document.getElementById("searchBox").value;
+            $.ajax({
+                url: "../User/EducatorIndexPartial",
+                async: true,
+                data: 'searchString=' + searchString,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                },
+                error: function (xhr, param) {
+                    console.log(xhr);
+                    console.log(param);
+                }
+            });
+            return false;
+        });
+    });
+</script>

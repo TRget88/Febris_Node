@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Privacy Policy";
+}
+
+@*
+    This page is a PLACEHOLDER and deliberately makes no legal claims.
+
+    It previously shipped a third-party boilerplate policy whose content was false for this
+    software: it asserted COPPA compliance and that no information is collected from anyone
+    under 13, while the node ships parent-linked student accounts and cohorts; it described
+    collecting social-security and credit-card numbers, which it does not; and it still
+    carried the template's own placeholder contact block. Shipping a pre-written policy an
+    operator did not author, and probably would not read, is worse than shipping none.
+
+    The organisation running a node is its data controller. Replace the section below with
+    your own policy before serving real users.
+*@
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="privacy-policy">
+    <hr />
+
+    <section id="privacy-placeholder">
+        <p>This node has not published a privacy policy yet.</p>
+        <p>
+            This software is self-hosted. The organisation running this node decides what
+            personal data it collects and how that data is handled, and is responsible for
+            describing it here &mdash; the authors of the software are not party to that and
+            cannot describe it on an operator's behalf.
+        </p>
+        <p class="text-muted">
+            <strong>Operators:</strong> replace this page
+            (<code>Views/Home/Privacy.cshtml</code>) with your own policy. What the node
+            stores by default &mdash; accounts, cohort membership, xAPI statements, uploaded
+            artifacts and their metadata &mdash; is described in <code>README.md</code> and
+            <code>docs/ARCHITECTURE.md</code>. That is a starting point, not a substitute for
+            a policy written for your deployment and your jurisdiction.
+        </p>
+    </section>
+</div>

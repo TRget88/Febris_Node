@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <UserSecretsId>962ac4c9-f643-47b1-9c98-a3c52cb9f9b1</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.10" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <!-- LOG-B1 fix: this host configured Console + (dead) RollingFile sinks in appsettings but
+         referenced NO sink assembly, so Serilog resolved zero sinks and logged NOWHERE. The other
+         7 web hosts get the Console + File sinks transitively via Serilog.AspNetCore (which also
+         provides the UseSerilog host extension this host already calls); add it here for the same
+         sink availability + explicit dependency. (SharedAPI + ContentDeveloperApi have the same gap.) -->
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+    <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" /> <!-- LOG-B2: enricher configured in appsettings but package was unreferenced -->
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" /> <!-- LOG-B2: enricher configured in appsettings but package was unreferenced -->
+    <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Febris.EnumLibrary" Version="0.1.0" />
+    <PackageReference Include="Febris.ModelLibrary" Version="0.1.0" />
+    <PackageReference Include="Febris.SharedServices" Version="0.1.0" />
+    <ProjectReference Include="..\FebrisEndUserBLL\Febris.UserNode.LogicLayer.csproj" />
+  </ItemGroup>
+
+
+</Project>

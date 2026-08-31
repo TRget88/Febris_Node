@@ -1,0 +1,118 @@
+﻿@using Febris.ModelLibrary.Models.UserModels;
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<LocalApplicationUser> SignInManager
+@inject UserManager<LocalApplicationUser> UserManager
+@using Febris.SharedServices;
+
+<ul class=" navbar-right">
+    @if (User.Identity.IsAuthenticated)
+    {
+        <li class="nav-item dropdown open" style="padding-left: 15px;">
+
+            <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true" id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">
+                @if (User.HasProfilePicture())
+                {
+                    <img src="@Url.Action("LoadProfilePicture", "Widget", new { path = User.ProfilePicturePath() })" alt="Profile picture">
+                }
+                else
+                {
+                    <img src="~/images/DefaultMedia/DefaultPerson.png" alt="Default Picture">
+                }
+
+                @User.Identity.Name.Replace('_', ' ')
+            </a>
+
+            <div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">
+                @*<a class="dropdown-item" title="Manage" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI,"Manage")">Settings</a>*@
+                <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Settings</a>
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="dropdown-item">Logout</button>
+                </form>
+                @*<a class="dropdown-item" asp-area="Identity" asp-page="/Account/Logout">Logout</a>*@
+            </div>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+
+            @*<a class="nav-link text-dark" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI,"login?returnUrl="+Context.Request.Scheme+"://"+Context.Request.Host)">Login</a>*@
+            @*<a class="nav-link text-dark" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI,"login?returnUrl=https://"+Context.Request.Host)">Login</a>*@
+            @*<a class="nav-link text-dark" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI, @"login?returnUrl=https://"+Context.Request.Host)">Login</a>*@
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+
+        </li>
+    }
+</ul>
+
+@*<ul class=" navbar-right">*@
+@*@if (SignInManager.IsSignedIn(User))
+    {*@
+@*<li class="nav-item">
+        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity.Name!</a>
+    </li>*@
+@*<li class="nav-item">
+        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+            <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+        </form>
+    </li>*@
+@*}
+    else
+    {*@
+@*<li class="nav-item">
+        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+    </li>*@
+@*<li class="nav-item">
+        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+    </li>*@
+@*}*@
+@*</ul>*@
+
+
+
+
+@*this is the way it is set up in other system*@
+@*@using Microsoft.Extensions.Options;
+    @using Febris.ModelLibrary.ViewModels;
+    @inject IOptions<UserAPIConfig> UserAPIConfigs
+    @using Febris.SharedServices;*@
+
+@*<ul class=" navbar-right">*@
+@*@if (User.Identity.IsAuthenticated)
+    {*@
+@*<li class="nav-item dropdown open" style="padding-left: 15px;">
+
+    <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true" id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">*@
+@*@if (User.HasProfilePicture())
+    {
+        <img src="@Url.Action("LoadProfilePicture", "Widget", new { path = User.ProfilePicturePath() })" alt="Profile picture">
+    }
+    else
+    {
+        <img src="~/images/DefaultMedia/DefaultPerson.png" alt="Default Picture">
+    }
+
+    @User.Identity.Name.Replace('_', ' ')*@
+<!--</a>
+
+<div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">-->
+@*<a class="dropdown-item" title="Manage" href="@UserAPIConfigs.Value.UserManagementAPI">Settings</a>*@
+@*<a class="dropdown-item" href="@UserAPIConfigs.Value.UserLogoutAPI?returnUrl=@Context.Request.Scheme://@Context.Request.Host">Logout</a>*@
+@*<a class="dropdown-item" title="Manage" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI,"Manage")">Settings</a>*@
+@*<a class="dropdown-item" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI,"logout?returnUrl="+Context.Request.Scheme+"://"+Context.Request.Host))">Logout</a>*@
+@*<a class="dropdown-item" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI,"logout?returnUrl="+Context.Request.Scheme+"://"+Context.Request.Host)">Logout</a>*@
+
+@*</div>
+    </li>*@
+<!--}
+else
+{
+    <li class="nav-item">-->
+@*<a class="nav-link text-dark" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI,"login?returnUrl="+Context.Request.Scheme+"://"+Context.Request.Host)">Login</a>*@
+@*<a class="nav-link text-dark" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI,"login?returnUrl=https://"+Context.Request.Host)">Login</a>*@
+@*<a class="nav-link text-dark" href="@String.Concat(UserAPIConfigs.Value.IdentityAPI, @"login?returnUrl=https://"+Context.Request.Host)">Login</a>*@
+
+@*</li>
+        }
+    </ul>*@
+

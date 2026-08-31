@@ -1,0 +1,254 @@
+﻿@model Febris.ModelLibrary.Models.DataModels.Curriculum
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+@using Febris.SharedServices;
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+
+</head>
+
+<div class="col-sm-12" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">@Model.Name</h1>
+    </div>
+</div>
+<br />
+<input type="hidden" id="modelId" value="@Model.Id" />
+<div>
+    <h3>Curriculum</h3>
+    <hr />
+    <div class="row">
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+
+            <div class="row">
+                <div class="col-sm-6" align="center" style="font-weight:bold">
+                    <label class="switch">
+                        <input type="checkbox" checked="@Model.Obsolete" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                    @Html.DisplayNameFor(model => model.Obsolete)
+                </div>
+            </div>
+
+            <hr />
+            <h4>General Information</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right">
+                    @Html.DisplayNameFor(model => model.Name)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Name)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right">
+                    @Html.DisplayNameFor(model => model.Version)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Version)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right">
+                    @Html.DisplayNameFor(model => model.TimeStamp)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.TimeStamp)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right">
+                    @Html.DisplayNameFor(model => model.LastUpdateTimeStamp)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.LastUpdateTimeStamp)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right">
+                    @Html.DisplayNameFor(model => model.Description)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+            </div>
+
+            <hr />
+            <h4>Classification Information</h4>
+            @* ROADMAP 11, fixed 2026-08-25. The checkbox below used to dereference
+               Model.CurriculumClassification directly, and that navigation is null on EVERY
+               curriculum this node can produce, so opening the Details modal threw a
+               NullReferenceException every time. Two independent reasons it is null, and closing
+               either one alone would not have been enough:
+
+                 1. Nothing in enduser/ can CREATE a CurriculumClassification. There is no
+                    controller, no DAL write and no seed, so the table is always empty and the
+                    picker on Create/Edit only ever offers "[None]" (docs/BUGS.md, "nothing can
+                    create a classification" -- an open owner question, not fixed here).
+                 2. Even when a classification is chosen, the link was not stored. The real
+                    relationship is a SHADOW foreign key, CurriculumClassificationId, and the write
+                    path only ever set the unconstrained CurriculumClassificationUUID column, which
+                    joins to nothing. That half IS fixed, in CurriculumQueries.Upsert.
+
+               Note DisplayNameFor and DisplayFor below are safe against a null model (they read the
+               expression tree, or null-propagate), so ONLY the raw dereference was the crash. The
+               whole block is still gated, because a "Classification Information" heading over four
+               blank rows tells the operator nothing. *@
+            @if (Model.CurriculumClassification == null)
+            {
+                <div>No classification is assigned to this curriculum.</div>
+            }
+            else
+            {
+                <div style="font-weight:bold">
+                    <label class="switch">
+                        <input type="checkbox" checked="@Model.CurriculumClassification.Obsolete" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                    @Html.DisplayNameFor(model => model.CurriculumClassification.Obsolete)
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right">
+                        @Html.DisplayNameFor(model => model.CurriculumClassification.Name)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.CurriculumClassification.Name)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right">
+                        @Html.DisplayNameFor(model => model.CurriculumClassification.Description)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.CurriculumClassification.Description)
+                    </div>
+                </div>
+            }
+
+
+            <hr />
+        </div>
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+            <h4>Module Index</h4>
+            <input type="hidden" id="Element0" value="ModuleIndex" />
+            <div id="Division0">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+@* ROADMAP 17 owner ruling 2026-08-24: node educators and admins DO edit content created
+   inside the node, because nobody else can -- there is no content-developer tier here. The gate
+   was User.IsContentDeveloper(), a claim LocalApplicationUser has no property to populate, so it
+   was never true and the Edit button was unreachable while Create sat on the navbar. This matches
+   the controller, which already allows EducatorAndOrgAdmins. *@
+@if (User.IsLocalEducator() || User.IsLocalAdmin() || User.IsLocalFebrisAdmin())
+{
+    <div>
+        <div align="center">
+            @await Html.PartialAsync("Buttons/GenericButtons/Curriculum/_DetailsButtonGroupPartial", new IndividualButtonPartial { Id = Model.Id })
+        </div>
+    </div>
+    }
+
+@*<br />
+<hr />
+
+<div align="center">
+    
+
+    <input type="hidden" id="Element0" value="Classification" />
+    <div id="Division0" align="center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div>
+
+</div>
+<br />*@
+
+<!--<div align="center">
+    <h3>Info</h3>
+    <br />
+    <div class="row">-->
+        @*<div class="col-md-6">
+                
+                <br />
+                <input type="hidden" id="Element2" value="Example0" />
+                <div id="Division2">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>*@
+        <!--<div class="col-md-6">
+            
+            <br />
+            <input type="hidden" id="Element3" value="Example0" />
+            <div id="Division3">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            
+            <br />
+            <input type="hidden" id="Element4" value="Example0" />
+            <div id="Division4">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            
+            <br />
+            <input type="hidden" id="Element5" value="Example0" />
+            <div id="Division5">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            
+            <br />
+            <input type="hidden" id="Element6" value="Example0" />
+            <div id="Division6">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            
+            <br />
+            <input type="hidden" id="Element7" value="Example0" />
+            <div id="Division7">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>-->
+
+<script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>

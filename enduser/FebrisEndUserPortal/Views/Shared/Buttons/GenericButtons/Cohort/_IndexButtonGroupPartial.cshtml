@@ -1,0 +1,19 @@
+﻿@model Febris.ModelLibrary.PartialViewModels.IndividualButtonPartial
+@using Febris.ModelLibrary.PartialViewModels;
+
+
+<td style="width:50px;">
+    <div class="btn-group" role="group">
+        @await Html.PartialAsync("Buttons/_IndividualButtonPartial",
+             new IndividualButtonPartial
+             {
+                 Action = "CohortDetails",
+                 ButtonType = "btn-info",
+                 Glyph = "info-circle",
+                 Id = Model.Id,
+                 Tooltip = "Cohort Details"
+             })
+    </div>
+</td>
+
+

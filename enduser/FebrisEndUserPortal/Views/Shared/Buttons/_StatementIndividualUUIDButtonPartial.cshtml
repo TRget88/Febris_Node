@@ -1,0 +1,17 @@
+﻿@model Febris.ModelLibrary.PartialViewModels.IndividualUUIDButtonPartial
+@using Febris.ModelLibrary.Models
+
+@*
+    Statement buttons that act on the xAPI UUID rather than the table's primary key.
+
+    The long-Id statement button partial that used to sit beside this one carried Model.Id, which was
+    wrong for both of these actions: the BLL, the voiding statement's urn:uuid: reference and the
+    stored JSON filename are all built on the UUID. Handing the key to a UUID parameter would bind as
+    Guid.Empty, so every void and every download would be refused for every statement. That is the
+    same shape of identifier mismatch that shipped a broken video entitlement gate earlier in this
+    audit, and it fails silently in exactly the same way.
+*@
+
+<button type="button" onclick="StatementButtonAction(this)" class="btn @Model.ButtonType" identification="@Model.Id" submitAction="@Model.Action" data-toggle="tooltip" title="@Model.Tooltip">
+    <span class="fa fa-@Model.Glyph"></span>
+</button>

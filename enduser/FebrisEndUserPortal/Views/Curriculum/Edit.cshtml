@@ -1,0 +1,86 @@
+@model Febris.UserNode.Portal.ViewModels.CurriculumAuthoringViewModel
+
+@{
+    ViewData["Title"] = "Edit Curriculum";
+}
+
+<h1>Edit @Model.Curriculum.Name</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        @* asp-route-id is LOAD-BEARING, not decoration. The POST is Edit(long id,
+           CurriculumAuthoringViewModel input) and its first guard is `id != input.Curriculum.Id`.
+           Because this page binds a VIEW MODEL, the hidden field below emits name="Curriculum.Id",
+           which fills input.Curriculum.Id and nothing else -- the top-level `id` parameter stayed 0
+           and the guard returned NotFound on every save.
+           It was reached as /Curriculum/edit?id=5 (CurriculumButtonOperation.js), a query string
+           rather than a route value, so the tag helper had no ambient id to put back either.
+           Views/Module/Edit.cshtml looks identical and works only because it binds the ENTITY, so
+           its asp-for="Id" emits name="Id" and happens to fill the parameter. Fixed 2026-08-25. *@
+        <form asp-action="Edit" asp-route-id="@Model.Curriculum.Id">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @* Identity fields the POST needs to resolve the row. LastUpdateTimeStamp is
+               deliberately NOT posted -- it is an audit field and the controller stamps it
+               server-side, so a hidden input would make it tamperable. *@
+            <input type="hidden" asp-for="Curriculum.Id" />
+            <input type="hidden" asp-for="Curriculum.UUID" />
+            <input type="hidden" asp-for="Curriculum.TimeStamp" />
+
+            <div class="form-group">
+                <label asp-for="Curriculum.Name" class="control-label"></label>
+                <input asp-for="Curriculum.Name" class="form-control" />
+                <span asp-validation-for="Curriculum.Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Curriculum.Version" class="control-label"></label>
+                <input asp-for="Curriculum.Version" class="form-control" />
+                <span asp-validation-for="Curriculum.Version" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Curriculum.Description" class="control-label"></label>
+                <textarea asp-for="Curriculum.Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="Curriculum.Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SelectedCurriculumClassification" class="control-label"></label>
+                <select asp-for="SelectedCurriculumClassification"
+                        asp-items="@Model.CurriculumClassificationList"
+                        class="form-control">
+                    <option value="">[None]</option>
+                </select>
+                <span asp-validation-for="SelectedCurriculumClassification" class="text-danger"></span>
+            </div>
+
+            @* Read-only here on purpose: obsoleting is a distinct action (ObsoleteToggle) so it
+               cannot be flipped by accident while editing a name. Matches IndexPartial's switch. *@
+            <div class="form-group">
+                <label asp-for="Curriculum.Obsolete" class="control-label"></label>
+                <div>
+                    <label class="switch">
+                        <input type="checkbox" asp-for="Curriculum.Obsolete" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="ModuleToCurriculumIndex" asp-route-id="@Model.Curriculum.Id">Modules in this curriculum</a>
+    &nbsp;|&nbsp;
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

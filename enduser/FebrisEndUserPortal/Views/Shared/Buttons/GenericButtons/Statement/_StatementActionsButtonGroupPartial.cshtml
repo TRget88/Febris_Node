@@ -1,0 +1,56 @@
+@model Febris.ModelLibrary.PartialViewModels.IndividualUUIDButtonPartial
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.SharedServices;
+
+@*
+    The action buttons for a single statement, rendered from the statement details modal.
+
+    TWO DIFFERENT AUDIENCES, on purpose. Download renders for ANYONE who can see the statement,
+    because exporting it discloses exactly what the modal already shows and the per-role read filter
+    has already decided what they can see. Void renders for admins alone. That split is not invented
+    here: the 2021 Portal role-switched into three partials and ALL THREE carried the download
+    button, while only the Febris-staff one carried void.
+
+    WHY THE DETAILS MODAL AND NOT THE INDEX ROW. Voiding is irreversible by owner ruling and by the
+    xAPI spec, so it belongs behind having actually opened the record. The download sits with it
+    because that is where it lived originally.
+
+    This replaces two things: the orphaned Febris-prefixed statement detail button partial, which was
+    referenced by zero views and pointed at an xAPI-controller route with nothing behind it, and the
+    void-only group that briefly stood here while the download was still missing.
+*@
+
+<div class="btn-group" role="group">
+    @await Html.PartialAsync("Buttons/_StatementIndividualUUIDButtonPartial",
+         new IndividualUUIDButtonPartial
+         {
+             Action = "StatementDownload",
+             ButtonType = "btn-info",
+             Glyph = "download",
+             Id = Model.Id,
+             Tooltip = "Download JSON data",
+         })
+
+    @if (User.IsLocalAdmin())
+    {
+        @await Html.PartialAsync("Buttons/_StatementIndividualUUIDButtonPartial",
+             new IndividualUUIDButtonPartial
+             {
+                 Action = "VoidStatement",
+                 ButtonType = "btn-danger",
+                 Glyph = "ban",
+                 Id = Model.Id,
+                 Tooltip = "Void this statement. This cannot be undone.",
+             })
+    }
+</div>
+
+@if (User.IsLocalAdmin())
+{
+    @* Token holder for the tokenised void POST in StatementButtonOperation.js. Never submitted as a
+       form, the script reads the value out of it. Matches the C-07 pattern in ManageMemberIndex.
+       The download needs no token: it is a GET and changes nothing. *@
+    <form id="statementAntiForgeryHolder">
+        @Html.AntiForgeryToken()
+    </form>
+}

@@ -1,0 +1,71 @@
+﻿@model Febris.ModelLibrary.PartialViewModels.IndividualButtonPartial
+@using Febris.ModelLibrary.PartialViewModels;
+
+
+<td style="width:500px;">
+    <div class="btn-group" role="group">
+        @await Html.PartialAsync("Buttons/_CohortIndividualButtonPartial",
+             new IndividualButtonPartial
+             {
+                 Action = "Edit",
+                 ButtonType = "btn-primary",
+                 Glyph = "edit",
+                 Id = Model.Id,
+                 Tooltip = "Edit",
+             })
+        @*@await Html.PartialAsync("Buttons/_CampaignIndividualButtonPartial",
+             new IndividualButtonPartial
+             {
+                 Action = "ManageNotes",
+                 ButtonType = "btn-primary",
+                 Glyph = "file-text-o",
+                 Id = Model.Id,
+                 Tooltip = "Manage Notes",
+             })*@
+        @await Html.PartialAsync("Buttons/_CohortIndividualButtonPartial",
+            new IndividualButtonPartial
+            {
+                Action = "ManageMembers",
+                ButtonType = "btn-primary",
+                Glyph = "users",
+                Id = Model.Id,
+                Tooltip = "Manage Cohort Members",
+            })
+        @* Delete, added 2026-08-09 on an owner ruling. The `case "Delete"` in
+           CohortButtonOperation.js has existed all along but was dead, because no button group ever
+           emitted Action = "Delete".
+
+           It goes HERE and not in _IndexButtonGroupPartial: that partial also renders inside
+           Hardware/ManageCohortIndexPartial, Hardware/AccessableCohortIndexPartial and the dashboard
+           widget, where a destructive control has no business appearing. This group renders only in
+           Cohort/DetailsModal, which is where a specific cohort is managed. *@
+        @await Html.PartialAsync("Buttons/_CohortIndividualButtonPartial",
+            new IndividualButtonPartial
+            {
+                Action = "Delete",
+                ButtonType = "btn-danger",
+                Glyph = "trash",
+                Id = Model.Id,
+                Tooltip = "Delete this cohort (irreversible -- use Archive to retire it instead)",
+            })
+        @*@await Html.PartialAsync("Buttons/_CampaignIndividualButtonPartial",
+           new IndividualButtonPartial
+           {
+               Action = "ManageCampaignEmail",
+               ButtonType = "btn-primary",
+               Glyph = "envelope-o",
+               Id = Model.Id,
+               Tooltip = "Manage Campaign Emails",
+           })
+        @await Html.PartialAsync("Buttons/_CampaignIndividualButtonPartial",
+             new IndividualButtonPartial
+             {
+                 Action = "ManageTeamMembers",
+                 ButtonType = "btn-primary",
+                 Glyph = "soccer-ball-o",
+                 Id = Model.Id,
+                 Tooltip = "Manage Team Members",
+             })*@
+    </div>
+</td>
+

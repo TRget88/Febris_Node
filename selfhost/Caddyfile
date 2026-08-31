@@ -1,0 +1,59 @@
+# Febris Node -- local TLS front for the clone-and-run compose stack.
+#
+# WHY A PROXY AT ALL: the portal's auth cookie is SecurePolicy=Always + SameSite=None -- login
+# simply cannot work over plain HTTP, so a working HTTPS entry point is part of clone-and-run.
+#
+# local_certs = Caddy's own self-signed local CA (no ACME, no internet). Your browser will warn
+# once; accept it for the trial, or trust the CA (SELF_HOSTING.md). *.localhost hostnames
+# resolve to loopback in modern browsers with no /etc/hosts edit.
+#
+# HSTS note: the hosts emit HSTS themselves. The febris.localhost names keep that pin OFF the
+# bare "localhost" host, so this stack never force-upgrades your other local dev servers.
+#
+# PRODUCTION: replace both site addresses with your real domains (and drop local_certs) --
+# Caddy then provisions publicly-trusted certificates via ACME automatically.
+
+{
+	local_certs
+}
+
+# THE PROBE ENDPOINTS ARE NOT PUBLIC.
+#
+# /health/live and /health/ready are deliberately AllowAnonymous, because an orchestrator probe
+# cannot authenticate, and that is correct. What was wrong was letting them out through this proxy.
+# Both hosts map them (FebrisEndUserApi/Startup.cs and FebrisEndUserPortal/Startup.cs), and each
+# vhost below forwarded its whole path space, so /health/ready was reachable from anywhere the
+# stack was. The readiness body names every registered check, so an unauthenticated caller could
+# enumerate which databases the node owns, whether Redis is configured, whether hub federation is
+# on, and watch dependency health live. Harmless on a *.localhost trial, and this file's own
+# PRODUCTION note tells operators to swap in real domains, at which point it is not.
+#
+# NOTHING LEGITIMATE LOSES ACCESS. The container healthchecks run INSIDE each container
+# (`curl http://localhost/health/ready`, docker-compose.yml) and never traverse Caddy, and the API
+# publishes a loopback-only port so the host can still curl the probes directly.
+#
+# 404 rather than 403 on purpose: a refusal confirms the endpoint is there.
+(no_public_probes) {
+	@probes path /health/*
+	respond @probes 404
+}
+
+# The operator portal.
+https://febris.localhost:8443 {
+	import no_public_probes
+
+	reverse_proxy node-portal:80 {
+		# The analytics middlewares read X-Real-IP when UsingRevProxy=true; Caddy sets
+		# X-Forwarded-* on its own.
+		header_up X-Real-IP {remote_host}
+	}
+}
+
+# The node API (xAPI ingest, launcher/mobile endpoints).
+https://api.febris.localhost:8443 {
+	import no_public_probes
+
+	reverse_proxy node-api:80 {
+		header_up X-Real-IP {remote_host}
+	}
+}

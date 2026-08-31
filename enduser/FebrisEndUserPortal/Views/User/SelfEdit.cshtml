@@ -1,0 +1,56 @@
+﻿@model Febris.ModelLibrary.ViewModels.UserSettingsViewModel
+
+@{
+    ViewData["Title"] = "Self Edit";
+}
+
+<div class="col-sm-12" align="center"  style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">Your Account Settings</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="SelfEdit" enctype="multipart/form-data">
+
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EmailAddress" class="control-label"></label>
+                <input asp-for="EmailAddress" class="form-control" />
+                <span asp-validation-for="EmailAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="control-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <p>Please only use .PNG or .JPG files</p>
+                <input type="file" name="ProfilePicture" class="form-control" onchange="imagepreview(this)" link="profilePic" />
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div align="center" class="jumbotron">
+            <img id="profilePic" height="150" />
+        </div>
+    </div>
+</div>
+@section scripts
+{
+    <script src="~/JSScriptLib/PartialViewCalls/ImagePreview.js"></script>
+}

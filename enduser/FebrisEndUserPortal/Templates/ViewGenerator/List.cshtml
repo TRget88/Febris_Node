@@ -1,0 +1,297 @@
+﻿@inherits Microsoft.VisualStudio.Web.CodeGeneration.Templating.RazorTemplateBase
+@using Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore
+@using System.Collections.Generic
+@using System.Linq
+@@model @GetEnumerableTypeExpression(Model.ViewDataTypeName)
+
+@{
+    if (Model.IsPartialView)
+    {
+@:@@using X.PagedList.Mvc.Core
+@:@@using X.PagedList.Mvc
+@:@@using X.PagedList
+@:@@using Febris.ModelLibrary.PartialViewModels
+@:
+    }
+    else if (Model.IsLayoutPageSelected)
+    {
+@:@@{
+    @:ViewData["Title"] = "@Model.ViewName";
+        if (!string.IsNullOrEmpty(Model.LayoutPageFile))
+        {
+        @:Layout = "@Model.LayoutPageFile";
+        }
+@:}
+@:
+@:<h1>@Model.ViewName</h1>
+@:
+    }
+    else
+    {
+@:@@{
+    @:Layout = null;
+@:}
+@:
+@:<!DOCTYPE html>
+@:
+@:<html>
+@:<head>
+    @:<meta name="viewport" content="width=device-width" />
+    @:<title>@Model.ViewName</title>
+@:</head>
+@:<body>
+            //    PushIndent("    ");
+    }
+
+@:@@await Html.PartialAsync("../Widgets/_StatusMessage", Model.FirstOrDefault().StatusMessage);          
+    if (Model.IsPartialView)
+    {
+@:<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />        
+@:<div id="tablePartial">
+    @:<div id="search">
+        @:@@using (Html.BeginForm())
+        @:{
+            @:<p>
+                @:@@Html.TextBox("SearchString", null, new { id = "searchBox", type = "text" })
+                @:<input type="submit" value="Search" class="glyphicon glyphicon-search btn btn-default" />
+            @:</p>
+        @:}
+    @:</div>
+    @:<table class="table">
+        @:<thead>
+            @:<tr>
+            Dictionary<string, IPropertyMetadata> propertyLookup = ((IModelMetadata)Model.ModelMetadata).Properties.ToDictionary(x => x.PropertyName, x => x);
+            Dictionary<string, INavigationMetadata> navigationLookup = ((IModelMetadata)Model.ModelMetadata).Navigations.ToDictionary(x => x.AssociationPropertyName, x => x);
+
+            foreach (var item in Model.ModelMetadata.ModelType.GetProperties())
+            {
+                if (propertyLookup.TryGetValue(item.Name, out IPropertyMetadata property)
+                    && property.Scaffold && !property.IsForeignKey && !property.IsPrimaryKey)
+                {
+                <th>
+                    @@Html.DisplayNameFor(model => model.@GetValueExpression(property))
+                </th>
+                }
+                else if (navigationLookup.TryGetValue(item.Name, out INavigationMetadata navigation))
+                {
+                <th>
+                    @@Html.DisplayNameFor(model => model.@GetValueExpression(navigation))
+                </th>
+                }
+            }
+                @:<th></th>
+            @:</tr>
+        @:</thead>
+        @:<tbody>
+        @:@@foreach (var item in Model) {
+            @:<tr>
+            foreach (var item in Model.ModelMetadata.ModelType.GetProperties())
+            {
+                if (propertyLookup.TryGetValue(item.Name, out IPropertyMetadata property)
+                    && property.Scaffold && !property.IsForeignKey && !property.IsPrimaryKey)
+                {
+                <td>
+                    @@Html.DisplayFor(modelItem => item.@GetValueExpression(property))
+                </td>
+                }
+                else if (navigationLookup.TryGetValue(item.Name, out INavigationMetadata navigation))
+                {
+                <td>
+                    @@Html.DisplayFor(modelItem => item.@GetValueExpression(navigation).@navigation.DisplayPropertyName)
+                </td>
+                }
+            }
+            string pkName = GetPrimaryKeyName();            
+            if (pkName != null)
+            {                
+                @:<td>
+                   @:<div align="center">                   
+                    @:@@await Html.PartialAsync("@GetButtonPartial(Model.ViewName)", new IndividualButtonPartial { Id = item.Id })
+                   @:</div>
+                @:</td>
+            }
+            else
+            {
+                <td>
+                    @@Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                    @@Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                    @@Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                </td>
+            }
+            @:</tr>
+        @:}
+        @:</tbody>
+    @:</table>
+    @:<div id="pagedList">
+        @:@@Html.PagedListPager(Model, page => Url.Action("@Model.ViewName", new { page = page, currentFilter = Model.FirstOrDefault().SearchString }))
+    @:</div>
+@:</div>    
+    }
+    else if (Model.IsLayoutPageSelected)
+    {           
+@:<div class="row">
+    @:<div class="col-xs-6">
+        @:<a asp-action="create" class="btn btn-success">
+            @:<span class="glyphicon glyphicon-plus glyphicon-plus"> </span>
+        @:</a>
+    @:</div>
+    @:<div class="col-xs-6">
+        @:<a asp-action="bulkcreate" class="btn btn-success">
+            @:<span class="glyphicon glyphicon-plus glyphicon-plus"> </span>
+            @:<span class="glyphicon glyphicon-plus glyphicon-plus"> </span>
+        @:</a>
+    @:</div>
+@:</div>
+    
+
+@:<div id="Modal" class="modal">    
+    @:<div class="modal-content">
+        @:<span class="close">&times;</span>
+        @:<div id="modalContent"></div>
+    @:</div>
+@:</div>
+@:<div class="container">  
+@:<h1>"Remove one of these options"</h1>
+
+    @:<div id="IndexPartial">
+        @:<div class="spinner-border" role="status">
+            @:<span class="visually-hidden"></span>
+        @:</div>
+    @:</div> 
+    @:<div class="row">
+        @:<div class="col-sm-6">
+            @:<div id="IndexPartial">
+                @:<div class="spinner-border" role="status">
+                    @:<span class="visually-hidden"></span>
+                @:</div>
+            @:</div>            
+        @:</div>
+        @:<div class="col-sm-6">
+            @:<div id="SecondPartial">
+                @:<div class="spinner-border" role="status">
+                    @:<span class="visually-hidden"></span>
+                @:</div>
+            @:</div>
+        @:</div>
+    @:</div>
+@:</div>
+
+
+    }
+    else
+    {
+        @:@@await Html.PartialAsync("../Widgets/_StatusMessage", Model.FirstOrDefault().StatusMessage);
+        @:<h1>"this is not where I meant to be"</h1>
+    }
+
+if (Model.IsPartialView)
+{
+@:<script>
+@:$(function () {
+    @:$('#pagedList').on('click', 'a', function () {
+        @:$.ajax({
+            @:url: this.href,
+            @:type: 'GET',
+            @:cache: false,
+            @:success: function (result) {
+                @:$('#tablePartial').html(result);
+            @:}
+        @:});
+        @:return false;
+    @:});
+@:});
+
+
+@:$(function () {
+    @:$('#search').submit(function (event) {
+        @:event.preventDefault();
+        @:var searchString = document.getElementById("searchBox").value;
+        @:$.ajax({
+            @:url: this.href,
+            @:async: true,
+            @:data: 'searchString=' + searchString,
+            @:type: 'GET',
+            @:cache: false,
+            @:success: function (result) {
+                @:$('#tablePartial').html(result);
+            @:},
+            @:error: function (xhr, param) {
+                @:console.log(xhr);
+                @:console.log(param);
+            @:}
+        @:});
+        @:return false;
+    @:});
+@:});
+@:</script>
+
+}
+else if (Model.IsLayoutPageSelected)
+{
+@:@@section scripts
+@:{    
+    @:<script src="@GetViewModelPartial(Model.ViewDataTypeName)"></script>
+    @:<script src="~/lib/ButtonOperations/GenericButtonOperation.js"></script>
+    @:<script src="@GetButtonOperationScript(Model.ViewDataTypeName)"></script>
+@:}
+}
+else
+{
+
+}
+    if (!Model.IsPartialView && !Model.IsLayoutPageSelected)
+    {
+        //ClearIndent();
+    @:</body>
+    @:</html>
+    }
+}
+@functions
+{
+    string GetPrimaryKeyName()
+    {
+        return (Model.ModelMetadata.PrimaryKeys != null && Model.ModelMetadata.PrimaryKeys.Length == 1)
+        ? Model.ModelMetadata.PrimaryKeys[0].PropertyName
+        : null;
+    }
+
+    string GetValueExpression(IPropertyMetadata property)
+    {
+        return property.PropertyName;
+    }
+
+    string GetValueExpression(INavigationMetadata navigation)
+    {
+        return navigation.AssociationPropertyName;
+    }
+
+    string GetViewModelPartial(string typeName)
+    {        
+        string output = typeName.Split('.').Last().ToString();
+        return "~/lib/PartialViewCalls/" + output + "IndexPartial.js";        
+    }
+
+    string GetButtonOperationScript(string typeName)
+    {
+        string output = typeName.Split('.').Last().ToString();
+        return "~/lib/ButtonOperations/" + output + "ButtonOperation.js";                
+    }
+
+    string GetButtonPartial(string typeName)
+    {
+        string output = typeName.Split('.').Last().ToString();
+        return "Buttons/GenericButtons/" + output + "/_IndexButtonGroupPartial";        
+    }
+    
+    string GetEnumerableTypeExpression(string typeName)
+    {
+        if (Model.IsPartialView)
+        {            
+            return "X.PagedList.IPagedList<" + typeName + ">";
+        }
+        else
+        {
+            return "IEnumerable<" + typeName + ">";
+        }        
+    }
+}

@@ -1,0 +1,38 @@
+﻿@model IEnumerable<Febris.ModelLibrary.Models.DataModels.MessageBoard>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<div class="row">
+    <div class="col-xs-6">
+        <a asp-action="create" class="btn btn-success" data-toggle="tooltip" title="Create Post">
+            <span class="glyphicon glyphicon-plus glyphicon-plus"> </span>
+        </a>
+    </div>
+    
+</div>
+<div class="container">  
+
+<div id="IndexPartial">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div> 
+ 
+</div>
+@section scripts
+{    
+    <script src="~/JSScriptLib/PartialViewCalls/LoadIndexPartial.js"></script>    
+    @* Lowercase "board" is the CORRECT spelling here and the rest of the portal agrees: the file is
+       MessageboardButtonOperation.js, the function it defines is MessageboardButtonAction, and
+       _MessageboardIndividualButtonPartial calls it by that name. Only these two script tags said
+       MessageBoard, so they were the outliers.
+
+       This was invisible on Windows, whose filesystem is case-insensitive, and a 404 on the Debian
+       runtime the container actually uses. The Edit button in the Messageboard details modal calls
+       MessageboardButtonAction, so in production the control simply did nothing. *@
+    <script src="~/JSScriptLib/ButtonOperation/Specific/MessageboardButtonOperation.js"></script>
+}

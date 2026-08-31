@@ -1,0 +1,807 @@
+﻿@model Febris.ModelLibrary.Models.XApiModels.Statement
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+@using Febris.SharedServices;
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">Statement @Model.UUID</h1>
+    </div>
+</div>
+<br />
+<input type="hidden" id="modelId" value="@Model.Id" />
+
+<div class="row">
+    <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+        <hr />
+        <h4>Generic Info</h4>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Timestamp)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Timestamp)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Stored)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Stored)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Version.VersionNumber)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Version.VersionNumber)
+            </div>
+        </div>
+
+        <hr />
+        <h4>Actor Info</h4>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Actor.Name)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Actor.Name)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Actor.ObjectType)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Actor.ObjectType)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Actor.Mbox)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Actor.Mbox)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Actor.Mbox_sha1sum)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Actor.Mbox_sha1sum)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Actor.OpenId)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Actor.OpenId)
+            </div>
+        </div>
+        @if (Model.Actor.Account != null)
+        {
+            <hr />
+            <h4>Actor Account Info</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Actor.Account.Name)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Actor.Account.Name)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Actor.Account.HomePage)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Actor.Account.HomePage)
+                </div>
+            </div>
+
+        }
+
+        @if (Model.Actor.Member != null)
+        {
+            <hr />
+            <h4>Actor Member Info</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Object Type</th>
+                        <th>Name</th>
+                        <th>Mbox</th>
+                        <th>Email Mbox Sha1</th>
+                        <th>Open Id</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Actor.Member.Actors)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.UUID)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ObjectType)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Mbox)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Mbox_sha1sum)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.OpenId)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @*<div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Actor.Member)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Actor.Name)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Actor.ObjectType)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Actor.ObjectType)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Actor.Mbox)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Actor.Mbox)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Actor.Mbox_sha1sum)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Actor.Mbox_sha1sum)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Actor.OpenId)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Actor.OpenId)
+                    </div>
+                </div>*@
+        }
+
+
+        <hr />
+        <h4>Verb Info</h4>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Verb.Id)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Verb.Id)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Verb.Display)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Model.Verb?.Display?.Values.FirstOrDefault()
+            </div>
+        </div>
+
+
+        @* Audit T2. Authority is whatever the SUBMITTING CLIENT asserted -- the node never sets
+           it, never verifies it, and never uses it for any authorization decision. Rendering it
+           unlabelled presented a self-declared identity, email address included, as though the node
+           had established it. The values are still shown, because they are part of the statement
+           record and suppressing them would hide what was actually stored, but they are now framed
+           as a claim rather than a fact. *@
+        @if (Model.Authority != null)
+        {
+            <hr />
+            <h4>Authority Info</h4>
+            <div class="alert alert-warning">
+                <strong>Claimed by the submitting client.</strong>
+                This node does not set or verify the authority on a statement, and does not use it
+                for access decisions. Treat it as self-declared.
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Authority.Actor.Name)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Authority.Actor.Name)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Authority.Actor.ObjectType)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Authority.Actor.ObjectType)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Authority.Actor.Mbox)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Authority.Actor.Mbox)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Authority.Actor.Mbox_sha1sum)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Authority.Actor.Mbox_sha1sum)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Authority.Actor.OpenId)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Authority.Actor.OpenId)
+                </div>
+            </div>
+            @if (Model.Authority.Actor.Account != null)
+            {
+                <hr />
+                <h4>Actor Account Info</h4>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Authority.Actor.Account.Name)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Authority.Actor.Account.Name)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Authority.Actor.Account.HomePage)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Authority.Actor.Account.HomePage)
+                    </div>
+                </div>
+
+            }
+            @if (Model.Authority.Actor.Member != null)
+            {
+                <hr />
+                <h4>Actor Member Info</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Object Type</th>
+                            <th>Name</th>
+                            <th>Mbox</th>
+                            <th>Email Mbox Sha1</th>
+                            <th>Open Id</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Authority.Actor.Member.Actors)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.UUID)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ObjectType)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Mbox)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Mbox_sha1sum)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.OpenId)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+
+
+        @if (Model.Context != null)
+        {
+            <hr />
+            <h4>Context Info</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Context.Platform)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Context.Platform)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Context.Revision)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Context.Revision)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Context.Language)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Context.Language)
+                </div>
+            </div>
+            @if (Model.Context.Instructor != null)
+            {
+                <hr />
+                <h4>Context Instructor Info</h4>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.Instructor.UUID)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.Instructor.UUID)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.Instructor.ObjectType)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.Instructor.ObjectType)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.Instructor.Name)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.Instructor.Name)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.Instructor.Mbox)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.Instructor.Mbox)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.Instructor.Mbox_sha1sum)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.Instructor.Mbox_sha1sum)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.Instructor.OpenId)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.Instructor.OpenId)
+                    </div>
+                </div>
+            }
+            @if (Model.Context.Group != null)
+            {
+                <hr />
+                <h4>Context Group Info</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Object Type</th>
+                            <th>Name</th>
+                            <th>Mbox</th>
+                            <th>Email Mbox Sha1</th>
+                            <th>Open Id</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Context.Group)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.UUID)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ObjectType)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Mbox)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Mbox_sha1sum)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.OpenId)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            @if (Model.Context.ContextActivities != null)
+            {
+                <hr />
+                <h4>Context Activites Info</h4>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.ContextActivities.Parent)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.ContextActivities.Parent)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.ContextActivities.Grouping)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.ContextActivities.Grouping)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.ContextActivities.Category)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.ContextActivities.Category)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.ContextActivities.Other)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.ContextActivities.Other)
+                    </div>
+                </div>
+            }
+            @if (Model.Context.StatementReference != null)
+            {
+                <hr />
+                <h4>Context Statement Reference Info</h4>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.StatementReference.Id)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.StatementReference.Id)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.StatementReference.ObjectType)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.StatementReference.ObjectType)
+                    </div>
+                </div>
+            }
+            @if (Model.Context.Extensions != null)
+            {
+                <hr />
+                <h4>Context Extensions Info</h4>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Context.Extensions.ExtensionMap)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Context.Extensions.ExtensionMap)
+                    </div>
+                </div>
+            }
+        }
+
+    </div>
+    <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+
+        <hr />
+        <h4>Object Info</h4>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Object.Id)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Object.Id)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Object.ObjectType)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Object.ObjectType)
+            </div>
+        </div>
+
+        <hr />
+        <h4>Object Definition Info</h4>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Object.Definition.Name)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Object.Definition.Name)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Object.Definition.Description)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Model.Object?.Definition?.Description?.Values.FirstOrDefault()
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Object.Definition.InteractionType)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Object.Definition.InteractionType)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Object.Definition.CorrectResponsesPattern)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Object.Definition.CorrectResponsesPattern)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5" align="right" style="font-weight:bold">
+                @Html.DisplayNameFor(model => model.Object.Definition.InteractionComponents)
+            </div>
+            <div class="col-sm-7" align="left">
+                @Html.DisplayFor(model => model.Object.Definition.InteractionComponents)
+            </div>
+        </div>
+
+        @* Definition is OPTIONAL in xAPI, and every other optional section in this view guards its
+           own root the same way (Authority, Context, Result). This one dereferenced Definition
+           directly and threw a NullReferenceException for any statement whose object has none,
+           which 500d the whole modal -- and the void button lives in it. Reachable since the T3
+           ingest fix correctly stopped writing a blank Definition row per activity. *@
+        @if (Model.Object?.Definition?.Extensions != null)
+        {
+            <hr />
+            <h4>Object Definition Extensions Info</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Object.Definition.Extensions.ExtensionMap)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Object.Definition.Extensions.ExtensionMap)
+                </div>
+            </div>
+        }
+
+        @if (Model.Result != null)
+        {
+            <hr />
+            <h4>Result Info</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Result.Completion)
+                </div>
+                <div class="col-sm-7" align="left">
+                    <label class="switch">
+                        <input checked="@Model.Result.Completion" type="checkbox" class="form-check-input" disabled>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Result.Success)
+                </div>
+                <div class="col-sm-7" align="left">
+                    <label class="switch">
+                        <input checked="@Model.Result.Success" type="checkbox" class="form-check-input" disabled>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Result.Response)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Result.Response)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Result.Duration)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Result.Duration)
+                </div>
+            </div>
+            @if (Model.Result.Score != null)
+            {
+                <hr />
+                <h4>Result Score Info</h4>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Result.Score.Scaled)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Result.Score.Scaled)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Result.Score.Raw)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Result.Score.Raw)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Result.Score.Min)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Result.Score.Min)
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Result.Score.Max)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Result.Score.Max)
+                    </div>
+                </div>
+            }
+            @if (Model.Result.Extensions != null)
+            {
+                <hr />
+                <h4>Result Extensions Info</h4>
+                <div class="row">
+                    <div class="col-sm-5" align="right" style="font-weight:bold">
+                        @Html.DisplayNameFor(model => model.Result.Extensions.ExtensionMap)
+                    </div>
+                    <div class="col-sm-7" align="left">
+                        @Html.DisplayFor(model => model.Result.Extensions.ExtensionMap)
+                    </div>
+                </div>
+            }
+        }
+
+    </div>
+</div>
+
+<br />
+<div id="iframeContainer" class="container-fluid" align="center" hidden>
+    <iframe id="fileUrlLoad" width="75%" height="400">
+    </iframe>
+</div>
+
+<div align="center">
+    <hr />
+    <h4>Attachments Info</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Usage Type</th>
+                <th>Display</th>
+                <th>Description</th>
+                <th>Content Type</th>                
+                <th>File URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Attachments)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UsageType)
+                    </td>
+                    <td>
+                        @item.Display?.Values.FirstOrDefault()
+                    </td>
+                    <td>
+                        @item.Description?.Values.FirstOrDefault()
+
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ContentType)
+                    </td>
+                    <td>
+                        <button url="@item.FileURL" class="btn btn-info" title="Follow path" onclick="loadFileUrl(this)">
+                            <span class="fa fa-file"></span>
+                        </button>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<br />
+@*
+    The statement action buttons. The block that used to be here was commented out AND pointed at
+    "Buttons/GenericButtons/LocalStatement/_DetailsButtonGroupPartial", a partial that does not exist
+    anywhere in the repo, so it could never have rendered even uncommented.
+
+    NO admin gate at this level. The group renders for anyone who can see the statement, because the
+    download inside it is available to them, and the partial decides for itself which buttons the
+    caller gets. Gating here instead would have hidden the download from every educator and learner,
+    which is the opposite of how the 2021 Portal had it.
+
+    Presentation only. The controller attribute and the BLL gates are what actually stop a request.
+*@
+@if (Model != null)
+{
+    <div>
+        <div align="center">
+            @await Html.PartialAsync("Buttons/GenericButtons/Statement/_StatementActionsButtonGroupPartial",
+                 new IndividualUUIDButtonPartial { Id = Model.UUID })
+        </div>
+    </div>
+}
+
+<br />
+
+
+<div align="center">
+    <input type="hidden" id="Element0" value="StatementExtras" />
+    <div id="Division0" align="center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div>
+
+
+
+</div>
+<br />
+
+
+
+<script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>
+
+

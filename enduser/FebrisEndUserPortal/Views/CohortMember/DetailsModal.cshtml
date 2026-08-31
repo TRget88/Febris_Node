@@ -1,0 +1,159 @@
+﻿@model Febris.ModelLibrary.ViewModels.CohortMemberViewModel
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">Cohort Member Details</h1>
+    </div>
+</div>
+
+<input type="hidden" id="modelId" value="@Model.CohortMember.Id" />
+<br />
+<div>
+    <div class="row">
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.CohortMember.TimeStamp)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.CohortMember.TimeStamp)
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.CohortMember.Cohort.Name)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.CohortMember.Cohort.Name)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.CohortMember.Cohort.Description)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.CohortMember.Cohort.Description)
+                </div>
+            </div>
+
+
+        </div>
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    Name:
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.UserData.ApplicationUser.FirstName) @Html.DisplayFor(model => model.UserData.ApplicationUser.LastName)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.UserData.ApplicationUser.Email)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.UserData.ApplicationUser.Email)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.UserData.ApplicationUser.IdentificationNumber)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.UserData.ApplicationUser.IdentificationNumber)
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    Role
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.UserData.Role)
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr />
+<br />
+<div>
+    @*<div align="center">
+            @await Html.PartialAsync("Buttons/GenericButtons/CohortMember/_DetailsButtonGroupPartial", new IndividualButtonPartial { Id = Model.Id })
+        </div>*@
+</div>
+
+@*<br />
+<hr />*@
+
+
+<div align="center">
+
+    @* The PurchaseList slot that sat beside this one is GONE (node remote teardown, plan 1.10).
+       It called CohortMemberController.LoadPurchaseList, which redirected to the central Purchase
+       controller that the node no longer has, so it spun forever on a page operators actually open.
+       Widened to full width rather than left as a half-width column with a hole beside it, which is
+       what Cohort/Index already does after the same surgery. *@
+    <div class="row">
+        <div class="col-md-12">
+            <br />
+            <input type="hidden" id="Element0" value="CohortList" />
+            <div id="Division0">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<br />
+
+
+<script>
+    modelId = null;
+    //modelLimiter = null;
+    //limiterId = null;
+
+
+    if (document.getElementById('modelId') != undefined) {
+        modelId = document.getElementById('modelId').value
+    }// else if (document.getElementById('modelLimiter') != undefined) {
+    //    modelLimiter = document.getElementById('modelLimiter').value
+    //} else if (document.getElementById('limiterId') != undefined) {
+    //    limiterId = document.getElementById('limiterId').value
+    //}
+
+    function loadPartialDetails() {
+        var url = window.location.pathname.split("/");
+        var controllerName = "CohortMember";
+        var loadingElements = true;
+        var cycle = 0;
+        while (loadingElements) {
+            if (document.getElementById('Element' + cycle.toString()) != undefined) {
+                var temp = document.getElementById('Element' + cycle.toString()).value
+                $("#Division" + cycle.toString()).load("../Widget/LoadPartialDetail?modelName=" + controllerName + "&variableName=" + temp + "&modelId=" + modelId)
+            } else {
+                loadingElements
+                break;
+            }
+            cycle++;
+        }
+    }
+    $(document).ready(function () {
+        loadPartialDetails();
+    });
+
+
+</script>
+

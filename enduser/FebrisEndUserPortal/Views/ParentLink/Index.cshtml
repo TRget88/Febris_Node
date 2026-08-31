@@ -1,0 +1,50 @@
+@model List<Febris.ModelLibrary.ViewModels.LocalUserViewModel>
+@*
+    Admin-only list of parent/guardian accounts in this tenant. Each row links to
+    the Manage page, where an admin attaches or detaches that guardian's students.
+    Attaching a student is what grants the guardian FERPA read-only access to that
+    student's learning records.
+*@
+@{
+    ViewData["Title"] = "Parents and guardians";
+}
+
+<h2>Parents and guardians</h2>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-info">@TempData["StatusMessage"]</div>
+}
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Create guardian account</a>
+</p>
+
+@if (Model == null || Model.Count == 0)
+{
+    <p>No parent or guardian accounts yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var parent in Model)
+            {
+                <tr>
+                    <td>@parent.ApplicationUser?.FirstName @parent.ApplicationUser?.LastName</td>
+                    <td>@parent.ApplicationUser?.Email</td>
+                    <td>
+                        <a class="btn btn-sm btn-secondary" asp-action="Manage" asp-route-id="@parent.UserId">Manage students</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

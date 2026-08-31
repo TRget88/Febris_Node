@@ -1,0 +1,109 @@
+name: build
+
+# Restore, build in Release, and run the two test suites that ship in this
+# repository. No deployment, no publishing, no secrets.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+
+jobs:
+  build:
+    name: build + test (net8.0)
+    runs-on: ubuntu-latest
+
+    steps:
+      # Actions are pinned to full commit SHAs, not tags, so a moved tag cannot change what runs.
+      # This job holds no secret, so the exposure here is reproducibility rather than the key
+      # disclosure that motivates the same rule on a workflow that does hold one. This is the only
+      # workflow in this repository, so the pins here answer to nothing else.
+      #
+      # The v4 tags these replace are ALL node20, a runtime being removed, and a SHA pin has no
+      # upgrade path. Verified before bumping by diffing each action.yml at both SHAs: every input
+      # this file passes still exists, and actions/cache is input-identical and output-identical
+      # across the range. Nothing here reads cache-hit in any case.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '8.0.x'
+
+      # There are no packages.lock.json files in this repository, so the key is a
+      # hash of the project files rather than of a resolved graph. That makes the
+      # cache a download accelerator only: `dotnet restore` still resolves versions
+      # itself on every run, so a stale cache cannot change what gets built.
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # WHY CI BUILDS febris-node.sln
+      #
+      # febris-node.sln at the repository root is the aggregate solution for this
+      # repository: it covers exactly the six projects that ship here, the four under
+      # enduser/ and the two test suites under tests/. One restore and one build
+      # therefore cover the whole tree.
+      #
+      # There is no shared/ directory to build. The shared kernel left for its own
+      # repository on 2026-08-28 and arrives here as the Febris.EnumLibrary,
+      # Febris.ModelLibrary, Febris.SharedServices and Febris.XApi.Models packages,
+      # which restore like any other dependency.
+      #
+      # The .sln files sitting beside most .csproj files are IDE conveniences for
+      # opening one slice of the tree. They overlap, so building them would mean
+      # repeated restores of the same graph. They are not a CI entry point.
+      #
+      # A project added to this repository must also be added to febris-node.sln
+      # (`dotnet sln febris-node.sln add <path>`) in the same commit, or CI will not
+      # build or test it.
+      - name: Restore
+        run: dotnet restore febris-node.sln
+
+      # No -warnaserror. The tree currently builds clean but noisy (several hundred
+      # warnings, mostly CS1998 and CS0472 in the Portal), so turning warnings into
+      # errors here would be a red build on day one rather than a signal.
+      - name: Build (Release)
+        run: dotnet build febris-node.sln -c Release --no-restore
+
+      # The suites are run as separate steps rather than as one `dotnet test` over the
+      # solution so that a failure names the suite in the step list.
+
+      - name: Test -- node business logic
+        run: >
+          dotnet test tests/FebrisEndUserBLLTests/Febris.UserNode.LogicLayer.Tests.csproj
+          -c Release --no-build
+
+      # The shared-services suite is NOT run here and no step above names it. It went with
+      # the shared kernel on 2026-08-28 and tests/FebrisSharedServicesTests is not part of
+      # this repository, so the step that ran it named a project that does not exist and
+      # failed every run.
+
+      # The architecture guards all run -- nothing is filtered out. The suite parses .csproj
+      # and .cs files from disk rather than loading assemblies. Two of the guards it holds,
+      # as a sample of what this step covers:
+      #
+      #   EdgeBoundaryTests (three) -- an edge deployment may reference only the
+      #     allowlisted shared projects. Those shared libraries stay clean of core data
+      #     access. The grandfathered-violation list has no stale entries.
+      #   DuplicateTypeGuardTests (two) -- no NEW type is defined in two projects at once,
+      #     and every entry in DuplicateTypeBaseline.txt is still a real duplicate. The
+      #     baseline is scoped to this repository's file set, so both halves of the
+      #     ratchet are meaningful here: the debt list can only shrink.
+      - name: Test -- architecture guards
+        run: >
+          dotnet test tests/FebrisArchitectureTests/Febris.ArchitectureTests.csproj
+          -c Release --no-build

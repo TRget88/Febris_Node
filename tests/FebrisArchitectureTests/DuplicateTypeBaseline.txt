@@ -1,0 +1,9 @@
+# Duplicate-type baseline, derived at cut time for THIS export's file set.
+# Computed by release/export/derive-duplicate-baseline.py, which applies the same rule as
+# DuplicateTypeGuardTests: a type declared in two or more distinct projects.
+# The workshop baseline covered shared+central+developer+enduser+marketing+tests. Most of
+# those trees do not ship here, so most of those types are not duplicated in this repo.
+ModuleController
+Program
+Startup
+StatementController

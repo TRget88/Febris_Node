@@ -1,0 +1,49 @@
+﻿@model IEnumerable<Febris.ModelLibrary.Models.AnalyticsModels.LocalAnalytics>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+@*<div class="row">
+    <div class="col-xs-6">
+        <a asp-action="create" class="btn btn-success">
+            <span class="glyphicon glyphicon-plus glyphicon-plus"> </span>
+        </a>
+    </div>
+    <div class="col-xs-6">
+        <a asp-action="bulkcreate" class="btn btn-success">
+            <span class="glyphicon glyphicon-plus glyphicon-plus"> </span>
+            <span class="glyphicon glyphicon-plus glyphicon-plus"> </span>
+        </a>
+    </div>
+</div>*@
+<div class="container">  
+@*<h1>"Remove one of these options"</h1>*@
+<div id="IndexPartial">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div> 
+    @*<div class="row">
+        <div class="col-sm-6">
+            <div id="IndexPartial">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>            
+        </div>
+        <div class="col-sm-6">
+            <div id="SecondPartial">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>*@
+</div>
+@section scripts
+{    
+    <script src="~/JSScriptLib/PartialViewCalls/LoadIndexPartial.js"></script>    
+}

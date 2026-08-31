@@ -1,0 +1,123 @@
+# Febris Node -- BRING YOUR OWN REVERSE PROXY.
+#
+# Use this when you already run nginx, Caddy, Traefik or similar and want the node behind it,
+# rather than running the bundled Caddy as a second proxy in front of your first one.
+#
+#   export COMPOSE_FILE=docker-compose.yml:selfhost/docker-compose.byo-proxy.yml
+#   docker compose up -d
+#
+# SET COMPOSE_FILE, do not pass -f by hand. The documented upgrade in SELF_HOSTING.md is
+# `git pull && docker compose up -d --build`, and a bare `docker compose up -d` converges to the
+# BASE file alone: it would restart the bundled Caddy on 8443 and drop the portal port, silently,
+# in the command an operator runs most often. COMPOSE_FILE makes the overlay stick for every
+# subsequent compose command in that shell. Put it in the shell profile or a .env for permanence.
+#
+# The bundled proxy is turned off by the scale: 0 below rather than by `--scale proxy=0`, for the
+# same reason: a flag applies to one command, a file applies to every command.
+#
+# WHAT THIS OVERLAY DOES: publishes the portal's plain-HTTP port on loopback so your proxy has an
+# upstream to point at, and stops the bundled Caddy. The API already publishes a loopback port in
+# the base file (NODE_API_HTTP_BIND / NODE_API_HTTP_PORT, default 127.0.0.1:8081).
+#
+# ---------------------------------------------------------------------------------------------
+# WHAT YOUR PROXY MUST DO
+#
+# Taken from selfhost/Caddyfile, which is the only other thing that has ever fronted this node,
+# plus the app behaviours that Caddy happened to satisfy by default and nginx/Traefik do not.
+#
+#   1. TERMINATE TLS. Not optional. The portal's auth cookie is SecurePolicy=Always with
+#      SameSite=None, so login CANNOT work over plain HTTP -- the browser refuses to store the
+#      cookie and the failure looks exactly like a wrong password.
+#
+#   2. SET X-Forwarded-Proto AND X-Forwarded-For. The node decides "was this request HTTPS" from
+#      the forwarded header, and that decision drives HTTPS redirection, HSTS emission and the
+#      Secure cookie. Caddy sets both unasked. nginx and Traefik must be told.
+#
+#   3. PRESERVE THE HOST HEADER. nginx defaults to `Host $proxy_host`, which rewrites it to the
+#      upstream. Every password-reset link, invitation link and confirmation link is built from
+#      Request.Host -- there is no public-base-URL setting anywhere in this app -- so getting this
+#      wrong sends real users mail pointing at http://node-portal/. Use `proxy_set_header Host
+#      $host;` or the equivalent. This one fails silently and only in outbound email, which is the
+#      worst place to discover it.
+#
+#   4. OVERWRITE X-Real-IP, do not pass it through. The analytics middlewares read it when
+#      UsingRevProxy is true and trust-check nothing, so a proxy that forwards a client-supplied
+#      X-Real-IP lets any caller write arbitrary addresses into the analytics tables. Caddy does
+#      this correctly via `header_up X-Real-IP {remote_host}`; nginx wants
+#      `proxy_set_header X-Real-IP $remote_addr;`.
+#
+#   5. RAISE THE BODY LIMIT AND THE READ TIMEOUTS. The app accepts multipart uploads far larger
+#      than a default proxy will pass (module and software-package uploads), while nginx caps
+#      request bodies at 1m out of the box. A package upload that dies at the proxy reports as a
+#      generic failure with nothing in the node's logs, because the request never arrived.
+#
+#   6. DECIDE WHO OWNS HSTS. The node emits it, with includeSubDomains and a one-year max-age by
+#      default (Transport:Hsts). On an apex domain that pins every subdomain you own, in every
+#      browser that touches this node, for a year, and it cannot be un-done by redeploying. If
+#      your proxy already sets HSTS, turn one of the two off rather than emitting both.
+#
+#   7. RESTRICT /health/* if the node is publicly reachable. The node's own probe body is terse
+#      by default (overall status only, no check inventory), so this is defence in depth rather
+#      than the control it used to be. There is still no reason to serve probes to the internet.
+#
+# TWO HOSTNAMES, not one. The portal and the API are separate upstreams and the bundled recipe
+# gives them separate vhosts (febris.localhost and api.febris.localhost). Serve them as two names.
+#
+# A SUBPATH MOUNT IS NOT SUPPORTED. Nothing in the app calls UsePathBase or reads
+# X-Forwarded-Prefix, so generated URLs would not carry the prefix.
+#
+# CORS, if you split the two names across different origins. Browser calls from the portal to the
+# API become cross-origin, and Transport:Cors:AllowedHosts ships EMPTY. Populate it, or serve both
+# names from one registrable domain.
+#
+# ---------------------------------------------------------------------------------------------
+# TRUSTING A PROXY THAT IS NOT IN THE COMPOSE NETWORK
+#
+# The base file trusts only the compose subnet (ForwardedHeaders__KnownNetworks__0: 172.28.0.0/16).
+# A proxy running as a compose service, or attached to this project's network, gets an address in
+# that range and is trusted with no further configuration.
+#
+# A proxy on the docker HOST, or on another machine, needs an explicit entry. Add the NEXT index,
+# __1, because __0 is already taken by the base file and reusing it silently replaces the compose
+# subnet:
+#
+#   services:
+#     node-portal:
+#       environment:
+#         ForwardedHeaders__KnownNetworks__1: "10.0.0.0/24"
+#     node-api:
+#       environment:
+#         ForwardedHeaders__KnownNetworks__1: "10.0.0.0/24"
+#
+# Declare the narrowest range that covers your proxy. KnownNetworks, not TrustAllProxies: anything
+# permitted to send X-Forwarded-For can claim to be any client, which defeats every IP-based
+# decision the node makes.
+#
+# UNVERIFIED, and deliberately not stated as fact: what source address a container sees for a
+# request arriving through a PUBLISHED port. Docker's userland proxy masquerades it to the bridge
+# gateway (which would be inside 172.28.0.0/16, hence trusted); pure iptables DNAT preserves the
+# original. Nobody has measured which applies here, and it matters in both directions -- if the
+# gateway form applies, then the base file's reasoning at docker-compose.yml:137-142, that
+# KnownNetworks stops a direct caller on the published API port forging the chain, does not hold.
+# Measure it before relying on either reading: send X-Forwarded-For: 1.2.3.4 to the published port
+# from the host and see which address the rate limiter keys on.
+
+services:
+  # Off. See the COMPOSE_FILE note at the top for why this is a file-level scale rather than a
+  # --scale flag.
+  proxy:
+    scale: 0
+
+  node-portal:
+    ports:
+      # Loopback by default, matching the API port in the base file and for the same reason: this
+      # is plain HTTP and the portal's auth cookie is Secure, so publishing it to the LAN would be
+      # a downgrade. Point your proxy at 127.0.0.1:${NODE_PORTAL_HTTP_PORT}.
+      #
+      # 8082 rather than 8080: this overlay exists for an operator who already runs a reverse proxy
+      # and other services on the box, which is exactly the machine where 8080 is already taken.
+      # 8082 sits beside the API's 8081 so the two read as a pair.
+      #
+      # Widen NODE_PORTAL_HTTP_BIND only if your proxy runs on a DIFFERENT machine, and then only
+      # on a network you control -- and add that proxy to ForwardedHeaders__KnownNetworks as above.
+      - "${NODE_PORTAL_HTTP_BIND:-127.0.0.1}:${NODE_PORTAL_HTTP_PORT:-8082}:80"

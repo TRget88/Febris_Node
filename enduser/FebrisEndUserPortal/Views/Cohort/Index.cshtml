@@ -1,0 +1,44 @@
+﻿@model IEnumerable<Febris.ModelLibrary.Models.DataModels.Cohort>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<div class="row">
+    <div class="col-xs-6">
+        <a asp-action="create" class="btn btn-success" data-toggle="tooltip" title="Cohort Creation">
+            <span class="glyphicon glyphicon-plus glyphicon-plus"> </span>
+        </a>
+    </div>    
+</div>
+<div class="container">  
+
+<div id="IndexPartial">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div> 
+    @*<div class="row">
+        <div class="col-sm-6">
+            <div id="IndexPartial">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>            
+        </div>
+        <div class="col-sm-6">
+            <div id="SecondPartial">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>*@
+</div>
+@section scripts
+{    
+    <script src="~/JSScriptLib/PartialViewCalls/LoadIndexPartial.js"></script>    
+    <script src="~/JSScriptLib/ButtonOperation/Specific/CohortButtonOperation.js"></script>
+}

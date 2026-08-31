@@ -1,0 +1,85 @@
+/* Toasts for StatusMessage.js (ROADMAP 20).
+
+   Deliberately NOT a modal. The existing status mechanism opens the shared #Modal, which blocks the
+   page and has to be dismissed before anything else can happen -- acceptable for a message that
+   arrives once per page load, wrong for a message that fires every time somebody ticks a checkbox.
+   confirm() has the same objection and worse: it asks a question after the action already happened.
+
+   Sizing is in rem and the stack is capped by max-height so a burst of messages scrolls rather than
+   running off the screen. */
+
+#statusMessageToasts {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    /* Above everything that can be on screen when a toast fires. The two values that matter are the
+       shared #Modal (Modal.css:5, z-index 1500) and gentelella's highest, 12312 in
+       build/css/custom.min.css. An earlier version of this comment guessed 1000 and 9999 -- both
+       wrong, and the second was low enough that trusting it would have put toasts UNDER the theme. */
+    z-index: 20000;
+    width: 22rem;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    pointer-events: none; /* the container never eats clicks; the toasts themselves do. */
+}
+
+.status-toast {
+    pointer-events: auto;
+    position: relative;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem 2.25rem 0.75rem 0.9rem;
+    border-radius: 4px;
+    border-left: 4px solid transparent;
+    background: #fff;
+    color: #2a3f54;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+    font-size: 0.9rem;
+    line-height: 1.35;
+    word-wrap: break-word;
+}
+
+.status-toast-ok {
+    border-left-color: #1abb9c;
+}
+
+.status-toast-warn {
+    border-left-color: #f0ad4e;
+}
+
+/* Failures are visually the loudest AND the only ones that do not self-dismiss. */
+.status-toast-failed {
+    border-left-color: #e74c3c;
+    background: #fdf3f2;
+}
+
+.status-toast-title {
+    font-weight: 600;
+    display: block;
+}
+
+.status-toast-detail {
+    display: block;
+    margin-top: 0.2rem;
+    opacity: 0.85;
+    font-size: 0.82rem;
+}
+
+.status-toast-close {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.5rem;
+    border: 0;
+    background: transparent;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.55;
+    padding: 0.15rem 0.3rem;
+}
+
+.status-toast-close:hover,
+.status-toast-close:focus {
+    opacity: 1;
+}

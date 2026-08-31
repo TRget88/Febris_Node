@@ -1,0 +1,102 @@
+@model Febris.ModelLibrary.ViewModels.PackageFeedSyncRequestViewModel
+@using Febris.ModelLibrary.ViewModels
+
+@{
+    ViewData["Title"] = "Package Feed Sync";
+    PackageFeedSyncResultViewModel result = ViewBag.SyncResult as PackageFeedSyncResultViewModel;
+}
+
+<h1>Package Feed Sync</h1>
+<hr />
+
+@*
+    ROADMAP 16: the feed-sync trigger, moved from POST api/SoftwarePackage/SyncFromFeed (NodeAdmin
+    token, hand-authored curl) to this form. One pass pulls published client software from a
+    distribution feed into this node's catalog. Manually triggered on purpose for a first ship: a
+    timer would run this before anyone had watched it work once, and the operator needs to see the
+    report. Run a dry run first -- it produces the same report and changes nothing.
+*@
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="FeedSync">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="ManifestUrl" class="control-label">Manifest URL</label>
+                <input asp-for="ManifestUrl" class="form-control" placeholder="https://example.org/releases/manifest.json" />
+                <span asp-validation-for="ManifestUrl" class="text-danger"></span>
+                <small class="text-muted">
+                    HTTPS only. Point at whichever feed you trust. An air-gapped node can point at
+                    a manifest served on its own network.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Channel" class="control-label"></label>
+                <input asp-for="Channel" class="form-control" placeholder="stable" />
+                <span asp-validation-for="Channel" class="text-danger"></span>
+            </div>
+
+            <div class="form-group form-check">
+                <input asp-for="DryRun" class="form-check-input" />
+                <label asp-for="DryRun" class="form-check-label">Dry run (report only, change nothing)</label>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Run Sync" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (result != null)
+{
+    <hr />
+    <h4>
+        @(result.DryRun ? "Dry run report" : "Sync report")
+        <small class="text-muted">(@result.ManifestUrl, channel @result.Channel, schema @result.SchemaVersion)</small>
+    </h4>
+    <p>
+        <strong>@result.Ingested</strong> ingested,
+        <strong>@result.AlreadyCurrent</strong> already current,
+        <strong>@result.Filtered</strong> filtered,
+        <strong>@result.Refused</strong> refused,
+        <strong>@result.Failed</strong> failed.
+    </p>
+    @if (result.Refused > 0 || result.Failed > 0)
+    {
+        <p class="text-danger">
+            A run does not fail as a whole because one package did. Read the Refused and Failed
+            rows below -- each carries its reason.
+        </p>
+    }
+    <div style="overflow-x: auto;">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Outcome</th>
+                    <th>Kind</th>
+                    <th>Version</th>
+                    <th>UUID</th>
+                    <th>Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (PackageFeedSyncItemViewModel item in result.Items)
+                {
+                    <tr>
+                        <td>@item.Outcome</td>
+                        <td>@item.Kind</td>
+                        <td>@item.Version</td>
+                        <td style="word-break: break-all;">@item.Uuid</td>
+                        <td>@item.Detail</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

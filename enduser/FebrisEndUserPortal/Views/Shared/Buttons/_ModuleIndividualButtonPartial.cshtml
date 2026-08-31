@@ -1,0 +1,10 @@
+﻿@model Febris.ModelLibrary.PartialViewModels.IndividualButtonPartial
+@using Febris.ModelLibrary.Models
+
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+<button type="button" onclick="ModuleButtonAction(this)" class="btn @Model.ButtonType" identification="@Model.Id" @*UserId="@Model.UserId" linkBase="@Model.LinkBase"*@ submitAction="@Model.Action" data-toggle="tooltip" title="@Model.Tooltip" >
+    <span class="fa fa-@Model.Glyph"></span>
+</button>

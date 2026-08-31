@@ -1,0 +1,35 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/*.user
+**/appsettings.Development.json
+**/appsettings.Staging.json
+**/appsettings.*.local.json
+**/.env
+**/.env.*
+**/*.pfx
+**/*.pem
+**/*.key
+# Keystores. This list never carried .p12 at all, and never .jks or .keystore either, though
+# tools/status.sh names those last two as the SIGN-1 tripwire. The signing keystore lives
+# off-tree so no build context ever held one, but the exclusion should not depend on that.
+**/*.p12
+**/*.jks
+**/*.keystore
+**/*.bks
+# ASP.NET DataProtection key rings (2026-08-29 incident): AppKeys:KeyRingPath is the relative
+# path "keys", so a ring minted by running the app from a clone sits beside the source and would
+# otherwise ride into the build context. `**/*.key` above does NOT cover it -- a ring is an XML
+# file named key-<guid>.xml. Both the ring directory and a loose ring file are excluded. Matches
+# a path component named EXACTLY "keys", so the vendored wwwroot jquery.hotkeys/ tree is untouched.
+**/keys/
+**/key-*.xml
+.git/
+.gitignore
+*.md
+# Self-host packaging (OSS_NODE_PLAN 5/6.5): keep the root build context lean -- the node
+# images restore/build from source only; tests, docs, and local run litter never ship.
+tests/
+docs/
+**/logs/

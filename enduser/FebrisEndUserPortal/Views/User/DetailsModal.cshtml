@@ -1,0 +1,306 @@
+﻿@model Febris.ModelLibrary.ViewModels.LocalUserViewModel;
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">@Model.ApplicationUser.UserName</h1>
+    </div>
+    <div class="row" align="center" style="word-wrap: break-word;">
+        @* ROADMAP 20 / audit C-09. This called SubmitFollowing('/ArchiveToggle', id), a helper that
+           did $.get(route + id) with an EMPTY .done() and no .fail(). It requested
+           "/ArchiveToggle<guid>" -- an address no controller serves -- and then discarded the 404 in
+           silence, so the switch moved and nothing happened, every time, for every operator who
+           touched it. The empty success handler is precisely why it survived: there was nothing to
+           report the failure.
+
+           The real action is UserController.LockoutToggle: [HttpPost], [ValidateAntiForgeryToken],
+           gated to OrgAdmins, rank-checked in the BLL, and it answers with the RESULTING state.
+           The checkbox is set from that answer rather than from the click, so it shows what was
+           persisted instead of what was intended. An Educator who can see this modal but may not
+           lock accounts now gets a 403 and is told so, which is the outcome the old call site hid.
+
+           The token is rendered inside this partial because the partial is AJAX-loaded into
+           #modalContent by LoadModal, so a token in the host page is not reachable from here --
+           same reasoning as Views/Cohort/IndexPartial.cshtml. *@
+        <label class="switch">
+            <input checked="@Model.IsLockedOut" type="checkbox"
+                   onchange="UserLockoutToggle(this, '@Model.ApplicationUser.Id')" />
+            <span class="slider round"></span>
+        </label>
+        <p>  Account Lock Status</p>
+    </div>
+</div>
+
+<div id="userLockoutToken" style="display:none">
+    @Html.AntiForgeryToken()
+</div>
+
+<script>
+    // Declared on window so it survives this partial replacing #modalContent, matching the pattern
+    // in Views/Cohort/IndexPartial.cshtml.
+    window.UserLockoutToggle = function (checkbox, id) {
+        var desired = checkbox.checked;
+        $.ajax({
+            url: "/User/LockoutToggle",
+            type: "POST",
+            data: {
+                id: id,
+                __RequestVerificationToken: $('#userLockoutToken input[name="__RequestVerificationToken"]').val()
+            },
+            success: function (result) {
+                // The server returns the state it actually stored. Trust it over the click.
+                var lockedOut = result && typeof result.lockedOut === "boolean"
+                    ? result.lockedOut
+                    : desired;
+                checkbox.checked = lockedOut;
+                window.StatusMessage.ok(lockedOut
+                    ? "Account locked."
+                    : "Account unlocked.");
+            },
+            error: function () {
+                // Repair only. The failure itself is reported by the global net in
+                // StatusMessage.js -- announcing it here as well would show two toasts for one
+                // failure. Leaving the switch showing a state the database does not have is the
+                // silent-success defect this whole item removes.
+                checkbox.checked = !desired;
+            }
+        });
+    };
+</script>
+<br />
+<div>
+    @* Was "Febris User" -- a misleading heading. This section shows THIS user's own account
+       details (username, role, email, phone), nothing vendor-related. *@
+    <h3>Account Details</h3>
+    <hr />
+    <div class="row">
+        <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+            <h4>General Information</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.ApplicationUser.UserName)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.ApplicationUser.UserName)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Role)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Role)
+                </div>
+            </div>
+
+            <hr />
+
+            <h4>Contact Information</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.ApplicationUser.Email)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.ApplicationUser.Email)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.ApplicationUser.PhoneNumber)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.ApplicationUser.PhoneNumber)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6" align="left" style="font-weight:bold">
+                    <label class="switch">
+                        <input type="checkbox" checked="@Model.ApplicationUser.EmailConfirmed" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                    @Html.DisplayNameFor(model => model.ApplicationUser.EmailConfirmed)
+                </div>
+                <div class="col-sm-6" align="left" style="font-weight:bold">
+                    <label class="switch">
+                        <input type="checkbox" checked="@Model.ApplicationUser.PhoneNumberConfirmed" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                    @Html.DisplayNameFor(model => model.ApplicationUser.PhoneNumberConfirmed)
+                </div>
+            </div>
+
+            <hr />
+
+            <h4>Account Information</h4>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.ApplicationUser.LockoutEnd)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.ApplicationUser.LockoutEnd)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.ApplicationUser.AccessFailedCount)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.ApplicationUser.AccessFailedCount)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6" align="left" style="font-weight:bold">
+                    <label class="switch">
+                        <input type="checkbox" checked="@Model.ApplicationUser.TwoFactorEnabled" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                    @Html.DisplayNameFor(model => model.ApplicationUser.TwoFactorEnabled)
+                </div>
+                <div class="col-sm-6" align="left" style="font-weight:bold">
+                    <label class="switch">
+                        <input type="checkbox" checked="@Model.ApplicationUser.LockoutEnabled" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                    @Html.DisplayNameFor(model => model.ApplicationUser.LockoutEnabled)
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+            @if (!string.IsNullOrEmpty(Model.ApplicationUser.ProfilePicturePath))
+            {
+                <img src="@Url.Action("LoadProfilePicture","Widget",new {path=Model.ApplicationUser.ProfilePicturePath})" class="img-fluid" alt="Image" />
+
+            }
+            else
+            {
+                <img src="~/images/DefaultMedia/DefaultPerson.png" class="img-fluid" alt="Default Image" />
+            }
+        </div>
+    </div>
+</div>
+
+<br />
+<hr />
+
+<div>
+    <div align="center">
+        @await Html.PartialAsync("Buttons/GenericButtons/User/_DetailsButtonGroupPartial", new IndividualUUIDButtonPartial { Id = Model.ApplicationUser.Id })
+    </div>
+</div>
+
+<br/>
+    <input type="hidden" id="modelId" value="@Model.ApplicationUser.Id" />
+    <hr/>
+    <br/>
+    <div align="center">
+
+        <div class="row">
+            @* Full width since the PurchaseList column beside it was removed below. *@
+            <div class="col-md-12">
+
+                <br />
+                <input type="hidden" id="Element0" value="CohortList" />
+                <div id="Division0" align="center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+            @* PurchaseList slot removed (node remote teardown, plan 1.10). It called
+               UserController.LoadPurchaseList, which redirected to the central Purchase controller
+               the node no longer has, so it spun forever. *@
+        </div>
+    </div>
+    <br />
+
+    @*<div align="center">
+
+        <br />
+        <div class="row">
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element2" value="SOME_VARIABLE" />
+                <div id="Division2">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element3" value="SOME_VARIABLE" />
+                <div id="Division3">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <br />
+        <div class="row">
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element4" value="SOME_VARIABLE" />
+                <div id="Division4">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element5" value="SOME_VARIABLE" />
+                <div id="Division5">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <br />
+        <div class="row">
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element6" value="SOME_VARIABLE" />
+                <div id="Division6">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element7" value="SOME_VARIABLE" />
+                <div id="Division7">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>*@
+
+
+
+
+
+<script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>

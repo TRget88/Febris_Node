@@ -1,0 +1,106 @@
+﻿@model Febris.ModelLibrary.ViewModels.LocalUserSettingsViewModel
+@using Febris.EnumLibrary
+@using Febris.SharedServices
+@using System.Linq
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    // Was "Self Edit", which is the title of a DIFFERENT page (SelfEdit.cshtml). This one is the
+    // admin editing somebody else's account, so the tab said the wrong thing.
+    ViewData["Title"] = "Edit user";
+    string statusMessage = TempData["StatusMessage"] as string;
+
+    // Audit C-05: this select rendered an UNFILTERED GetEnumSelectList, so an Educator could open
+    // any account -- including its own -- pick ITAdmin and submit. Offer only roles the signed-in
+    // operator outranks. This is a UX narrowing, NOT the fix: UserLogic.Update enforces
+    // RoleRankPolicy.CanAssign (and additionally checks the TARGET's current rank, which this view
+    // cannot see), so a crafted POST that never rendered this page is still refused.
+    var actorRoles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+    var assignableRoles = Enum.GetValues(typeof(InstitutionUserAccountType))
+        .Cast<InstitutionUserAccountType>()
+        .Where(t => RoleRankPolicy.CanAssign(actorRoles, new string[0], t.ToString()))
+        .Select(t => new SelectListItem(t.ToString(), ((int)t).ToString()))
+        .ToList();
+}
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">Edit @Model.FirstName @Model.LastName </h1>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div class="alert alert-info">@statusMessage</div>
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" enctype="multipart/form-data">
+
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserAccountType" class="control-label"></label>
+                <select asp-for="UserAccountType" asp-items="assignableRoles" class="form-control">
+                    @*<option selected="selected" value=""></option>*@
+                </select>
+                <span asp-validation-for="UserAccountType" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EmailAddress" class="control-label"></label>
+                <input asp-for="EmailAddress" class="form-control" />
+                <span asp-validation-for="EmailAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="control-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <p>Please only use .PNG or .JPG files</p>
+                <input type="file" name="ProfilePicture" class="form-control" onchange="imagepreview(this)" link="profilePic" />
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div align="center" class="jumbotron">
+            <img id="profilePic" height="150" />
+        </div>
+
+        @* Sits OUTSIDE the Edit form on purpose: nested forms are invalid HTML and the inner one
+           silently never submits. The form tag helper emits the antiforgery token, so there is no
+           explicit @@Html.AntiForgeryToken() here -- same shape as the ParentLink per-row actions. *@
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Password setup</h5>
+                <p class="card-text">
+                    Emails this person a link to set their own password. Use it when the account was
+                    created for them and the original link has lapsed or never arrived. It always
+                    sends a fresh link, and it does not change or reveal any existing password.
+                </p>
+                <form asp-controller="User" asp-action="ResendActivation" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-outline-primary">Send password setup link</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts
+{
+    <script src="~/JSScriptLib/PartialViewCalls/ImagePreview.js"></script>
+}

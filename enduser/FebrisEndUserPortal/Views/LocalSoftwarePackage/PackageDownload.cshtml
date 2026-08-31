@@ -1,0 +1,102 @@
+﻿@model Febris.ModelLibrary.Models.DataModels.LocalSoftwarePackage
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+
+<div class="col-sm-12" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">@Model.Name Software Package</h1>
+    </div>
+    <div class="row">
+        <div class="col-sm-6" align="center" style="font-weight:bold">
+            <label class="switch">
+                <input type="checkbox" checked="@Model.Obsolete" disabled />
+                <span class="slider round"></span>
+            </label>
+            @Html.DisplayNameFor(model => model.Obsolete)
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="modelId" value="@Model.Id" />
+<br />
+<hr />
+<div>
+    <div class="row">
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+            <h3>General information</h3>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.TimeStamp)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.TimeStamp)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.LastUpdateTimeStamp)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.LastUpdateTimeStamp)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Name)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Name)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Version)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Version)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Description)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+            </div>
+
+
+            <hr />
+            <h3>Extended Package Information</h3>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.LocalSoftwarePackageType)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.LocalSoftwarePackageType)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Language)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Language)
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+            @if (Model.LocalSoftwarePackageType != LocalSoftwarePackageType.AndroidMobileCompanion&& Model.LocalSoftwarePackageType != LocalSoftwarePackageType.None)
+            {
+                @await Html.PartialAsync("Buttons/GenericButtons/LocalSoftwarePackage/_DownloadButtonGroupPartial", new IndividualUUIDButtonPartial { Id = Model.UUID })
+            }
+            @*@await Html.PartialAsync("Buttons/GenericButtons/LocalSoftwarePackage/_DownloadButtonGroupPartial", new IndividualUUIDButtonPartial { Id = Model.UUID })*@
+        </div>
+    </div>
+</div>
+<hr />
+<br />
+@section scripts
+{
+    <script src="~/JSScriptLib/ButtonOperation/Specific/LocalSoftwarePackageButtonOperation.js"></script>
+}

@@ -1,0 +1,54 @@
+﻿@model IEnumerable<Febris.ModelLibrary.Models.DataModels.Module>
+    <h4>Module Index</h4>
+    <table class="table">
+        <thead>
+            <tr>               
+                <th>Is Obsolete</th>
+                @*<th>Is Test</th>*@
+                <th>Time Stamp</th>
+                <th>Name</th>
+                <th>Version</th>
+                @*<th></th>*@
+            </tr>
+        </thead>
+        <tbody>
+        @if(Model != null){
+        @foreach (var item in Model) {
+            <tr>
+                <td>
+                    <div>
+                        <label class="switch">
+                            <input asp-for="@item.Obsolete" type="checkbox" disabled />
+                            <span class="slider round"></span>
+                        </label>                        
+                    </div>                    
+                </td>
+                @*<td>*@
+                    
+                    
+                    @*<div>
+            <label class="switch">
+                <input asp-for="@item.IsTest" type="checkbox" disabled />
+                <span class="slider round"></span>
+            </label>
+        </div>*@
+                @*</td>*@
+                <td>
+                    @Html.DisplayFor(modelItem => item.TimeStamp)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Version)
+                </td>
+                @*<td>
+                    <div align="center">
+                        @await Html.PartialAsync("Buttons/GenericButtons/Module/_IndexButtonGroupPartial", new IndividualButtonPartial { Id = item.Id })
+                    </div>
+                </td>*@
+            </tr>
+        }}
+        </tbody>
+    </table>
+    

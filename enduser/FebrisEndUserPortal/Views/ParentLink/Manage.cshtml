@@ -1,0 +1,69 @@
+@model Febris.ModelLibrary.ViewModels.ParentLinkManagementViewModel
+@*
+    Admin-only management of one guardian's linked students. The first table lists
+    students already linked (each removable). The form below links a new learner.
+    Linking grants this guardian FERPA read-only access to the student's records;
+    unlinking revokes it. Both actions are admin-only and audited in the BLL.
+*@
+@{
+    ViewData["Title"] = "Manage guardian links";
+}
+
+<h2>Manage guardian links</h2>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-info">@TempData["StatusMessage"]</div>
+}
+
+<p><a asp-action="Index">Back to guardians</a></p>
+
+<h4>Linked students</h4>
+@if (Model.LinkedStudents == null || Model.LinkedStudents.Count == 0)
+{
+    <p>No students linked yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr><th>Student</th><th>Email</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var link in Model.LinkedStudents)
+            {
+                <tr>
+                    <td>@link.StudentName</td>
+                    <td>@link.StudentEmail</td>
+                    <td>
+                        @* Unlink revokes this guardian's access to one student actor. *@
+                        <form asp-action="Unlink" method="post">
+                            <input type="hidden" name="parentUserId" value="@Model.ParentUserId" />
+                            <input type="hidden" name="studentActorId" value="@link.StudentActorId" />
+                            <button type="submit" class="btn btn-sm btn-danger">Unlink</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4>Link a student</h4>
+@if (Model.LinkableStudents == null || Model.LinkableStudents.Count == 0)
+{
+    <p>No learner accounts available to link.</p>
+}
+else
+{
+    <form asp-action="Link" method="post" class="form-inline">
+        <input type="hidden" name="parentUserId" value="@Model.ParentUserId" />
+        <select name="studentUserId" class="form-control mr-2">
+            @foreach (var student in Model.LinkableStudents)
+            {
+                <option value="@student.UserId">@student.ApplicationUser?.FirstName @student.ApplicationUser?.LastName (@student.ApplicationUser?.Email)</option>
+            }
+        </select>
+        <button type="submit" class="btn btn-primary">Link student</button>
+    </form>
+}

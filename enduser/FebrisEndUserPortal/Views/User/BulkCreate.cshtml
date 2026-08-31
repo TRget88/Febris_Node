@@ -1,0 +1,91 @@
+﻿@model Febris.ModelLibrary.ViewModels.BulkUserCreationViewModel
+@using Febris.EnumLibrary
+@using Febris.ModelLibrary.ViewModels
+
+@{
+    ViewData["Title"] = "Bulk Input";
+}
+
+
+<h3>Bulk User Input</h3>
+
+
+<h3 align="center">Please read instructions carfully and follow steps</h3>
+<hr />
+
+<h2 align="center">Step 1 - Make sure Excel document is set up correctly</h2>
+<br />
+<br />
+<hr />
+<div align="center">
+    <div align="center">*Do not use headers and set up your excel document as seen below</div>
+    <div align="center">
+        [Identification Number], [First Name], [Last Name], [Email Address], [Phone Number]
+    </div>
+</div>
+<hr />
+<br />
+<br />
+<h2 align="center">Step 2 - Pick a Cohort (optional)</h2>
+<p align="center">
+    Select a Cohort from the dropdown list. If no Cohort is selected these users will still be added but not attached to a Cohort.
+</p>
+<br />
+<br />
+<h2 align="center">Step 3 - Select User Account Type </h2>
+<p align="center">
+    Specify the type of user account for these new users.
+</p>
+<br />
+<br />
+<h2 align="center">Step 4 - Copy Excel List</h2>
+<p align="center">
+    Copy excel list. If you are using google sheets the last entry is ususally taken off and will need to be added manually.
+</p>
+<br />
+<br />
+<h2 align="center">Step 5 - Paste in Directed Area</h2>
+<p align="center">
+    Past copied cells in the indicated box. It will automatically create a list containing pasted information.
+</p>
+<br />
+<br />
+<h2 align="center">Step 6 - Check input</h2>
+<p align="center">
+    Check created cells to make sure they are processed correctly and match the pattern mentioned in step 1.
+</p>
+<br />
+<br />
+<h2 align="center">Step 7 - Submit Table</h2>
+<p align="center">
+    The red button removes all users on list from designated Cohort. The green button add all users on list to designated Cohort and make accounts for them as needed.
+</p>
+
+<hr />
+
+<div class="container">
+    <h3>Bulk Data Input</h3>
+    <div id="BulkInput">Loading Bulk Input Area...</div>
+</div>
+
+
+@section scripts{
+    <script>
+        //simple index function
+        function loadBulkAddTable() {
+            $("#BulkInput").load("/User/BulkCreatePartial")
+        }
+
+        //$(window).bind("load", function () {
+
+        //    loadProfessionalIndex();
+        //});
+        window.onload = function init() {
+
+            loadBulkAddTable();
+        };
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+}
+

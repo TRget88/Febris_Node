@@ -1,0 +1,114 @@
+@model Febris.ModelLibrary.ViewModels.ModulePackageUploadViewModel
+
+@{
+    ViewData["Title"] = "Add Module";
+}
+
+<h1>Add Module</h1>
+<hr />
+
+@*
+    The node's own module authoring form. It posts to the SAME ingest logic the API uses -- the
+    .zip streams to IStorageProvider, its SHA-256 is recorded on a PackageArtifact row, and the
+    local Module catalog row is upserted.
+
+    Every metadata field below is operator-supplied because nothing is read from inside the zip.
+    That was true of the API path too; the difference is that this is a form instead of a
+    hand-authored multipart POST carrying a token minted from a route with no UI.
+*@
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="File" class="control-label">Module package (.zip)</label>
+                <input asp-for="File" type="file" accept=".zip" class="form-control" />
+                <span asp-validation-for="File" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Version" class="control-label"></label>
+                <input asp-for="Version" class="form-control" />
+                <span asp-validation-for="Version" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Language" class="control-label"></label>
+                <select asp-for="Language" asp-items="Html.GetEnumSelectList<Febris.EnumLibrary.LanguageMapTypeEnum>()" class="form-control"></select>
+                <span asp-validation-for="Language" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="XApiInteractionType" class="control-label"></label>
+                <select asp-for="XApiInteractionType" asp-items="Html.GetEnumSelectList<Febris.EnumLibrary.XApiInteractionType>()" class="form-control"></select>
+                <span asp-validation-for="XApiInteractionType" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="MainSectionCount" class="control-label"></label>
+                <input asp-for="MainSectionCount" class="form-control" />
+                <span asp-validation-for="MainSectionCount" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="TotalSectionCount" class="control-label"></label>
+                <input asp-for="TotalSectionCount" class="form-control" />
+                <span asp-validation-for="TotalSectionCount" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="InteractionComponents" class="control-label"></label>
+                <input asp-for="InteractionComponents" class="form-control" />
+                <span asp-validation-for="InteractionComponents" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EstimatedCompletionTime" class="control-label"></label>
+                <input asp-for="EstimatedCompletionTime" class="form-control" />
+                <span asp-validation-for="EstimatedCompletionTime" class="text-danger"></span>
+            </div>
+
+            @*
+                ROADMAP 16 row 3: without this field every submit posted a null UUID, so
+                re-uploading a module minted a fresh catalog row, a fresh stored .zip and a fresh
+                xAPI activity, orphaning the old set. The upsert-by-UUID path existed in the shared
+                ingest logic all along -- the form just never exposed it.
+            *@
+            <div class="form-group">
+                <label asp-for="UUID" class="control-label">Existing module UUID (optional)</label>
+                <input asp-for="UUID" class="form-control" placeholder="Leave empty for a new module" />
+                <span asp-validation-for="UUID" class="text-danger"></span>
+                <small class="text-muted">
+                    Supply an existing module's UUID to update its catalog row and replace its
+                    package in place, keeping its xAPI activity link. The module index shows each
+                    module's UUID in its details.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Add Module" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

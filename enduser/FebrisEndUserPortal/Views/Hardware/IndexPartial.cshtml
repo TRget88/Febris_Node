@@ -1,0 +1,133 @@
+﻿@model X.PagedList.IPagedList<Febris.ModelLibrary.Models.DataModels.LocalHardware>
+@using Febris.EnumLibrary;
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc
+@using X.PagedList
+@using Febris.ModelLibrary.PartialViewModels
+
+<div id="tablePartial">
+    <div id="search">
+        @using (Html.BeginForm())
+        {
+            <p>
+                @Html.TextBox("SearchString", null, new { id = "searchBox", type = "text" })
+                <input type="submit" value="Search" class="fa fa-search btn btn-primary" />
+            </p>
+        }
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Locked out</th>
+                <th>
+                    Condition
+                </th>
+                <th>
+                    License
+                </th>
+                <th>
+                    Name
+                </th>               
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <label class="switch">
+                                @* Audit C-09: this checkbox called SubmitFollowing('@ID','@LOCK') -- but the helper's
+                                   signature is (route, id) and it does $.get(route + id), so the arguments landed in the wrong
+                                   slots and produced a GET to a relative URL like "5False". There is no ToggleLockOut action in
+                                   the node's HardwareController for it to have hit either. It never worked.
+                                   Made a read-only indicator: locking a device is done on the Edit screen
+                                   (Views/Hardware/Edit.cshtml:20, asp-for="Hardware.IsLockedOut"), which DOES work now that
+                                   HardwareLogic.Update persists the edit instead of inserting a duplicate row. A one-click
+                                   toggle here would need its own [HttpPost] action and token -- worth doing, but it is new
+                                   surface for a capability that already has a working path (ROADMAP 17). *@
+                                <input checked="@item.IsLockedOut" type="checkbox" disabled />
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.HardwareCondition)
+                        </td>
+                        @* The credential is NEVER listed (audit T9). This column previously printed
+                           every device's authentication credential in cleartext, on one page, to any
+                           Educator, Admin or ITAdmin. The stored value is now a hash, so there is
+                           nothing readable to print. Regenerate is the only way to obtain a new one. *@
+                        <td>
+                            @if (string.IsNullOrEmpty(item.PhysicalLicense))
+                            {
+                                <span class="text-danger">No credential</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Set</span>
+                            }
+                            <form asp-action="RegenerateCredential" method="post" style="display:inline"
+                                  onsubmit="return confirm('Issue a NEW credential for this device? Its current credential stops working immediately, and the device will not authenticate until the new value is entered on it. The new credential is shown only once.');">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn btn-sm btn-warning">Regenerate</button>
+                            </form>
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DescriptiveName)
+                        </td>
+                        
+                                @await Html.PartialAsync("Buttons/GenericButtons/Hardware/_IndexButtonGroupPartial", new IndividualButtonPartial { Id = item.Id })
+                            
+                    </tr>
+                }}
+        </tbody>
+    </table>
+    <div id="pagedList">
+        @if (TempData.ContainsKey("CurrentFilter"))
+        {
+            @Html.PagedListPager(Model, page => Url.Action("IndexPartial", new { page = page, currentFilter = TempData["CurrentFilter"].ToString() }));
+        }
+        else
+        {
+            @Html.PagedListPager(Model, page => Url.Action("IndexPartial", new { page = page }));
+        }
+    </div>
+</div>
+<script>
+    $(function () {
+        $('#pagedList').on('click', 'a', function () {
+            $.ajax({
+                url: this.href,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                }
+            });
+            return false;
+        });
+    });
+    $(function () {
+        $('#search').submit(function (event) {
+            event.preventDefault();
+            var searchString = document.getElementById("searchBox").value;
+            $.ajax({
+                url: "../Hardware/IndexPartial",
+                async: true,
+                data: 'searchString=' + searchString,
+                type: 'GET',
+                cache: false,
+                success: function (result) {
+                    $('#tablePartial').html(result);
+                },
+                error: function (xhr, param) {
+                    console.log(xhr);
+                    console.log(param);
+                }
+            });
+            return false;
+        });
+    });
+</script>

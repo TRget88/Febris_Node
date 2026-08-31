@@ -1,0 +1,18 @@
+﻿@model Febris.ModelLibrary.PartialViewModels.IndividualUUIDButtonPartial
+@using Febris.ModelLibrary.PartialViewModels;
+
+
+<td style="width:500px;">
+    <div class="btn-group" role="group">       
+        @await Html.PartialAsync("Buttons/_LocalSoftwarePackageIndividualUUIDButtonPartial",
+             new IndividualUUIDButtonPartial
+             {
+                 Action = "DownloadPackage",
+                 ButtonType = "btn-primary btn-large",
+                 Glyph = "download",
+                 Id = Model.Id,
+                 Tooltip = "Download Software Package .ZIP",
+             })        
+    </div>
+</td>
+

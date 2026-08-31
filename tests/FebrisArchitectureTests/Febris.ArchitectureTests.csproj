@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- NET8 Wave 0: retargeted from
+         netcoreapp3.1 so the test host runs on the .NET 8 runtime. The EOL 3.1 host
+         FailFasts on the rebuilt dev VM (no libssl1.1/old ICU). Safe to flip ahead of
+         the app-code waves: this project references no server projects (see note below). -->
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Configurations>Debug;Release;Staging</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!--
+    Intentionally NO ProjectReference items. This guard parses other projects'
+    .csproj files from disk. Depending on nothing means it can never itself drag
+    a project across the boundary it polices.
+  -->
+
+</Project>

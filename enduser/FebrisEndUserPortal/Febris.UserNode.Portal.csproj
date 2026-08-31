@@ -1,0 +1,197 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!-- NET8 migration -->
+    <TargetFramework>net8.0</TargetFramework>
+    <UserSecretsId>aspnet-Febris.UserNode.Portal-4BD2F1C4-6905-4CE0-9D0D-167A3CA5E831</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
+    <Configurations>Debug;Release;Staging</Configurations>
+    <ApplicationIcon>Febris-icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Templates\**" />
+    <Content Remove="Templates\**" />
+    <EmbeddedResource Remove="Templates\**" />
+    <None Remove="Templates\**" />
+    <!-- NET8 Wave 4: quarantine the stock ASP.NET-template Identity migration (the
+         00000000000000_ placeholder timestamp is the scaffold artifact). It describes a
+         SQL SERVER schema (SqlServerValueGenerationStrategy) that was never applied to
+         Febris's Postgres DBs. The real Identity schema is EndUserDAL's ApplicationDb
+         migrations (Npgsql). It only compiled on 3.1 because the vestigial SqlServer
+         provider package (now dropped) happened to be referenced, and it was inert at
+         runtime (the DAL, not this portal, is the context's migrations assembly).
+         Files kept on disk per the repo's quarantine-don't-delete convention. -->
+    <Compile Remove="Data\Migrations\00000000000000_CreateIdentitySchema.cs" />
+    <Compile Remove="Data\Migrations\00000000000000_CreateIdentitySchema.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\Shared\Buttons\GenericButtons\LocalAnalytics\_DetailsButtonGroupPartial.cshtml" />
+    <Content Remove="Views\Shared\Buttons\GenericButtons\LocalAnalytics\_IndexButtonGroupPartial.cshtml" />
+    <Content Remove="Views\Shared\Buttons\_LocalAnalyticsIndividualButtonPartial.cshtml" />
+    <Content Remove="wwwroot\JSScriptLib\ButtonOperation\Specific\LocalAnalyticsButtonOperation.js" />
+  </ItemGroup>
+
+  <!-- This project is SDK-style (Microsoft.NET.Sdk.Web), so wwwroot content is globbed
+       automatically. It used to carry 3,591 explicit Include entries for the vendored
+       gentelella theme; 3,544 of them already pointed at files that were not on disk. Explicit
+       Content items for missing files hard-fail `dotnet publish` with MSB3030, which is why the
+       parsleyjs entries in particular had to be commented out to keep the Portal image
+       buildable. All of them were removed with the theme prune. The glob ships the retained
+       assets, verified by publishing and confirming all 21 view-referenced files land in
+       wwwroot/gentelella-master.
+  -->
+
+  <ItemGroup>
+    <None Include="Areas\Identity\Pages\Account\AccessDenied.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\ConfirmEmail.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\ConfirmEmailChange.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\ExternalLogin.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\ForgotPassword.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\ForgotPasswordConfirmation.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Lockout.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Login.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\LoginWith2fa.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\LoginWithRecoveryCode.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Logout.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\ChangePassword.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\DeletePersonalData.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\Disable2fa.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\DownloadPersonalData.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\Email.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\EnableAuthenticator.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\ExternalLogins.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\GenerateRecoveryCodes.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\Index.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\PersonalData.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\ResetAuthenticator.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\SetPassword.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\ShowRecoveryCodes.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\TwoFactorAuthentication.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\_Layout.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\_ManageNav.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\_StatusMessage.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Manage\_ViewImports.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\Register.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\RegisterConfirmation.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\ResetPassword.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\ResetPasswordConfirmation.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\_StatusMessage.cshtml" />
+    <None Include="Areas\Identity\Pages\Account\_ViewImports.cshtml" />
+    <None Include="Areas\Identity\Pages\Error.cshtml" />
+    <None Include="Areas\Identity\Pages\_ViewImports.cshtml" />
+    <None Include="Areas\Identity\Pages\_ViewStart.cshtml" />
+    <None Include="Pages\Shared\_Layout.cshtml" />
+    <None Include="Pages\Shared\_LoginPartial.cshtml" />
+    <None Include="Pages\Shared\_ValidationScriptsPartial.cshtml" />
+    <None Include="Pages\_ViewImports.cshtml" />
+    <None Include="Pages\_ViewStart.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Actor\_IndexButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Curriculum\_DetailsButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Curriculum\_IndexButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Hardware\_DetailsButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Hardware\_IndexButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\LocalSoftwarePackage\_DownloadButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\LocalSoftwarePackage\_IndexButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Location\_DetailsButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Location\_IndexButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Messageboard\_DetailsButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Messageboard\_IndexButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Module\_DetailsButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Module\_IndexButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\GenericButtons\Statement\_IndexButtonGroupPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\_CurriculumIndividualButtonPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\_HardwareIndividualButtonPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\_IndividualButtonPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\_IndividualUUIDButtonPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\_LocalSoftwarePackageIndividualUUIDButtonPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\_LocationIndividualButtonPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\_MessageboardIndividualButtonPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\_ModuleIndividualButtonPartial.cshtml" />
+    <None Include="Views\Shared\Buttons\_UserIndividualButtonPartial.cshtml" />
+    <None Include="Views\TestUser\DetailsModal.cshtml" />
+    <None Include="Views\TestUser\Index.cshtml" />
+    <None Include="Views\TestUser\IndexPartial.cshtml" />
+    <None Include="wwwroot\images\banner1.svg" />
+    <None Include="wwwroot\images\banner2.svg" />
+    <None Include="wwwroot\images\banner3.svg" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Generic\ButtonActions.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Generic\GenericButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Specific\CohortButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Specific\CurriculumButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Specific\HardwareButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Specific\LocalSoftwarePackageButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Specific\LocationButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Specific\MessageboardButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Specific\ModuleButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Specific\StatementButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\ButtonOperation\Specific\UserButtonOperation.js" />
+    <None Include="wwwroot\JSScriptLib\InfiniteScroll\infiniteStatementScroll.js" />
+    <None Include="wwwroot\JSScriptLib\InfiniteScroll\infiniteStatementScrollNoLoad.js" />
+    <None Include="wwwroot\JSScriptLib\Modal\Modal.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+    <!-- Self-host clone-and-run: PrivateAssets="all" made this a
+         development-dependency, so `dotnet publish` EXCLUDED the assembly while plain builds
+         copied it; Startup calls AddDatabaseDeveloperPageExceptionFilter() unconditionally, so
+         every PUBLISHED portal (i.e. every container) crashed at boot with
+         FileNotFoundException while local bin/ runs worked. The filter only activates alongside
+         the Development-environment exception page, so shipping it is standard (template default). -->
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.5" />
+    <PackageReference Include="NCrontab.Signed" Version="3.3.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+    <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+    <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="X.PagedList.Mvc.Core" Version="8.1.0" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Febris.EnumLibrary" Version="0.1.0" />
+    <PackageReference Include="Febris.ModelLibrary" Version="0.1.0" />
+    <PackageReference Include="Febris.SharedServices" Version="0.1.0" />
+    <ProjectReference Include="..\FebrisEndUserBLL\Febris.UserNode.LogicLayer.csproj" />
+    <ProjectReference Include="..\FebrisEndUserDAL\Febris.UserNode.DataAccessLayer.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>Preserve</TypeScriptJSXEmit>
+    <TypeScriptModuleKind />
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
+  </PropertyGroup>
+
+</Project>

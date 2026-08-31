@@ -1,0 +1,249 @@
+﻿# Febris Node -- self-host clone-and-run stack. The compose file, the seed data and the
+# self-host docs together are the proof the node is genuinely useful without the hub.
+#
+# Quickstart (full walkthrough: SELF_HOSTING.md):
+#   ./selfhost/generate-env.sh        # writes .env with fresh local secrets
+#   docker compose up -d --build
+#   open https://febris.localhost:8443   (accept the local self-signed CA)
+#   log in with NODE_ADMIN_EMAIL / NODE_ADMIN_PASSWORD from .env
+#
+# Composition notes:
+# - No hub anywhere: LicenseKey/ApiUrlPath are blanked; the ONE federation gate resolves
+#   DISABLED, every read is node-local. The node is the source of truth.
+# - Postgres is the Tier-1 default engine; ONE server, the hosts' EF provisioner
+#   creates/migrates the four databases at first boot and seeds vocabulary + node identity
+#   + bootstrap admin (idempotent).
+# - Valkey, not Redis, ships in the compose (Redis relicensing; drop-in compatible).
+#   It holds only session tickets + device refresh tokens, never data caches.
+# - Storage: the FileSystem IStorageProvider over one named volume (zero-infra default).
+# - Caddy terminates TLS with a LOCAL self-signed CA: the portal auth cookie is
+#   SecurePolicy=Always, so a working HTTPS front is part of clone-and-run, not an extra.
+#   *.localhost names resolve to loopback in browsers without /etc/hosts edits.
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: febris
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?run ./selfhost/generate-env.sh (or copy .env.example to .env and fill it) first}
+      # First database only; the node's startup provisioner creates the rest
+      # (febris_data / febris_xapi / febris_analytics) via EF migrations.
+      POSTGRES_DB: febris_user
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U febris -d febris_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    volumes:
+      - valkeydata:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  node-api:
+    build:
+      # Repo root context -- the monorepo Dockerfiles restore ../../shared/* references.
+      context: .
+      dockerfile: enduser/FebrisEndUserApi/Dockerfile
+    image: febris-node-api:local
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    environment: &node-environment
+      # --- databases (single server, four DBs; EF creates them if absent) ---
+      ConnectionStrings__UserDBConnection: "Host=postgres;Port=5432;Database=febris_user;Username=febris;Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__DataDBConnection: "Host=postgres;Port=5432;Database=febris_data;Username=febris;Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__XAPIDBConnection: "Host=postgres;Port=5432;Database=febris_xapi;Username=febris;Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__AnalyticsDBConnection: "Host=postgres;Port=5432;Database=febris_analytics;Username=febris;Password=${POSTGRES_PASSWORD}"
+      # --- session/token state (Valkey is a Redis-protocol drop-in) ---
+      RedisConnectionStrings__AuthConnection: "valkey:6379"
+      RedisConnectionStrings__HardwareConnection: "valkey:6379"
+      # --- artifact store: FileSystem default over a named volume.
+      #     SmbClient__Path mirrors the same root for the legacy StaticDetails path layer;
+      #     trailing slash is load-bearing (paths are concatenated). ---
+      Storage__Provider: "FileSystem"
+      Storage__BasePath: "/data/storage"
+      SmbClient__Path: "/data/storage/"
+      FileSystem__UniqueFileSystemPath: "node/"
+      # --- DataProtection key ring: shared volume so BOTH hosts read one ring (and it
+      #     survives restarts, and overrides the appsettings default) ---
+      AppKeys__KeyRingPath: "/data/keys"
+      # --- T11: durable, BOUNDED logs.
+      #     The Serilog file sink shipped with a RELATIVE path ("logs/log-.json"), which resolves
+      #     under the image WORKDIR /app, i.e. the container's writable layer. The documented
+      #     upgrade (`git pull && docker compose up -d --build`) rebuilds the image and recreates
+      #     both containers, so every on-disk log line died with it -- and so did `docker compose
+      #     logs`, the one log-reading procedure the docs give. Post-upgrade history was zero.
+      #     The path below is on the persisted `storage` volume, in the very directories the node
+      #     already creates at boot and that SELF_HOSTING.md already tells operators to back up.
+      #     Those directories existed and nothing ever wrote to them; now something does.
+      #     Bounds are set HERE rather than in appsettings.json so the portable default is
+      #     untouched: without an explicit fileSizeLimitBytes the sink silently stops accepting
+      #     events at its 1 GB default, which is a blind spot with no error rather than a full
+      #     disk. 50 MB x 90 files caps each host at ~4.5 GB of the storage volume. ---
+      Serilog__WriteTo__1__Args__fileSizeLimitBytes: "52428800"
+      Serilog__WriteTo__1__Args__rollOnFileSizeLimit: "true"
+      Serilog__WriteTo__1__Args__retainedFileCountLimit: "90"
+      Serilog__WriteTo__1__Args__path: "/data/storage/node/logs/api/log-.json"
+      # --- node-local token signing (shared by both hosts: the portal mints, the API validates) ---
+      JwtSettings__Secret: ${NODE_JWT_SECRET:?run ./selfhost/generate-env.sh first}
+      # --- NO HUB: blank the legacy hub credentials explicitly; the
+      #     federation gate resolves DISABLED and every query is local-first ---
+      LicenseKey: ""
+      ApiUrlPath__AuthenticationApi: ""
+      ApiUrlPath__DataApi: ""
+      # --- NO THIRD PARTY EITHER: the geocoder sends operator-entered street addresses to
+      #     whatever host this names, and it shipped naming the public OpenStreetMap
+      #     Nominatim service. Blank here as well as in appsettings.json, because compose is
+      #     the file an operator actually reads. Blank degrades rather than crashing: the
+      #     lookup logs and returns fallback coordinates. Name your own geocoding endpoint
+      #     here to turn it on. ---
+      GeoDataUrls__GeoCoderServerAPIUrl: ""
+      # --- optional SMTP (password resets / invites); blank = not configured ---
+      EmailSender__Host: ${SMTP_HOST:-}
+      EmailSender__Port: ${SMTP_PORT:-587}
+      EmailSender__Sender: ${SMTP_SENDER:-}
+      EmailSender__Password: ${SMTP_PASSWORD:-}
+      UsingRevProxy: "true"
+      # ASPNETCORE_FORWARDEDHEADERS_ENABLED WAS SET HERE AND IS DELIBERATELY REMOVED. Its comment
+      # claimed the flag "only ENABLES the middleware, leaving KnownProxies/KnownNetworks at the
+      # framework's loopback default". That is backwards. In WebHost.ConfigureWebDefaults the
+      # ForwardedHeaders_Enabled branch CLEARS both collections, and the framework's own source
+      # comment says why: "Only loopback proxies are allowed by default. Clear that restriction
+      # because forwarders are being enabled by explicit configuration."
+      #
+      # So the flag registered a SECOND forwarded-headers middleware, via a startup filter that runs
+      # ahead of everything in Configure, trusting ANY peer. It ran before the app's own properly
+      # restricted UseForwardedHeaders and set RemoteIpAddress from the header first, defeating the
+      # exact decision recorded a few lines below (KnownNetworks, NOT TrustAllProxies) and
+      # re-opening H-15 through X-Forwarded-For for anyone who could reach a host directly.
+      #
+      # Removing it is safe under BOTH readings of the framework behaviour. The app already applies
+      # XForwardedFor AND XForwardedProto itself (ForwardedHeadersConfiguration.cs:88, where
+      # XForwardedProto is what corrects Request.Scheme behind a TLS-terminating proxy), with the
+      # KnownNetworks below. So the flag was redundant if the old comment was right, and harmful if
+      # it was wrong. Either way nothing is lost.
+      #
+      # DECLARE the proxy. Without this, Caddy is an unknown proxy, its X-Forwarded-For is
+      # DISCARDED, and every caller resolves to Caddy's own container address. That flattens the
+      # analytics IP on every request and collapses the rate limiter into a single bucket.
+      #
+      # KnownNetworks, NOT TrustAllProxies: node-api also publishes 8081, so it is reachable
+      # WITHOUT passing through Caddy. That bind is loopback-only by default now (see ports
+      # below), but an operator can widen it to the LAN with NODE_API_HTTP_BIND, and trusting
+      # any peer would then let a direct caller on 8081 forge the entire forwarded chain.
+      # Naming the compose subnet means forwarded headers are honoured from Caddy and ignored
+      # from a LAN client. Shared by both node services via the *node-environment anchor.
+      ForwardedHeaders__KnownNetworks__0: "172.28.0.0/16"
+    volumes:
+      - storage:/data/storage
+      - keys:/data/keys
+    ports:
+      # LOOPBACK BY DEFAULT (audit H-56, a cut line A publication blocker). This endpoint is
+      # plain HTTP, and the API is what carries device JWTs, the Hardware PhysicalLicense
+      # credential and xAPI learner records. Published to the whole LAN it sent all of that in
+      # cleartext, and SELF_HOSTING.md recommended it as the FIRST choice for launcher and
+      # mobile clients. That is the insecure default the audit named.
+      #
+      # Bound to 127.0.0.1 the host can still curl /health/* without the local CA, which is the
+      # other reason this port exists, while nothing on the LAN can reach it in the clear.
+      #
+      # OPT IN if you need it: NODE_API_HTTP_BIND=0.0.0.0 restores LAN reachability. Do that only
+      # on a network you control, and prefer pointing devices at the HTTPS API host on
+      # ${NODE_HTTPS_PORT:-8443}.
+      #
+      # The portal is NOT exposed over HTTP at all -- its auth cookie is HTTPS-only by design.
+      - "${NODE_API_HTTP_BIND:-127.0.0.1}:${NODE_API_HTTP_PORT:-8081}:80"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/health/ready"]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      # First boot runs 4x EF migrations + vocabulary/identity seeds.
+      start_period: 120s
+
+  node-portal:
+    build:
+      context: .
+      dockerfile: enduser/FebrisEndUserPortal/Dockerfile
+    image: febris-node-portal:local
+    restart: unless-stopped
+    depends_on:
+      # After the API is READY, not merely started: the API host provisions/migrates the
+      # four databases; ordering removes the two hosts racing first-boot Migrate().
+      node-api:
+        condition: service_healthy
+    environment:
+      <<: *node-environment
+      # Overrides the API path inherited from the anchor: one directory per host, both on the
+      # persisted storage volume.
+      Serilog__WriteTo__1__Args__path: "/data/storage/node/logs/portal/log-.json"
+      # Clone-and-run bootstrap admin (sub-slice 2): operator-owned identity + initial
+      # password so first login needs no SMTP. Blank password = legacy option A (email flow).
+      NodeBootstrap__AdminEmail: ${NODE_ADMIN_EMAIL:-}
+      NodeBootstrap__AdminPassword: ${NODE_ADMIN_PASSWORD:-}
+      # SSO first-login (JIT) provisioning ships CLOSED: an unknown external-IdP user is
+      # turned away rather than handed an account. This is the one identity gate an operator
+      # has to be able to reopen without editing appsettings, so it is forwarded here.
+      # Any other Identity__* key is set by adding it to this block in the same style.
+      Identity__Registration__AutoProvisionJit: ${NODE_AUTO_PROVISION_JIT:-false}
+    volumes:
+      - storage:/data/storage
+      - keys:/data/keys
+    # NO PORTS BY DESIGN in the default recipe: the portal is reached through the bundled proxy,
+    # and its auth cookie is Secure so a plain-HTTP LAN port would be a downgrade.
+    #
+    # BRING YOUR OWN REVERSE PROXY: if you already run one and want this node behind it, use the
+    # overlay at selfhost/docker-compose.byo-proxy.yml, which publishes this service on loopback
+    # and turns the bundled proxy off. It is a separate file rather than a variable here because a
+    # compose port with an empty published half ("127.0.0.1::80") does NOT disable the mapping, it
+    # assigns a RANDOM host port -- an opt-in that silently opts you in is worse than no opt-in.
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/health/ready"]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 120s
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      node-portal:
+        condition: service_healthy
+    volumes:
+      - ./selfhost/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    ports:
+      - "${NODE_HTTPS_PORT:-8443}:8443"
+
+# Pinned so ForwardedHeaders__KnownNetworks above can name a subnet that is actually
+# deterministic. Compose otherwise assigns one per project at random, which cannot be declared
+# in configuration ahead of time.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  pgdata:
+  valkeydata:
+  storage:
+  keys:
+  caddydata:
+  caddyconfig:

@@ -1,0 +1,97 @@
+@model Febris.ModelLibrary.Models.DataModels.Module
+
+@{
+    ViewData["Title"] = "Edit Module";
+}
+
+<h1>Edit @Model.Name</h1>
+<hr />
+
+@*
+    METADATA ONLY. The stored package bytes belong to the ingest path, so nothing here implies
+    the .zip changed -- re-ingesting the same UUID is how a payload gets replaced. There is
+    deliberately no file input on this form.
+*@
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @* Identity the POST needs to resolve the row. LastUpdateTimeStamp is stamped
+               server-side, so it is not posted. *@
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="UUID" />
+            <input type="hidden" asp-for="TimeStamp" />
+
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Version" class="control-label"></label>
+                <input asp-for="Version" class="form-control" />
+                <span asp-validation-for="Version" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Language" class="control-label"></label>
+                <select asp-for="Language" asp-items="Html.GetEnumSelectList<Febris.EnumLibrary.LanguageMapTypeEnum>()" class="form-control"></select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="XApiInteractionType" class="control-label"></label>
+                <select asp-for="XApiInteractionType" asp-items="Html.GetEnumSelectList<Febris.EnumLibrary.XApiInteractionType>()" class="form-control"></select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="MainSectionCount" class="control-label"></label>
+                <input asp-for="MainSectionCount" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="TotalSectionCount" class="control-label"></label>
+                <input asp-for="TotalSectionCount" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="InteractionComponents" class="control-label"></label>
+                <input asp-for="InteractionComponents" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EstimatedCompletionTime" class="control-label"></label>
+                <input asp-for="EstimatedCompletionTime" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Obsolete" class="control-label"></label>
+                <div>
+                    <label class="switch">
+                        <input type="checkbox" asp-for="Obsolete" />
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

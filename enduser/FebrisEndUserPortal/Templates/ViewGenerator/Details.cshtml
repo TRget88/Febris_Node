@@ -1,0 +1,371 @@
+﻿@inherits Microsoft.VisualStudio.Web.CodeGeneration.Templating.RazorTemplateBase
+@using Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore
+@using System.Collections.Generic
+@using System.Linq
+@@model @Model.ViewDataTypeName
+@{
+    if (Model.IsPartialView)
+    {    
+@:@@using Febris.ModelLibrary.PartialViewModels;
+@:@@using Febris.EnumLibrary;  
+@:
+@:<head>
+    @:<meta name="viewport" content="width=device-width" />
+    @:<link href="~/lib/billboard/billboard.css" rel="stylesheet" />
+    @:<link href="~/css/Modal.css" rel="stylesheet" />
+    @:<style>
+        @:body {font-family: Arial, Helvetica, sans-serif;}
+        @:.column {display: inline-block; padding: 5px;}
+    @:</style>
+@:</head>   
+@:  
+@:<div class="col-sm-12" align="center" ; style ="border-radius: 20px; padding:10px; align-items: center;">
+    @:<div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        @:<h1 style="word-wrap: break-word; font-weight: bold;">@Model.ViewName</h1>
+    @:</div>
+@:</div>
+    }
+    else if (Model.IsLayoutPageSelected)
+    {
+@:@@using Febris.ModelLibrary.PartialViewModels;
+@:@@using Febris.EnumLibrary;
+@:
+@:@@{
+    @:ViewData["Title"] = "@Model.ViewName";
+        if (!string.IsNullOrEmpty(Model.LayoutPageFile))
+        {
+    @:Layout = "@Model.LayoutPageFile";
+        }
+@:}
+@:
+@:<div class="col-sm-12" align="center" ; style = "border-radius: 20px; padding:10px; align-items: center;">
+    @:<div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        @:<h1 style="word-wrap: break-word; font-weight: bold;">@Model.ViewName</h1>
+    @:</div>
+@:</div>
+@:
+    }
+    else
+    {
+@:@@using Febris.ModelLibrary.PartialViewModels;
+@:@@using Febris.EnumLibrary;
+@:
+@:@@{
+    @:Layout = null;
+@:}
+@:
+@:<!DOCTYPE html>
+@:
+@:<html>
+@:<head>
+    @:<meta name="viewport" content="width=device-width" />           
+    @:<title>@Model.ViewName</title>
+@:</head>
+@:<body>
+@:
+//    PushIndent("    ");
+    }
+}
+<br/>
+@@await Html.PartialAsync("../Widgets/_StatusMessage", Model.FirstOrDefault().StatusMessage);
+@{
+    if (Model.IsPartialView)
+    {
+Dictionary<string, IPropertyMetadata> propertyLookup = ((IModelMetadata)Model.ModelMetadata).Properties.ToDictionary(x => x.PropertyName, x => x);
+Dictionary<string, INavigationMetadata> navigationLookup = ((IModelMetadata)Model.ModelMetadata).Navigations.ToDictionary(x => x.AssociationPropertyName, x => x);
+
+@:<div class="row">
+    @:<div class="col-sm-6" align="center" ; style = "border-radius: 20px; padding:10px; align-items: center;">
+        foreach (var item in Model.ModelMetadata.ModelType.GetProperties())
+        {
+            if (propertyLookup.TryGetValue(item.Name, out IPropertyMetadata property)
+                && property.Scaffold && !property.IsForeignKey && !property.IsPrimaryKey)
+            {       
+        <div class="row">                 
+            <div class = "col-sm-2" align="right">
+                @@Html.DisplayNameFor(model => model.@GetValueExpression(property))
+            </div>
+            <div class = "col-sm-10" align="left">
+                @@Html.DisplayFor(model => model.@GetValueExpression(property))
+            </div>
+        </div>
+            }
+            else if (navigationLookup.TryGetValue(item.Name, out INavigationMetadata navigation))
+            {
+        <div class="row">      
+            <div class = "col-sm-2" align="right">
+                @@Html.DisplayNameFor(model => model.@GetValueExpression(navigation))
+            </div>
+            <div class = "col-sm-10" align="left">
+                @@Html.DisplayFor(model => model.@GetValueExpression(navigation).@navigation.DisplayPropertyName)
+            </div>
+        </div>
+            }
+        }	
+    @:</div>
+    @:<div class="col-sm-6" align="center" ; style = "border-radius: 20px; padding:10px; align-items: center;">
+        @:@@if (Model.Image == "/images/DefaultMedia/default.png")
+        @:{
+            @:<img src="~/images/DefaultMedia/default.png" alt="Default image" width="128" height="128" />
+        @:}
+        @:else
+        @:{
+            @:<img src="@GetImagePartial()" alt="Image" width="128" height="128" />                    
+        @:}
+    @:</div>
+@:</div>
+	}
+    else if (Model.IsLayoutPageSelected)
+    {
+@:<div>
+    @:<h4>@Model.ViewDataTypeShortName</h4>
+    @:<hr />
+
+    Dictionary<string, IPropertyMetadata> propertyLookup = ((IModelMetadata)Model.ModelMetadata).Properties.ToDictionary(x => x.PropertyName, x => x);
+    Dictionary<string, INavigationMetadata> navigationLookup = ((IModelMetadata)Model.ModelMetadata).Navigations.ToDictionary(x => x.AssociationPropertyName, x => x);
+
+
+    @:<div class="row">
+        @:<div class="col-sm-6" align="center" ; style = "border-radius: 20px; padding:10px; align-items: center;">
+            foreach (var item in Model.ModelMetadata.ModelType.GetProperties())
+            {
+                if (propertyLookup.TryGetValue(item.Name, out IPropertyMetadata property)
+                    && property.Scaffold && !property.IsForeignKey && !property.IsPrimaryKey)
+                {       
+            <div class="row">                 
+                <div class = "col-sm-2" align="right">
+                    @@Html.DisplayNameFor(model => model.@GetValueExpression(property))
+                </div>
+                <div class = "col-sm-10" align="left">
+                    @@Html.DisplayFor(model => model.@GetValueExpression(property))
+                </div>
+            </div>
+                }
+                else if (navigationLookup.TryGetValue(item.Name, out INavigationMetadata navigation))
+                {
+            <div class="row">      
+                <div class = "col-sm-2" align="right">
+                    @@Html.DisplayNameFor(model => model.@GetValueExpression(navigation))
+                </div>
+                <div class = "col-sm-10" align="left">
+                    @@Html.DisplayFor(model => model.@GetValueExpression(navigation).@navigation.DisplayPropertyName)
+                </div>
+            </div>
+                }
+            }	
+        @:</div>
+        @:<div class="col-sm-6" align="center" ; style = "border-radius: 20px; padding:10px; align-items: center;">
+            @:@@if (Model.Image == "/images/DefaultMedia/default.png")
+            @:{
+                @:<img src="~/images/DefaultMedia/default.png" alt="Default image" width="128" height="128" />
+            @:}
+            @:else
+            @:{
+                @:<img src="@GetImagePartial()" alt="Image" width="128" height="128" />                    
+            @:}
+        @:</div>
+    @:</div>
+@:</div>
+    }
+    else
+    {
+@:<div>
+    @:<h4>@Model.ViewDataTypeShortName</h4>
+    @:<hr />
+        
+    Dictionary<string, IPropertyMetadata> propertyLookup = ((IModelMetadata)Model.ModelMetadata).Properties.ToDictionary(x => x.PropertyName, x => x);
+    Dictionary<string, INavigationMetadata> navigationLookup = ((IModelMetadata)Model.ModelMetadata).Navigations.ToDictionary(x => x.AssociationPropertyName, x => x);
+
+    @:<div class="row">
+        @:<div class="col-sm-6" align="center" ; style = "border-radius: 20px; padding:10px; align-items: center;">
+            foreach (var item in Model.ModelMetadata.ModelType.GetProperties())
+            {
+                if (propertyLookup.TryGetValue(item.Name, out IPropertyMetadata property)
+                    && property.Scaffold && !property.IsForeignKey && !property.IsPrimaryKey)
+                {       
+            <div class="row">                 
+                <div class = "col-sm-2" align="right">
+                    @@Html.DisplayNameFor(model => model.@GetValueExpression(property))
+                </div>
+                <div class = "col-sm-10" align="left">
+                    @@Html.DisplayFor(model => model.@GetValueExpression(property))
+                </div>
+            </div>
+                }
+                else if (navigationLookup.TryGetValue(item.Name, out INavigationMetadata navigation))
+                {
+            <div class="row">      
+                <div class = "col-sm-2" align="right">
+                    @@Html.DisplayNameFor(model => model.@GetValueExpression(navigation))
+                </div>
+                <div class = "col-sm-10" align="left">
+                    @@Html.DisplayFor(model => model.@GetValueExpression(navigation).@navigation.DisplayPropertyName)
+                </div>
+            </div>
+                }
+            }	
+        @:</div>
+        @:<div class="col-sm-6" align="center" ; style = "border-radius: 20px; padding:10px; align-items: center;">
+            @:@@if (Model.Image == "/images/DefaultMedia/default.png")
+            @:{
+                @:<img src="~/images/DefaultMedia/default.png" alt="Default image" width="128" height="128" />
+            @:}
+            @:else
+            @:{
+                @:<img src="@GetImagePartial()" alt="Image" width="128" height="128" />                    
+            @:}
+        @:</div>
+    @:</div>
+@:</div>
+    }
+}
+<br/>
+<div>
+@{
+string pkName = GetPrimaryKeyName();   
+if (Model.IsPartialView)
+{
+@:<div align="center">                   
+    @:@@await Html.PartialAsync("@GetButtonPartial(Model.ViewDataTypeName)", new IndividualButtonPartial { Id = Model.Id })
+@:</div>
+}
+else if (Model.IsLayoutPageSelected)
+{
+if (pkName != null)
+{
+@:<div align="center">                   
+    @:@@await Html.PartialAsync("@GetButtonPartial(Model.ViewDataTypeName)", new IndividualButtonPartial { Id = "@@Model.@pkName" })
+@:</div>            
+}
+else
+{
+@:<div align="center">                   
+    @:@@await Html.PartialAsync("@GetButtonPartial(Model.ViewDataTypeName)", new IndividualButtonPartial { /* Id = Model.PrimaryKey */ })
+@:</div>
+}
+}
+else
+{
+if (pkName != null)
+{
+@:<div align="center">                   
+    @:@@await Html.PartialAsync("@GetButtonPartial(Model.ViewDataTypeName)", new IndividualButtonPartial { Id = "@@Model.@pkName" })
+@:</div>            
+}
+else
+{
+@:<div align="center">                   
+    @:@@await Html.PartialAsync("@GetButtonPartial(Model.ViewDataTypeName)", new IndividualButtonPartial { /* Id = Model.PrimaryKey */ })
+@:</div>
+}
+}
+}</div>
+
+<br/>
+
+<div align="center">
+    <h3>Associations</h3>
+    <h4>Associations 1</h4>
+    <div class="row">
+        foreach(var item for Model.Catagory){
+        <div>@@Html.DisplayFor(model => item.thing)</div>
+        }
+    </div>
+    <h4>Associations 2</h4>
+    <div class="row">
+        foreach(var item for Model.Catagory){
+        <div>@@Html.DisplayFor(model => item.thing)</div>
+        }
+    </div>
+</div>
+<br/>
+
+<div align="center">
+    <h3>Module info</h3>
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            <div><b>Total Tests Taken</b></div>
+            <br />
+            <div id="TestsTakenLineChart">Loading Test Total....</div>
+        </div>
+        <div class="col-md-6">
+            <div><b>Total Minute Count</b></div>
+            <br />
+            <div id="HoursLineChart">Loading hour count...</div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            <div><b>Pass/Fail</b></div>
+            <br />
+            <div id="statementPieChart">Loading Statement Pie Chart....</div>
+        </div>
+        <div class="col-md-6">
+            <div><b>Pass/Fail</b></div>
+            <br />
+            <div id="secondStatementPieChart">Loading Statement Pie Chart....</div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            <div><b>Pass/Fail</b></div>
+            <br />
+            <div id="statementRadarChart">Loading Radar Chart....</div>
+        </div>
+        <div class="col-md-6">
+            <div><b>Pass/Fail</b></div>
+            <br />
+            <div id="secondStatementRadarChart">Loading Radar Chart....</div>
+        </div>
+    </div>
+</div>
+
+<script src="~/lib/d3/d3.js"></script>
+<script src="~/lib/billboard/billboard.js"></script>
+<script src="~/lib/Widget/VariableSet.js"></script>
+<script src="~/lib/PartialViewCalls/StatementTimeChartPartialViewCall.js"></script>
+<script src="~/lib/PartialViewCalls/StatementCountChartPartialViewCall.js"></script>
+<script src="~/lib/PartialViewCalls/StatementRadarChartPartialViewCall.js"></script>
+<script src="~/lib/PartialViewCalls/StatementPieChartPartialViewCall.js"></script>
+
+@{
+    if (!Model.IsPartialView && !Model.IsLayoutPageSelected)
+    {
+        //ClearIndent();
+    @:</body>
+    @:</html>
+    }
+}
+@functions
+{
+    string GetPrimaryKeyName()
+    {
+        return (Model.ModelMetadata.PrimaryKeys != null && Model.ModelMetadata.PrimaryKeys.Length == 1)
+        ? Model.ModelMetadata.PrimaryKeys[0].PropertyName
+        : null;
+    }
+
+    string GetValueExpression(IPropertyMetadata property)
+    {
+        return property.PropertyName;
+    }
+
+    string GetValueExpression(INavigationMetadata navigation)
+    {
+        return navigation.AssociationPropertyName;
+    }
+
+    string GetButtonPartial(string typeName)
+    {
+        string output = typeName.Split('.').Last().ToString();
+        return "Buttons/GenericButtons/" + output + "/_DetailsButtonGroupPartial";        
+    }
+
+    string GetImagePartial()
+    {
+        return "@Url.Action(\"ImageLoader\",\"Widget\",new {path=Model.Image})";        
+    }
+}

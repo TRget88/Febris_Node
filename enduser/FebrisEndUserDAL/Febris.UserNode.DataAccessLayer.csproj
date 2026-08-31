@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- NET8 Wave 2: EF/Npgsql -> 8.0.x
+         (host behavior gated by the Wave-3 legacy-timestamp switch). Mvc.NewtonsoftJson
+         dropped (this DAL uses Newtonsoft directly, not the MVC formatter);
+         Mvc.ViewFeatures dropped -> FrameworkReference. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <Configurations>Debug;Release;Staging</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\ApplicationDb\20220629220632_Initial.cs" />
+    <Compile Remove="Migrations\ApplicationDb\20220629220632_Initial.Designer.cs" />
+    <Compile Remove="Migrations\ApplicationDb\20220629220832_Initial.cs" />
+    <Compile Remove="Migrations\ApplicationDb\20220629220832_Initial.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Febris.EnumLibrary" Version="0.1.0" />
+    <PackageReference Include="Febris.ModelLibrary" Version="0.1.0" />
+    <PackageReference Include="Febris.SharedServices" Version="0.1.0" />
+  </ItemGroup>
+
+</Project>

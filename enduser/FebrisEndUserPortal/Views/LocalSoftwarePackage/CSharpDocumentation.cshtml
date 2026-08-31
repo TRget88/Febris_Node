@@ -1,0 +1,916 @@
+﻿
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+    <style>
+        .codesnippet {
+            background: darkslategray;
+            margin-bottom: 0;
+        }
+
+            .codesnippet p {
+                color: white;
+                margin-bottom: 0;
+            }
+
+            .codesnippet span {
+                color: cornflowerblue;
+            }
+
+            .codesnippet span2 {
+                color: palegreen;
+            }
+
+        /*This does work but is not needed*/
+        /*.codesnippet span.green {
+                color: palegreen;
+            }*/
+
+    </style>
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">C# Unity Read Me Documentation</h1>
+    </div>
+</div>
+<br />
+
+@*Background*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Background</h3>
+    <hr />
+    <p>
+        This is document is used to help developers integrate Febris functionality into XR simulations built in unity or with C#.
+        Some of the sections posted pertain directly to Unity.
+    </p>
+    <p style="font-weight:bold">
+        Please keep in mind this library is a continuous work in progress and may change as well as these documents.
+    </p>
+</div>
+
+
+@*External Requirements*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>External Requirements</h3>
+    <hr />
+    <p>
+        A few things are not provided that are needed to use this library properly. These items are:
+    </p>
+    <ol>
+        <li>
+            Stopwatch instance (or timespan but the stopwatch is the most simple)
+        </li>
+        <li>
+            String array
+        </li>
+        <li>
+            float for score (Min, Max, Raw, and Scaled)
+        </li>
+        <li>
+            Newtonsoft.Json dll that is at least 12.0.0.0
+        </li>
+    </ol>
+    <p>
+        The stopwatch instance is used for keeping track of how long a user is in a simulation. This will be used multiple times.
+        <br />
+        The string array will be used to collect Command line arguments.
+    </p>
+    <p>
+        Example:
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        <span>public class</span>
+        <span2>testScript</span2> : <span2>MonoBehaviour</span2>
+    </p>
+
+    <p>{</p>
+    <p>
+        &emsp;
+        <span2>Stopwatch</span2>
+        __stopwatch =
+        <span>new</span>
+        <span2>Stopwatch</span2>
+        ();
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __rawScore = 0f;
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __minScore = 0f;
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __maxScore = 100f;
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __scaledScore = 0f;
+    </p>
+    <br />
+    <p>
+        &emsp;
+        <span>void</span>
+        Start()
+    </p>
+    <p>&emsp;{</p>
+    <p>&emsp;&emsp;stopwatch.Start();</p>
+    <p>
+        &emsp;&emsp;
+        <span>string</span>[] arguments=<span2>Environment</span2>.GetCommandLineArgs();
+    </p>
+
+    <p>&emsp;}</p>
+
+    <p>}</p>
+</div>
+
+
+@*Adding the Febris dll*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Adding the Febris dll</h3>
+    <hr />
+    <p>
+        Add the febris dll (dynamic link library) to a folder in your project. This dll will be provided by Febris. It does not need to be stored in a specific location but it will need to be present. The namespace path can be seen below.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement
+    </p>
+</div>
+
+
+@*Initialization*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Initialization</h3>
+    <hr />
+    <p>
+        Initialization needs to happen when the simulation starts. This will require the arguments to be passed into the newly initialized Febris files.
+    </p>
+    <p>
+        Example:
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        <span>public class</span>
+        <span2>testScript</span2> : <span2>MonoBehaviour</span2>
+    </p>
+
+    <p>{</p>
+    <p>
+        &emsp;
+        <span2>Stopwatch</span2>
+        __stopwatch =
+        <span>new</span>
+        <span2>Stopwatch</span2>
+        ();
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __rawScore = 0f;
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __minScore = 0f;
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __maxScore = 100f;
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __scaledScore = 0f;
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __period = 10f;
+    </p>
+    <p>
+        &emsp;
+        <span>float</span>
+        __nextUpdate  = 10f;
+    </p>
+
+
+
+    <br />
+    <p>
+        &emsp;
+        <span>void</span>
+        Start()
+    </p>
+    <p>&emsp;{</p>
+    <p>&emsp;&emsp;__stopwatch.Start();</p>
+
+    <p>
+        &emsp;&emsp;
+        <span>bool</span> isInitialized=<span>false</span>;
+    </p>
+    <br />
+    <p>
+        &emsp;&emsp;
+        <span>string</span>[] argumentArray=<span>default</span>;
+    </p><p>
+        &emsp;&emsp;
+        <span>string</span>[,] statementOutputArray=<span>default</span>;
+    </p>
+    <p>
+        &emsp;&emsp;
+        <span>switch</span> (<span2>Application</span2>.platform)
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        {
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span>case</span><span2> RuntimePlatform</span2>.Android:
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        {
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span2>AndroidJavaClass</span2> UnityPlayer= <span>new</span> <span2>AndroidJavaClass</span2>("com.unity3d.player.UnityPlayer");
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span2>AndroidJavaObject</span2> currentActivity= UnityPlayer.GetStatic<<span2>AndroidJavaObject</span2>>("currentActivity");
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;        
+    <span2>AndroidJavaObject</span2> inputIntent= currentActivity.Call<<span2>AndroidJavaObject</span2>>(<span2>AndroidIntentConst</span2>.GetIntentTag);
+</p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>bool</span> hasExtra= intent.Call<<span>bool</span>>(<span2>AndroidIntentConst</span2>.HasExtrasTag, <span2>AndroidIntentConst</span2>.ArgumentExtraTag);
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>if</span>(!hasExtra){
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        UnityEngine.<span2>Debug</span2>.Log("*********************Intent has no extras******************************");
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+    <br />
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span2>AndroidJavaObject</span2> extras = intent.Call<<span2>AndroidJavaObject</span2>>("getExtras");
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>try</span>{
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>string</span> arguments = extras.Call<<span>string</span>>(<span2>AndroidIntentConst</span2>.GetStringTag, <span2>AndroidIntentConst</span2>.ArgumentExtraTag);
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        argumentArray = <span>new string</span>[] {arguments};
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        UnityEngine.<span2>Debug</span2>.Log(argumentArray);
+    </p>
+
+
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>catch</span>{
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        UnityEngine.<span2>Debug</span2>.Log("*********************FAILED TO GET ARGUMENTS******************************");
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>break</span>;
+    </p>
+
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+
+
+    <p>
+        &emsp;&emsp;&emsp;
+        <span>case</span><span2> RuntimePlatform</span2>.WindowsPlayer:
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        {
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        argumentArray = <span2>Environment</span2>.GetCommandLineArgs();
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>break</span>;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span>default</span>:
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        {
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span2>Application</span2>.Quit();
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>break</span>;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        }
+    </p>
+
+
+
+    <p>
+        &emsp;&emsp;
+        <span>try</span>{
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span>switch</span> (<span2>Application</span2>.platform)
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        {
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        <span>case</span><span2> RuntimePlatform</span2>.WindowsPlayer:
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        {
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        (isInitialized, statementOutputArray) = <span2>Initializer</span2>.Initialize(argumentArray, ExpectedOperatingSystem.WindowsPC).Result;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>break</span>;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        <span>case</span><span2> RuntimePlatform</span2>.Android:
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        {
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        (isInitialized, statementOutputArray) = <span2>Initializer</span2>.Initialize(argumentArray, ExpectedOperatingSystem.Android).Result;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        Android_SendBroadcast(statementOutputArray, <span2>AndroidIntentConst</span2>.StatementCreation);
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>break</span>;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        <span>case</span><span2> RuntimePlatform</span2>.IPhonePlayer:
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        {
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        (isInitialized, statementOutputArray) = <span2>Initializer</span2>.Initialize(argumentArray, ExpectedOperatingSystem.iOSvariant).Result;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>break</span>;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;
+        <span>catch</span>(<span2>Exception</span2> ex){
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span2>Console</span2>.WriteLine("Error initalizing in Unity: " + ex.Message);
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span>throw</span>;
+    </p>
+    <p>
+        &emsp;&emsp;
+        }
+    </p>
+
+
+    <p>
+        &emsp;&emsp;
+        <span>string</span> startpath = <span2>Application</span2>.persistentDataPath;
+    </p>
+
+    <p>
+        &emsp;&emsp;
+        UnityEngine.<span2>Debug</span2>.Log("isInitalized:" + isInitialized.ToString());
+    </p>
+
+    <p>
+        &emsp;&emsp;
+        <span>if</span> (!isInitialized);
+    </p>
+    <p>
+        &emsp;&emsp;
+        {
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        UnityEngine.<span2>Debug</span2>.LogError("has not been initalized");
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        #if (!UNITY_EDITOR)
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span2>Application</span2>.Quit();
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        #endif
+    </p>
+    <p>
+        &emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;
+        <span>new</span> <span2>WaitForSeconds</span2>(1f);
+    </p>
+
+    <br />
+
+
+    <p>
+        &emsp;&emsp;
+        <span>try</span>{
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span2>StatementHandler</span2>.UpdateStatement(XAPIProperties.Result, ResultOptions.ScoreMin, __minScore);
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span2>StatementHandler</span2>.UpdateStatement(XAPIProperties.Result, ResultOptions.ScoreMax, __maxScore);
+    </p>
+    <br />
+
+    <p>
+        &emsp;&emsp;&emsp;
+        <span>switch</span> (<span2>Application</span2>.platform)
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        {
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        <span>case</span><span2> RuntimePlatform</span2>.WindowsPlayer:
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        {
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <span2>///Nothing is need here for updates because windowsPlayer uses the file system.</span2>
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>break</span>;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        <span>case</span><span2> RuntimePlatform</span2>.Android:
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        {
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        (isInitialized, statementOutputArray) = <span2>StatementHandler</span2>.GetSendableUpdate().Result;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        UnityEngine.<span2>Debug</span2>.Log("statement Output Array:" + statementOutputArray.ToString());
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        Android_SendBroadcast(statementOutputArray, <span2>AndroidIntentConst</span2>.StatementUpdate);
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>break</span>;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;
+        <span>case</span><span2> RuntimePlatform</span2>.IPhonePlayer:
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        {
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        (isInitialized, statementOutputArray) = <span2>StatementHandler</span2>.GetSendableUpdate().Result;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+        <span>break</span>;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;&emsp;&emsp;
+        }
+    </p>
+
+    <p>
+        &emsp;&emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;
+        <span>catch</span>(<span2>Exception</span2> ex){
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span2>Console</span2>.WriteLine("Error updating statement in Unity: " + ex.Message);
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span>throw</span>;
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        }
+    </p>
+    <p>
+        &emsp;&emsp;
+        }
+    </p>
+
+    <p>
+        &emsp;&emsp;
+        <span>catch</span>(<span2>Exception</span2> ex){
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        UnityEngine.<span2>Debug</span2>.Log(ex.Message);
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        UnityEngine.<span2>Debug</span2>.Log(ex.Data);
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        #if (!UNITY_EDITOR)
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        <span2>Application</span2>.Quit();
+    </p>
+    <p>
+        &emsp;&emsp;&emsp;
+        #endif
+    </p>
+    <p>
+        &emsp;&emsp;
+        }
+    </p>
+
+
+    <p>&emsp;}</p>
+
+</div>
+
+
+@*Keeping Time*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <h3>Keeping Time</h3>
+    <hr />
+    <p>
+        Time keeping needs to be handled at least once every 10 seconds. This can be handled two different ways. Both functions require the use of the previously discussed stopwatch variable. The easiest way can be handled in one line seen below.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.DurationUpdate(__stopwatch.Elapsed);
+    </p>
+</div>
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <p>
+        The second way to handle timekeeping can be completed with a more generic function seen below.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.UpdateStatement(XAPIProperties.Result, ResultOptions.Duration, __stopwatch.Elapsed);
+    </p>
+</div>
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <p>
+        One simple way of accomplishing this task is by using an update like shown below.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        <span>private void</span> Update(){
+    </p>
+    <p>
+        &emsp;
+        <span>if</span> (<span2>Time</span2>.time > __nextUpdate){
+    </p>
+    <p>
+        &emsp;&emsp;
+        __nextUpdate += __period;
+    </p>
+    <p>
+        &emsp;&emsp;
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.DurationUpdate(__stopwatch.Elapsed);
+    </p>
+    <p>&emsp;}</p>
+    <p>}</p>
+
+
+
+</div>
+
+
+@*Stage Restart Counting*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+
+    <h3>Stage Restart Counting</h3>
+    <hr />
+    <p>
+        Whenever a stage is restarted a count is kept. This should be tied to the stage restart button in the UI. This can be done using the snippet below.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.StageRestart();
+    </p>
+</div>
+
+
+@*Adding notes*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <h3>Adding notes</h3>
+    <hr />
+    <p>
+        Adding notes to a simulation adds extra information for later review by the user. <span style="font-weight:bold">Notes are immutable.</span> This is accomplished two different ways. The easiest way can be seen in the below snippet.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.AddResultNote("This is a very useful note");
+    </p>
+</div>
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <p>
+        Note adding can also be accomplished by the snippet below.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.UpdateStatement(XAPIProperties.Result, ResultOptions.Extensions, ResultExtensionOptions.Notes,"This is a very useful note");
+    </p>
+</div>
+
+
+@*Scoring the Simulation*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <h3>Scoring the Simulation</h3>
+    <hr />
+    <p>
+        Scoring a simulation has multiple parts. The maximum score, the minimum score, the scaled score, and the raw score. The maximum score is the highest possible score on the simulation and the minimum score is likewise the lowest possible score on the simulation. The raw score on the simulation is the procession of the user and needs to be kept current with progress.
+        <span style="font-weight:bold">Do not set a scaled score, it is currently automatically set.</span>
+        The snippet below shows how these can be added to the result of the simulation.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        <span2>
+            //These can be set at the start of the simulation and may already be set when the simulation starts, but most likely not.
+        </span2>
+    </p>
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.UpdateStatement(XAPIProperties.Result, ResultOptions.ScoreMax, 100f);
+    </p>
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.UpdateStatement(XAPIProperties.Result, ResultOptions.ScoreMin, 0f);
+    </p>
+    <p>
+        <span2>
+            //This is the user's score that needs to be kept current. 85f is just an example.
+        </span2>
+    </p>
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.UpdateStatement(XAPIProperties.Result, ResultOptions.ScoreRaw, 85f);
+    </p>
+</div>
+
+
+@*Simulation pass*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <h3>Simulation pass</h3>
+    <hr />
+    <p>
+        If the simulation score is higher than passing this needs to be noted using the below snippet. (ie. if the passing score is 70 and the person has already scored higher than true needs to be passed as the input.)
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.SimulationPassed(true);
+    </p>
+    <p>
+        <span2>
+            //or
+        </span2>
+    </p>
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.UpdateStatement(XAPIProperties.Result, ResultOptions.Success, true);
+    </p>
+</div>
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <p>
+        It would be more simple if this were a static variable in the simulation and used as a variable in the bool position. This can also be handled at a different point seen in the ending simulation section.
+    </p>
+</div>
+
+
+@*Completing the Simulation*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <h3>
+        Completing the Simulation
+    </h3>
+    <hr />
+    <p>
+        If the user completes the simulation it should be noted using the snippet below.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.SimulationComplete();
+    </p>
+    <p>
+        <span2>
+            //or
+        </span2>
+    </p>
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.UpdateStatement(XAPIProperties.Result, ResultOptions.Completion, true);
+    </p>
+</div>
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <p>
+        This can also be handled at a different point seen in the ending simulation section.
+    </p>
+</div>
+
+
+@*Ending the Simulation*@
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <h3>
+        Ending the Simulation
+    </h3>
+    <hr />
+    <p>
+        Ending a simulation can be handled a few different ways depending on what has been accomplished. If everything has already been updated then the below snippet can be used to end the simulation.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.EndSimulation();
+    </p>
+</div>
+<div class="col-sm-12" style="border-radius: 20px; padding:10px; align-items: center;">
+    <p>
+        The below snippet will fill in the needed items that could have been set in completion and success as well as the raw score and duration of the simulation. This is the easiest, most complete way to end a simulation.
+    </p>
+</div>
+@* Code Snippet *@
+<div class="col-sm-12 codesnippet container-fluid">
+    <p>
+        Febris.CsharpSimulationLibraryNetStandard.Statement.<span2>StatementHandler</span2>.EndSimulation(<span>bool</span> success, <span>bool</span> complete, <span>float</span> rawScore, <span2>TimeSpan</span2> duration);
+    </p>
+</div>
+

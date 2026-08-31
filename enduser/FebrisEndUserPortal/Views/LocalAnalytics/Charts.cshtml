@@ -1,0 +1,97 @@
+﻿@model string
+@using Febris.ModelLibrary.PartialViewModels;
+
+@{
+    ViewData["Title"] = "Charts";
+}
+
+<head>
+    <link href="~/gentelella-master/vendors/jqvmap/dist/jqvmap.css" rel="stylesheet" />
+</head>
+
+<h2>Charts</h2>
+
+@if (TempData.ContainsKey("StatusMessage"))
+{
+    <input type="hidden" id="statusMessage" value="@TempData["StatusMessage"].ToString()" />
+}
+
+
+<input type="hidden" id="modelId" value="1" />
+
+<br />
+
+<div align="center">
+    <div class="row">
+        <div class="col-md-6">
+
+            <br />
+            <input type="hidden" id="Element0" value="RequestByDate" />
+            <div id="Division0">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+
+            <br />
+            <input type="hidden" id="Element1" value="RequestsByUniqueIP" />
+            <div id="Division1">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <br />
+
+    <div class="row">
+        <div class="col-md-6">
+
+            <br />
+            <input type="hidden" id="Element2" value="PageRequestByUser" />
+            <div id="Division2">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+
+            <br />
+            <input type="hidden" id="Element3" value="OddRequestsPortion" />
+            <div id="Division3">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+
+            <br />
+            <input type="hidden" id="Element4" value="BotOrUser" />
+            <div id="Division4">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden"></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+
+</div>
+
+<script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>
+

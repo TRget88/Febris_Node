@@ -1,0 +1,101 @@
+﻿@model X.PagedList.IPagedList<Febris.ModelLibrary.Models.XApiModels.Actor>
+
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Mvc
+@using X.PagedList
+@using Febris.ModelLibrary.PartialViewModels
+
+<div id="tablePartial">
+    <div id="search">
+        @using (Html.BeginForm())
+        {
+            <p>
+                @Html.TextBox("SearchString", null, new { id = "searchBox", type = "text" })
+                <input type="submit" value="Search" class="fa fa-search btn btn-primary" />
+            </p>
+        }
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Object Type</th>
+                <th>Name</th>
+                <th>Mbox</th>
+                <th>Email Mbox Sha1</th>
+                <th>Open Id</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @if(Model != null){
+        @foreach (var item in Model) {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UUID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ObjectType)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Mbox)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Mbox_sha1sum)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OpenId)
+                </td>                               
+                    @await Html.PartialAsync("Buttons/GenericButtons/Actor/_IndexButtonGroupPartial", new IndividualButtonPartial { Id = item.Id })                   
+            </tr>
+        }}
+        </tbody>
+    </table>
+    <div id="pagedList">
+    @if(TempData.ContainsKey("CurrentFilter")){
+        @Html.PagedListPager(Model, page => Url.Action("IndexPartial", new { page = page, currentFilter = TempData["CurrentFilter"].ToString()}));
+    }
+    else{
+        @Html.PagedListPager(Model, page => Url.Action("IndexPartial", new { page = page }));
+    }        
+    </div>
+</div>    
+<script>
+$(function () {
+    $('#pagedList').on('click', 'a', function () {
+        $.ajax({
+            url: this.href,
+            type: 'GET',
+            cache: false,
+            success: function (result) {
+                $('#tablePartial').html(result);
+            }
+        });
+        return false;
+    });
+});
+$(function () {
+    $('#search').submit(function (event) {
+        event.preventDefault();
+        var searchString = document.getElementById("searchBox").value;
+        $.ajax({
+            url: "../Actor/IndexPartial",
+            async: true,
+            data: 'searchString=' + searchString,
+            type: 'GET',
+            cache: false,
+            success: function (result) {
+                $('#tablePartial').html(result);
+            },
+            error: function (xhr, param) {
+                console.log(xhr);
+                console.log(param);
+            }
+        });
+        return false;
+    });
+});
+</script>

@@ -1,0 +1,47 @@
+@model Febris.ModelLibrary.ViewModels.LocalUserCreation
+@*
+    Admin-only form to create a parent/guardian account. The account role is fixed
+    to UserParent server-side (the controller overrides any posted value), so a
+    guardian never receives a learner actor of their own. After creation the admin
+    is taken to the Manage page to link the guardian's students.
+*@
+@{
+    ViewData["Title"] = "Create guardian";
+}
+
+<h2>Create guardian account</h2>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-info">@TempData["StatusMessage"]</div>
+}
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    @* Role is fixed to UserParent; carried as a hidden field and re-forced server-side. *@
+    <input type="hidden" asp-for="UserAccountType" />
+
+    <div class="form-group">
+        <label asp-for="FirstName"></label>
+        <input asp-for="FirstName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="LastName"></label>
+        <input asp-for="LastName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="EmailAddress"></label>
+        <input asp-for="EmailAddress" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="PhoneNumber"></label>
+        <input asp-for="PhoneNumber" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="IdentificationNumber"></label>
+        <input asp-for="IdentificationNumber" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create guardian</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

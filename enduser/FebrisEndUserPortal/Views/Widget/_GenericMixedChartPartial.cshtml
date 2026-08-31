@@ -1,0 +1,25 @@
+﻿@model Febris.ModelLibrary.ViewModels.GenericMixedChart
+
+
+<div class="x_panel">
+    <div class="x_title">
+        <h2>@Model.Title<small>@Model.Description</small></h2>
+        <ul class="nav navbar-right panel_toolbox">           
+            <li>
+                <a class="close-link"><i class="fa fa-close"></i></a>
+            </li>
+        </ul>
+        <div class="clearfix"></div>
+    </div>    
+    <div class="x_content">    
+        <table class="flex-table">    
+            <tbody>
+                <tr id="@Model.IdToUse">    
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    ProcessGenericMixedChart(@Html.Raw(Json.Serialize(Model)));
+</script>

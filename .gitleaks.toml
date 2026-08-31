@@ -1,0 +1,95 @@
+# Per-repo gitleaks config, shipped IN each public repo (NR-5).
+# SECURITY.md points here, so the scan diligence is visible rather than asserted.
+#
+# The gate is "zero UN-ALLOWLISTED findings", not "zero findings". DRIFT phase 1
+# classified 74 false positives across 11,992 blobs and found ZERO real credentials
+# ever committed; the allowlists below are those 74 by class, so a real finding is
+# never buried in noise.
+
+[extend]
+useDefault = true
+
+# ---- Rules the default ruleset does not carry ----
+#
+# WHY THESE EXIST. On 2026-08-29 a live, UNENCRYPTED ASP.NET DataProtection master key
+# (key-<guid>.xml) reached the public node repo, and every scanner in the chain reported zero
+# findings on it. The default ruleset cannot see this shape: its private-key rule is anchored on
+# PEM armour and matches only a "BEGIN ... PRIVATE KEY" header, and a key ring has no armour --
+# the master key is raw base64 sitting between XML tags, with no quoted assignment for the
+# generic catch-all to latch onto either. So the material is only detectable by a rule written
+# for it. Three rules, deliberately overlapping, because the leak got past every single-point
+# guard once already: the key material itself, the file structure, and the file name.
+#
+# None of the three declares `keywords`. gitleaks uses keywords as a prefilter and skips the
+# regex entirely when none is present in the fragment, so a keyword that is subtly wrong makes a
+# rule silently never fire -- the exact failure mode the allowlist comments below were written
+# about. These regexes are cheap and specific enough to always run.
+
+[[rules]]
+id = "aspnet-dataprotection-master-key"
+description = "ASP.NET DataProtection master key material: the base64 <value> carried inside the <masterKey> element of a key ring. This is the secret itself. The window between the two tags is bounded rather than greedy because a real ring puts the \"the key below is in an unencrypted form\" warning comment between them. Fires on encrypted rings too, and that is correct: a ring belongs in no repository, public or private."
+regex = '''(?s)<masterKey\b[^>]{0,400}>.{0,400}?<value>\s*([A-Za-z0-9+/]{32,}={0,2})\s*</value>'''
+secretGroup = 1
+tags = ["key", "dataprotection", "aspnet"]
+
+[[rules]]
+id = "aspnet-dataprotection-key-ring-structure"
+description = "The structural shape of a key-<guid>.xml ring file: the <descriptor deserializerType=\"Microsoft.AspNetCore.DataProtection...\"> element, or the <encryption>/<validation> algorithm pair nested inside it. Backstop for a ring the first rule cannot reach -- one reformatted, line-split past the bounded window, or encrypted to a certificate so that no plain <value> exists. Zero occurrences of either string in the workshop tree at the time of writing, so it is not a noise source."
+regex = '''<descriptor\s+deserializerType="Microsoft\.AspNetCore\.DataProtection\.[^"]{0,400}"|<encryption\s+algorithm="[A-Za-z0-9_]{1,40}"\s*/>\s*<validation\s+algorithm="[A-Za-z0-9_]{1,40}"\s*/>'''
+tags = ["key", "dataprotection", "aspnet"]
+
+[[rules]]
+id = "aspnet-dataprotection-key-ring-filename"
+description = "A file named key-<guid>.xml, matched on PATH rather than content. The name is minted by DataProtection itself and is a GUID, so the pattern is anchored to the full 8-4-4-4-12 hex shape and cannot collide with a hand-named key-something.xml. Catches a ring whose contents are unreadable to a content rule for any reason, including one committed empty or truncated."
+path = '''(^|/)key-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\.xml$'''
+tags = ["key", "dataprotection", "aspnet"]
+
+
+[[allowlists]]
+description = "Vendored third-party assets. Not first-party code; the D1 prune removes most of them structurally, but what remains still carries sample keys and contributor emails. Scoped to the vendored SUBTREES, not to wwwroot/ as a whole: only gentelella-master/, lib/ and the marketing site's startbootstrap theme are vendored. JSScriptLib/, css/, js/, images/, media/ and EmailTemplates/ are first-party portal code -- JSScriptLib/ alone is 101 of the node's 245 wwwroot files -- and the old '.*/wwwroot/.*' entry meant gitleaks never opened any of them."
+paths = [
+  '''.*/wwwroot/gentelella-master/.*''',
+  '''.*/wwwroot/lib/.*''',
+  '''.*/wwwroot/startbootstrap-grayscale-gh-pages/.*''',
+  '''.*/node_modules/.*''',
+  '''.*\.min\.(js|css)$''',
+]
+
+[[allowlists]]
+description = "LinkedIndustry is a Febris domain term (CurriculumLinkedIndustry, MarketplaceListingLinkedIndustry), not a LinkedIn API secret; the linkedin-client-secret rule matches the substring. regexTarget=line is REQUIRED -- allowlist regexes are tested against the EXTRACTED SECRET by default, not the surrounding text, so this rule silently suppressed nothing until it was actually run."
+regexTarget = "line"
+regexes = ['''LinkedIndustry''']
+
+# targetRules on the two test-tree allowlists below is load-bearing, not decoration.
+# A global allowlist carrying `paths` and NO rule restriction makes gitleaks skip the
+# matching files outright -- it reports "scanned ~0 bytes" -- so these two blocks between
+# them suppressed EVERY rule across the whole test tree, 21% of the repo and 75 .cs files.
+# A real AWS access key and a real GitHub PAT planted under tests/ were both invisible.
+# The rule ids are derived from what actually fires, not guessed: with the restriction
+# removed, a scan of tests/ (working tree and all 79 commits of history) reports exactly
+# generic-api-key and private-key. Widening either list is therefore a deliberate,
+# reviewable act rather than a silent side effect of a path glob.
+
+[[allowlists]]
+description = "Deliberate dummy fixtures. Test doubles and golden files use obviously fake material; several are asserted ON, so replacing them breaks the test that proves the validator rejects bad input. The noise is the generic catch-all rule matching fixture GUIDs (e.g. LicenseKey = \"8b4bffe1-...\"), so that is the only rule this suppresses."
+targetRules = ["generic-api-key"]
+paths = [
+  '''tests/.*''',
+  '''.*/Fixtures/.*''',
+  '''distribution/manifest\.sample\.json$''',
+]
+
+[[allowlists]]
+description = "Runtime-generated test keys. These are created during the test run, never committed material."
+targetRules = ["private-key"]
+regexes = [
+  '''BEGIN (RSA )?PRIVATE KEY''',
+]
+paths = ['''tests/.*''']
+
+[[allowlists]]
+description = "Reserved placeholder domains and addresses introduced by the R1 severance scrub. example.com/.org/.invalid cannot resolve to anything an operator does not control."
+regexes = [
+  '''(?i)@example\.(com|org|invalid)''',
+  '''(?i)https?://(www\.)?example\.(com|org|invalid)''',
+]

@@ -1,0 +1,115 @@
+﻿@model Febris.ModelLibrary.ViewModels.BulkUserCreationViewModel
+@using Febris.EnumLibrary
+@using Febris.ModelLibrary.ViewModels
+
+<head>
+    <link href="~/gentelella-master/vendors/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    <style>
+
+        textarea#excelPasteBox {
+            width: 60%;
+            /*padding: 8px;*/
+        }
+
+        /* hr {
+            width: 90%;
+            margin: 10px;
+        }
+
+        textarea#jsonDataDump {
+            width: 90%;
+            padding: 8px;
+        }
+
+        th > div {
+            border: thin #d3d3d3 dashed;
+            padding: 2px;
+        }
+
+        td > div {
+            padding: 2px;
+        }
+
+        .ignored {
+            background-color: #d3d3d3;
+            color: grey;
+        }
+
+        th.ignored > div:before {
+            content: "Column Ignored";
+        }*/
+    </style>
+</head>
+
+<div>
+    <div class="form-group">
+        <label asp-for="AccountType" class="control-label"></label>
+        <select asp-for="AccountType" id="accountType" asp-items="Html.GetEnumSelectList<InstitutionUserAccountType>()" class="form-control">
+            @*<option selected="selected" value="">[Select User Account Type]</option>*@
+        </select>
+        <span asp-validation-for="AccountType" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="SelectedCohortList" class="control-label"></label>
+        <select asp-for="SelectedCohortList" id="selectedCohortList" asp-items="@Model.CohortSelectList" class="form-control" multiple>
+            <option selected="selected" value="">[None]</option>
+        </select>
+        <span asp-validation-for="SelectedCohortList" class="text-danger"></span>
+    </div>
+</div>
+<br />
+<hr />
+<div align="center">
+    <div align="center">*Do not use headers and set up your excel document as seen below</div>
+    <div align="center">
+        [Identification Number],[First Name], [Last Name], [Email Address], [Phone Number]
+    </div>
+</div>
+<hr />
+@*<form asp-action="BulkCreatePost">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>*@
+<div class="row" style="text-align: center;">
+    <div class="col-1">
+        <button id="exportRemovalJsonData" type="button" class="btn btn-lg btn-danger glyphicon glyphicon-minus-sign" value="Export Removal JSON Data"></button>
+    </div>
+    <div class="flex-fill col-8">
+        @*<button id="exportRemovalJsonData" type="button" class="btn btn-lg btn-danger glyphicon glyphicon-minus" value="Export JSON Data"></button>*@
+        <textarea rows="1" id="excelPasteBox" placeholder="Paste your excel form data here with proper format..."></textarea>
+    </div>
+    <div class="col-1">
+        @*<div class="form-group">
+                <input type="submit" value="Create" id="exportJsonData" class="btn btn-lg btn-success glyphicon glyphicon-plus" />
+            </div>*@
+        <button id="exportJsonData" type="button" class="btn btn-lg btn-success glyphicon glyphicon-plus" value="Export JSON Data"></button>
+    </div>
+
+</div>
+<hr />
+@* CSV alternative to the paste box: same columns, same order, no header row. Parsed
+   server-side by ICsvUserImporter (User/BulkCreateCsvPost), which feeds the same create
+   path as the paste flow. The action existed, was registered and tested, but no form
+   posted to it until ROADMAP 17. *@
+<div class="row" style="text-align: center;">
+    <div class="col-1"></div>
+    <div class="flex-fill col-8">
+        <input type="file" id="csvUploadFile" accept=".csv,text/csv" />
+    </div>
+    <div class="col-1">
+        <button id="uploadCsvData" type="button" class="btn btn-lg btn-success glyphicon glyphicon-upload" value="Upload CSV" title="Upload CSV"></button>
+    </div>
+</div>
+<hr />
+<div id="output">
+    <table id="excelDataTable" class="flex-table"></table>
+</div>
+<hr />
+
+@* Antiforgery token holder. Rendered INSIDE the partial because the partial is AJAX-loaded
+   into #BulkInput, so a token on the parent page would not survive the swap. Same reason as
+   Views/Cohort/IndexPartial.cshtml. The bulk scripts read it by name and send it as the
+   RequestVerificationToken header. *@
+@Html.AntiForgeryToken()
+
+<script src="~/JSScriptLib/TableScripts/BulkProcessing.js"></script>
+<script src="~/JSScriptLib/TableScripts/BulkUserProcessing.js"></script>

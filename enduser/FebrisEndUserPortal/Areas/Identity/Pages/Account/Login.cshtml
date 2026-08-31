@@ -1,0 +1,112 @@
+﻿@page
+@model LoginModel
+@inject Microsoft.Extensions.Options.IOptions<Febris.UserNode.Portal.IdentityPolicy.IdentityPolicyOptions> IdentityPolicy
+@inject Febris.UserNode.Portal.IdentityPolicy.IRegistrationPolicy RegistrationPolicy
+
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<h1>@ViewData["Title"]</h1>
+<div class="row">
+    <div class="col-md-4">
+        @if (IdentityPolicy.Value.Login.AllowLocalPassword)
+        {
+        <section>
+            <form id="account" method="post">
+                <h4>Use a local account to log in.</h4>
+                <hr />
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Input.Email"></label>
+                    <input asp-for="Input.Email" class="form-control" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.Password"></label>
+                    <input asp-for="Input.Password" class="form-control" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label asp-for="Input.RememberMe">
+                            <input asp-for="Input.RememberMe" />
+                            @Html.DisplayNameFor(m => m.Input.RememberMe)
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Log in</button>
+                </div>
+                <div class="form-group">
+                    @if (IdentityPolicy.Value.Login.AllowSelfServiceReset)
+                    {
+                        <p>
+                            <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
+                        </p>
+                    }
+                    @* Self-registration entry point. Gated on IRegistrationPolicy, never on the raw
+                       RegistrationMode enum -- the policy is the single place that decides, so this
+                       link and the server-side POST gate in RegisterModel can never disagree.
+                       Closed (AdminOnly/Invite) is the shipped default, so this renders nothing
+                       until an operator opts in via Identity:Registration:Mode. *@
+                    @if (RegistrationPolicy.SelfRegistrationEnabled)
+                    {
+                        <p>
+                            <a id="register-link" asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Create an account</a>
+                        </p>
+                    }
+                    @* Invitation entry point, for somebody who has an invitation but has mislaid the
+                       emailed link. Rendered ONLY in Invite mode, and that is the one behaviour
+                       that distinguishes Invite from AdminOnly -- invitations themselves work in
+                       every mode, because an invited person is not a stranger signing themselves
+                       up. The page it points at admits nobody without a valid token, so this link
+                       grants nothing; it is a signpost, not a gate. *@
+                    @if (RegistrationPolicy.Mode == Febris.UserNode.Portal.IdentityPolicy.RegistrationMode.Invite)
+                    {
+                        <p>
+                            <a id="accept-invitation-link" asp-page="./AcceptInvitation">Have an invitation? Accept it here</a>
+                        </p>
+                    }
+                </div>
+            </form>
+        </section>
+        }
+        else
+        {
+            <p class="text-muted">Local password sign-in is disabled. Use your institution's SSO to sign in.</p>
+        }
+    </div>
+    <div class="col-md-6 col-md-offset-2">
+        @*
+            Task #15 (2026-05-20): external-login block uncommented. Renders
+            a button per enabled provider from appsettings.json ->
+            ExternalAuthProviders. If no providers are enabled, the section
+            shows nothing (the original Identity-scaffolding "no providers
+            configured" message was kept inside an @if for visibility while
+            registering -- safe to delete in production once at least one
+            provider ships).
+        *@
+        @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+        {
+            <section>
+                <h4>Use your institution's SSO to sign in</h4>
+                <hr />
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                    <div>
+                        <p>
+                            @foreach (var provider in Model.ExternalLogins)
+                            {
+                                <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">@provider.DisplayName</button>
+                            }
+                        </p>
+                    </div>
+                </form>
+            </section>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

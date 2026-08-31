@@ -1,0 +1,91 @@
+@page "/setup"
+@model NodeSetupModel
+@{
+    ViewData["Title"] = "Set up this node";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (!Model.TokenAvailable)
+{
+    <div class="row">
+        <div class="col-md-8">
+            <div class="alert alert-warning">
+                <p>
+                    This node has no administrator yet, but there is no setup token available right
+                    now. A token is printed to the node's startup output and lasts
+                    @Model.TokenLifetimeMinutes minutes.
+                </p>
+                <p class="mb-0">
+                    <strong>Restart the node</strong> to have a new one printed, then reload this page.
+                </p>
+            </div>
+            <p>
+                With Docker: <code>docker compose restart node-portal</code>, then
+                <code>docker compose logs node-portal</code>.
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-6">
+            <p>
+                This node has no administrator yet. Paste the setup token from its startup output and
+                create the first account. That account is an <strong>IT Admin</strong>, the node's
+                highest local role, and can create everyone else.
+            </p>
+            <p class="text-muted">
+                The token is printed to the console only, never to the log files, so being able to
+                read it is what proves you run this node. It lasts @Model.TokenLifetimeMinutes
+                minutes and works once.
+            </p>
+
+            <form method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="Input.Token"></label>
+                    <input asp-for="Input.Token" class="form-control" autocomplete="off" spellcheck="false" />
+                    <span asp-validation-for="Input.Token" class="text-danger"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label asp-for="Input.FirstName"></label>
+                        <input asp-for="Input.FirstName" class="form-control" />
+                        <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="Input.LastName"></label>
+                        <input asp-for="Input.LastName" class="form-control" />
+                        <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.Email"></label>
+                    <input asp-for="Input.Email" class="form-control" autocomplete="username" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.Password"></label>
+                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.ConfirmPassword"></label>
+                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create administrator and sign in</button>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

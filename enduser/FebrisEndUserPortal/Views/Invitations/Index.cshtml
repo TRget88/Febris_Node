@@ -1,0 +1,236 @@
+﻿@model Febris.ModelLibrary.ViewModels.InvitationsPageViewModel
+@using Febris.EnumLibrary
+
+@{
+    ViewData["Title"] = "Invitations";
+    string statusMessage = TempData["StatusMessage"] as string;
+
+    string StateBadge(InviteState state)
+    {
+        switch (state)
+        {
+            case InviteState.Active: return "badge badge-info";
+            case InviteState.AlreadyConsumed: return "badge badge-success";
+            case InviteState.Expired: return "badge badge-secondary";
+            case InviteState.Revoked: return "badge badge-danger";
+            default: return "badge badge-secondary";
+        }
+    }
+
+    string StateLabel(InviteState state)
+    {
+        switch (state)
+        {
+            case InviteState.Active: return "waiting";
+            case InviteState.AlreadyConsumed: return "accepted";
+            case InviteState.Expired: return "expired";
+            case InviteState.Revoked: return "cancelled";
+            default: return state.ToString();
+        }
+    }
+}
+
+<h1>Invitations</h1>
+
+<p class="text-muted">
+    Invite someone to create an account here. They choose their own password, and the account is
+    created only when they accept, so an invitation nobody takes up leaves nothing behind.
+</p>
+
+<p class="text-muted">
+    Invitations work whatever the registration mode is set to (currently
+    <code>@Model.EffectiveRegistrationMode</code>). The mode controls whether strangers can sign
+    themselves up. An invited person is not a stranger, so closing registration does not cancel
+    invitations that are already out.
+</p>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div class="alert alert-info">@statusMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(Model.IssuedAcceptUrl))
+{
+    <div class="card mb-3 @(Model.IssuedEmailFailed ? "border-warning" : "")">
+        <div class="card-body">
+            <h5 class="card-title">
+                @if (Model.IssuedEmailFailed)
+                {
+                    <text>The email could not be sent &ndash; use this link instead</text>
+                }
+                else
+                {
+                    <text>Invitation link for @Model.IssuedForEmail</text>
+                }
+            </h5>
+            <p class="card-text">
+                <code style="word-break: break-all;">@Model.IssuedAcceptUrl</code>
+            </p>
+            <p class="card-text">
+                <small class="text-muted">
+                    Shown once and not stored anywhere. Copy it now if you need to pass it on by
+                    hand, for example on a node with no mail server configured. Anyone who has this
+                    link and knows the invited address can create the account, so treat it like a
+                    password.
+                </small>
+            </p>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-5">
+        <h3>Invite someone</h3>
+
+        @if (Model.AssignableRoles == null || Model.AssignableRoles.Count == 0)
+        {
+            <div class="alert alert-warning">
+                Your account cannot grant any role, so it cannot issue invitations.
+            </div>
+        }
+        else
+        {
+            <form asp-controller="Invitations" asp-action="Issue" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label for="Email">Email address</label>
+                    <input type="email" class="form-control" id="Email" name="Email" required
+                           placeholder="student@school.example" />
+                    <small class="form-text text-muted">
+                        They will have to confirm this exact address to accept, so a forwarded
+                        invitation cannot be used by somebody else.
+                    </small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="FirstName">First name</label>
+                        <input type="text" class="form-control" id="FirstName" name="FirstName" />
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="LastName">Last name</label>
+                        <input type="text" class="form-control" id="LastName" name="LastName" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="Role">Role</label>
+                    <select class="form-control" id="Role" name="Role">
+                        @foreach (string role in Model.AssignableRoles)
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    </select>
+                    <small class="form-text text-muted">
+                        Only roles you are allowed to grant are listed.
+                    </small>
+                </div>
+
+                @if (Model.AvailableCohorts != null && Model.AvailableCohorts.Count > 0)
+                {
+                    <div class="form-group">
+                        <label for="CohortUUID">Add to cohort (optional)</label>
+                        <select class="form-control" id="CohortUUID" name="CohortUUID">
+                            <option value="">-- none --</option>
+                            @foreach (var cohort in Model.AvailableCohorts)
+                            {
+                                <option value="@cohort.Uuid">@cohort.Name</option>
+                            }
+                        </select>
+                        <small class="form-text text-muted">
+                            They join this cohort automatically when they accept, so inviting a class
+                            is one step instead of two. Leave it as none to link them later by hand.
+                        </small>
+                    </div>
+                }
+
+                <div class="form-group">
+                    <label for="ExpiresInDays">Expires in (days)</label>
+                    <input type="number" min="1" max="30" class="form-control" id="ExpiresInDays"
+                           name="ExpiresInDays" placeholder="7" />
+                    <small class="form-text text-muted">
+                        Blank uses seven days. After that the link stops working on its own.
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Send invitation</button>
+            </form>
+        }
+    </div>
+
+    <div class="col-md-7">
+        <h3>Sent</h3>
+
+        @if (Model.Invitations == null || Model.Invitations.Count == 0)
+        {
+            <p class="text-muted">No invitations have been sent from this node yet.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Cohort</th>
+                            <th>State</th>
+                            <th>Expires (UTC)</th>
+                            <th>Invited by</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var invite in Model.Invitations)
+                        {
+                            <tr>
+                                <td>
+                                    @invite.Email
+                                    @if (!string.IsNullOrWhiteSpace(invite.Name))
+                                    {
+                                        <br />
+                                        <small class="text-muted">@invite.Name</small>
+                                    }
+                                </td>
+                                <td>@invite.Role</td>
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(invite.CohortName))
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                    else
+                                    {
+                                        @invite.CohortName
+                                    }
+                                </td>
+                                <td>
+                                    <span class="@StateBadge(invite.State)">@StateLabel(invite.State)</span>
+                                    @if (invite.State == InviteState.Revoked && !string.IsNullOrWhiteSpace(invite.RevokedByEmail))
+                                    {
+                                        <br />
+                                        <small class="text-muted">by @invite.RevokedByEmail</small>
+                                    }
+                                </td>
+                                <td>@invite.ExpiresAtUtc.ToString("u")</td>
+                                <td>@invite.IssuedByEmail</td>
+                                <td>
+                                    @if (invite.CanRevoke)
+                                    {
+                                        @* The form tag helper emits the antiforgery token, which is
+                                           why there is no explicit @@Html.AntiForgeryToken() here --
+                                           same shape as the ParentLink per-row actions. *@
+                                        <form asp-controller="Invitations" asp-action="Revoke" method="post">
+                                            <input type="hidden" name="uuid" value="@invite.Uuid" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

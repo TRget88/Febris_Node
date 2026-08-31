@@ -1,0 +1,178 @@
+@model Febris.ModelLibrary.ViewModels.HubFederationSettingsViewModel
+
+@{
+    ViewData["Title"] = "Hub Federation";
+    Febris.ModelLibrary.ViewModels.HubProbeResultViewModel probe = ViewBag.ProbeResult as Febris.ModelLibrary.ViewModels.HubProbeResultViewModel;
+    Febris.ModelLibrary.ViewModels.HubSyncSummaryViewModel sync = ViewBag.SyncSummary as Febris.ModelLibrary.ViewModels.HubSyncSummaryViewModel;
+    string saveMessage = ViewBag.SaveMessage as string;
+
+    string ProbeBadgeClass(string status)
+    {
+        switch (status)
+        {
+            case "Healthy": return "badge badge-success";
+            case "Degraded": return "badge badge-warning";
+            default: return "badge badge-danger";
+        }
+    }
+}
+
+<h1>Hub Federation</h1>
+
+<p class="text-muted">
+    Federation is <strong>optional</strong>: this node operates fully standalone. Opting in
+    connects the node to a central hub for pull-only enrichment (vocabulary and catalog sync,
+    marketplace membership). The license key is a marketplace membership credential &mdash; it is
+    never required to operate the node.
+</p>
+
+@if (!string.IsNullOrEmpty(saveMessage))
+{
+    <div class="alert alert-success">@saveMessage</div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <h3>Status</h3>
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th scope="row">Gate</th>
+                    <td>
+                        @if (Model.EffectiveEnabled)
+                        {
+                            <span class="badge badge-info">enabled</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">disabled (standalone node)</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Settings source</th>
+                    <td>
+                        @if (Model.HasStoredSettings)
+                        {
+                            <text>stored on this node (saved @(Model.UpdatedAtUtc?.ToString("u")))</text>
+                        }
+                        else
+                        {
+                            <text>deployment configuration (nothing saved here yet)</text>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">License key</th>
+                    <td>
+                        @if (Model.HasLicenseKey)
+                        {
+                            <code>@Model.LicenseKeyMasked</code>
+                        }
+                        else
+                        {
+                            <span class="text-muted">not stored</span>
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <form asp-controller="HubFederation" asp-action="TestConnection" method="post" class="mb-3">
+            <button type="submit" class="btn btn-outline-primary">Test Connection</button>
+            <small class="form-text text-muted">Probes the hub using the SAVED settings (save first).</small>
+        </form>
+
+        @if (probe != null)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Probe:
+                        <span class="@ProbeBadgeClass(probe.Status)">@probe.Status</span>
+                    </h5>
+                    <p class="card-text">@probe.Description</p>
+                    <p class="card-text"><small class="text-muted">@probe.ProbedAtUtc.ToString("u")</small></p>
+                </div>
+            </div>
+        }
+
+        @if (Model.EffectiveEnabled)
+        {
+            <form asp-controller="HubFederation" asp-action="SyncNow" method="post" class="mb-3">
+                <button type="submit" class="btn btn-outline-primary">Sync now</button>
+                <small class="form-text text-muted">
+                    Pull-only enrichment: hub vocabulary and catalog rows are added or refreshed
+                    locally by natural key; local-only rows are never deleted, and nothing is
+                    pushed up. Runs only on this button &mdash; there is no background schedule.
+                </small>
+            </form>
+        }
+
+        @if (sync != null)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Sync result</h5>
+                    @if (sync.SkippedGateClosed)
+                    {
+                        <p class="card-text">Skipped &mdash; the federation gate is closed.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-sm mb-2">
+                            <thead>
+                                <tr><th>Domain</th><th>Added</th><th>Updated</th><th>Failed</th><th>Error</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var domain in sync.Domains)
+                                {
+                                    <tr>
+                                        <td>@domain.Domain</td>
+                                        <td>@domain.Added</td>
+                                        <td>@domain.Updated</td>
+                                        <td>@domain.Failed</td>
+                                        <td>@(string.IsNullOrEmpty(domain.Error) ? "-" : domain.Error)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    <p class="card-text"><small class="text-muted">started @sync.StartedAtUtc.ToString("u")</small></p>
+                </div>
+            </div>
+        }
+
+    </div>
+
+    <div class="col-md-6">
+        <h3>Settings</h3>
+        <form asp-controller="HubFederation" asp-action="Save" method="post">
+            <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="Enabled" name="Enabled" value="true" @(Model.Enabled ? "checked" : "") />
+                <label class="form-check-label" for="Enabled">Enable hub federation</label>
+            </div>
+            <div class="form-group">
+                <label for="DataApi">Hub data API</label>
+                <input type="url" class="form-control" id="DataApi" name="DataApi" value="@Model.DataApi" placeholder="https://hub.example/api/" />
+            </div>
+            <div class="form-group">
+                <label for="AuthenticationApi">Hub authentication API</label>
+                <input type="url" class="form-control" id="AuthenticationApi" name="AuthenticationApi" value="@Model.AuthenticationApi" placeholder="https://hub.example/authapi/" />
+            </div>
+            <div class="form-group">
+                <label for="LicenseKey">License key</label>
+                <input type="password" class="form-control" id="LicenseKey" name="LicenseKey" value="" autocomplete="new-password"
+                       placeholder="@(Model.HasLicenseKey ? "stored (" + Model.LicenseKeyMasked + ") — leave blank to keep" : "not stored")" />
+                <small class="form-text text-muted">
+                    Write-only: the stored key is never shown here. Leave blank to keep it.
+                </small>
+            </div>
+            <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="ClearLicenseKey" name="ClearLicenseKey" value="true" />
+                <label class="form-check-label" for="ClearLicenseKey">Remove the stored license key</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+</div>

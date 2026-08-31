@@ -1,0 +1,36 @@
+﻿// SPDX-FileCopyrightText: 2026 Febris
+// SPDX-License-Identifier: AGPL-3.0-only
+using System.Threading.Tasks;
+using Febris.ModelLibrary.Models.UserModels;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
+
+namespace Febris.UserNode.Portal.Areas.Identity.Pages.Account.Manage
+{
+    public class PersonalDataModel : PageModel
+    {
+        private readonly UserManager<LocalApplicationUser> _userManager;
+        private readonly ILogger<PersonalDataModel> _logger;
+
+        public PersonalDataModel(
+            UserManager<LocalApplicationUser> userManager,
+            ILogger<PersonalDataModel> logger)
+        {
+            _userManager = userManager;
+            _logger = logger;
+        }
+
+        public async Task<IActionResult> OnGet()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            return Page();
+        }
+    }
+}

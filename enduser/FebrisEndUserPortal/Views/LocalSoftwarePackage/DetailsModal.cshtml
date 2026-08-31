@@ -1,0 +1,227 @@
+﻿@model Febris.ModelLibrary.Models.DataModels.LocalSoftwarePackage
+@using Febris.ModelLibrary.PartialViewModels;
+@using Febris.EnumLibrary;
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/css/Modal.css" rel="stylesheet" />
+</head>
+
+<div class="col-sm-12" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
+        <h1 style="word-wrap: break-word; font-weight: bold;">@Model.Name Software Package</h1>
+    </div>
+
+    @*<div class="col-sm-6 row" align="center" style="font-weight:bold">*@
+    <div class="row" align="center" style="word-wrap: break-word; font-weight: bold;">
+        <label class="switch">
+            <input type="checkbox" checked="@Model.Obsolete" disabled />
+            <span class="slider round"></span>
+        </label>
+        @Html.DisplayNameFor(model => model.Obsolete)
+    </div>
+</div>
+
+<div>
+    <hr style="display: inline-block;width:100%" />
+    <div class="row">
+        <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+            <h3>General information</h3>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Name)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Name)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Version)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Version)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Description)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.TimeStamp)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.TimeStamp)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.LastUpdateTimeStamp)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.LastUpdateTimeStamp)
+                </div>
+            </div>
+
+            <hr />
+            <h3>Extended Package Information</h3>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.LocalSoftwarePackageType)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.LocalSoftwarePackageType)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5" align="right" style="font-weight:bold">
+                    @Html.DisplayNameFor(model => model.Language)
+                </div>
+                <div class="col-sm-7" align="left">
+                    @Html.DisplayFor(model => model.Language)
+                </div>
+            </div>
+        </div>
+        @*<div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
+                @await Html.PartialAsync("Buttons/GenericButtons/LocalSoftwarePackage/_DownloadButtonGroupPartial", new IndividualUUIDButtonPartial { Id = Model.UUID })
+            </div>*@
+
+
+    <div class="col-sm-6" align="center" style="border-radius: 20px; padding:10px; align-items: center;">
+        @if (Model.LocalSoftwarePackageType != LocalSoftwarePackageType.AndroidMobileCompanion && Model.LocalSoftwarePackageType != LocalSoftwarePackageType.None)
+        {
+            @await Html.PartialAsync("Buttons/GenericButtons/LocalSoftwarePackage/_DownloadButtonGroupPartial", new IndividualUUIDButtonPartial { Id = Model.UUID })
+        }
+        @*@if (Model.LocalSoftwarePackageType != LocalSoftwarePackageType.MobileCompanion)
+        {
+            @await Html.PartialAsync("Buttons/GenericButtons/LocalSoftwarePackage/_DownloadButtonGroupPartial", new IndividualUUIDButtonPartial { Id = Model.UUID })
+        }*@
+    </div>
+    </div>
+</div>
+@*<hr />
+    <br />*@
+@*<div>
+        <div align="center">
+            @await Html.PartialAsync("Buttons/GenericButtons/LocalSoftwarePackage/_DetailsButtonGroupPartial", new IndividualButtonPartial { Id = Model.Id })
+        </div>
+    </div>*@
+
+@*<br />
+    <input type="hidden" id="modelId" value="@Model.Id" />
+
+    <br />
+    <hr />
+
+    <div align="center">
+
+
+
+
+
+        <input type="hidden" id="Element0" value="Example0" />
+        <div id="Division0" align="center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+
+
+        <input type="hidden" id="Element1" value="Example1" />
+        <div id="Division1" align="center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+
+    </div>
+    <br />
+    <hr />
+    <br />
+
+    <div align="center">
+        <h3>Info</h3>
+        <br />
+        <div class="row">
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element2" value="Example0" />
+                <div id="Division2">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element3" value="Example0" />
+                <div id="Division3">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <br />
+        <div class="row">
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element4" value="Example0" />
+                <div id="Division4">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element5" value="Example0" />
+                <div id="Division5">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <br />
+        <div class="row">
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element6" value="Example0" />
+                <div id="Division6">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+
+                <br />
+                <input type="hidden" id="Element7" value="Example0" />
+                <div id="Division7">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>*@
+
+@*<script src="~/JSScriptLib/PartialViewCalls/LoadViewDetails.js"></script>*@

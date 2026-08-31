@@ -1,0 +1,183 @@
+@model Febris.ModelLibrary.ViewModels.NodeStatusViewModel
+
+@{
+    ViewData["Title"] = "Node Status";
+
+    string StatusBadgeClass(string status)
+    {
+        switch (status)
+        {
+            case "Healthy": return "badge badge-success";
+            case "Degraded": return "badge badge-warning";
+            default: return "badge badge-danger";
+        }
+    }
+
+    string FormatBytes(long bytes)
+    {
+        string[] units = { "B", "KiB", "MiB", "GiB", "TiB" };
+        double value = bytes;
+        int unit = 0;
+        while (value >= 1024 && unit < units.Length - 1)
+        {
+            value /= 1024;
+            unit++;
+        }
+        return value.ToString("0.#") + " " + units[unit];
+    }
+}
+
+<h1>Node Status</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>
+            Overall:
+            <span class="@StatusBadgeClass(Model.OverallStatus)">@Model.OverallStatus</span>
+        </h2>
+        <p class="text-muted">
+            Snapshot taken @Model.GeneratedAtUtc.ToString("u") &mdash; this page re-runs every
+            registered health check on each load.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h3>Node</h3>
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th scope="row">Name</th>
+                    <td>@(string.IsNullOrWhiteSpace(Model.NodeName) ? "(unprovisioned)" : Model.NodeName)</td>
+                </tr>
+                <tr>
+                    <th scope="row">Institution UUID</th>
+                    <td>@(Model.InstitutionUUID?.ToString() ?? "(unprovisioned)")</td>
+                </tr>
+                <tr>
+                    <th scope="row">Node version</th>
+                    <td>@Model.NodeVersion</td>
+                </tr>
+                <tr>
+                    <th scope="row">Hub federation</th>
+                    <td>
+                        @if (Model.HubFederationEnabled)
+                        {
+                            <span class="badge badge-info">enabled</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">disabled (standalone node)</span>
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <h3>Storage</h3>
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th scope="row">Backend</th>
+                    <td>@Model.StorageUsage.ProviderKind</td>
+                </tr>
+                @if (Model.StorageUsage.HasUsage)
+                {
+                    <tr>
+                        <th scope="row">Volume size</th>
+                        <td>@FormatBytes(Model.StorageUsage.TotalBytes)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Used</th>
+                        <td>@FormatBytes(Model.StorageUsage.UsedBytes)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Available</th>
+                        <td>@FormatBytes(Model.StorageUsage.AvailableBytes)</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <th scope="row">Usage</th>
+                        <td>n/a</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h3>Components</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Status</th>
+                    <th>Detail</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Components.Count == 0)
+                {
+                    <tr><td colspan="4">No health checks are registered on this host.</td></tr>
+                }
+                @foreach (var component in Model.Components)
+                {
+                    <tr>
+                        <td>@component.Name</td>
+                        <td><span class="@StatusBadgeClass(component.Status)">@component.Status</span></td>
+                        <td>@component.Description</td>
+                        <td>@component.DurationMs ms</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h3>Installed client software</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Version</th>
+                    <th>SHA-256</th>
+                    <th>Uploaded</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.InstalledPackages.Count == 0)
+                {
+                    <tr><td colspan="5">No client-software packages have been ingested on this node.</td></tr>
+                }
+                @foreach (var package in Model.InstalledPackages)
+                {
+                    <tr>
+                        <td>@package.PackageType</td>
+                        <td>@package.Name</td>
+                        <td>@package.Version</td>
+                        <td><code>@(string.IsNullOrWhiteSpace(package.Sha256) ? "n/a" : package.Sha256)</code></td>
+                        <td>@package.UploadedUtc.ToString("u")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        // Optional auto-refresh: a status page an operator leaves open should stay current.
+        setTimeout(function () { window.location.reload(); }, 60000);
+    </script>
+}
