@@ -1,5 +1,3 @@
-﻿// SPDX-FileCopyrightText: 2026 Febris
-// SPDX-License-Identifier: AGPL-3.0-only
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +11,7 @@ using X.PagedList;
 using Febris.ModelLibrary.Models.DataModels;
 using System.IO;
 using Febris.SharedServices;
+using Microsoft.Extensions.Options;
 using Febris.EnumLibrary;
 using Microsoft.AspNetCore.Authorization;
 using Febris.ModelLibrary.ViewModels;
@@ -29,16 +28,21 @@ namespace Febris.UserNode.Portal.Controllers.Data
         private readonly ILocalSoftwarePackageLogic _context;
         private readonly IPackageIngestLogic _ingestContext;
         private readonly IPackageFeedSyncLogic _feedSyncContext;
+        private readonly ClientDownloadOptions _clientDownloads;
         public LocalSoftwarePackageController(
             ILocalSoftwarePackageLogic context,
             IPackageIngestLogic ingestContext,
             IPackageFeedSyncLogic feedSyncContext,
+            IOptions<ClientDownloadOptions> clientDownloads,
             ILogger<LocalSoftwarePackageController> logger
             )
         {
             _context = context;
             _ingestContext = ingestContext;
             _feedSyncContext = feedSyncContext;
+            // Never null: Configure<T> always yields an instance, and an absent section leaves
+            // the class defaults, which is the point of link-out working unconfigured.
+            _clientDownloads = clientDownloads?.Value ?? new ClientDownloadOptions();
             _logger = logger;
             //if (!User.HasSignedServiceAgreement() || !User.HasSignedServiceAgreement())
             //{
@@ -65,78 +69,6 @@ namespace Febris.UserNode.Portal.Controllers.Data
         }
 
         #region Authoring (ROADMAP 16: the writes moved here from the API)
-
-        // GET: LocalSoftwarePackage/Upload
-        // ROADMAP 16: package ingest moved from POST api/SoftwarePackage/Upload (NodeAdmin token)
-        // to the Portal behind cookie auth, mirroring Module/Create -- the API endpoint existed
-        // only because no Portal form did, and the token existed only to reach the API endpoint.
-        // Action-level OrgAdmins on top of the class gate: distributing client software is a
-        // node-administration write, not an educator action.
-        [Authorize(Roles = Febris.Constants.RoleConstants.OrgAdmins)]
-        public IActionResult Upload(LocalSoftwarePackageType? input)
-        {
-            return View(new SoftwarePackageUploadViewModel
-            {
-                LocalSoftwarePackageType = input ?? LocalSoftwarePackageType.PC
-            });
-        }
-
-        // POST: LocalSoftwarePackage/Upload
-        // Fronts the SAME ingest logic the API endpoint used -- stream to IStorageProvider, record
-        // the stored bytes' SHA-256 on a PackageArtifact row, upsert the catalog row -- rather
-        // than duplicating any of it. Supplying an existing UUID updates that package in place.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [RequestSizeLimit(1_073_741_824)]
-        [Authorize(Roles = Febris.Constants.RoleConstants.OrgAdmins)]
-        public async Task<IActionResult> Upload(SoftwarePackageUploadViewModel input)
-        {
-            try
-            {
-                if (input?.File == null || input.File.Length == 0)
-                {
-                    ModelState.AddModelError("File", "A software package (.zip) is required.");
-                }
-                else if (!input.File.FileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                {
-                    // Mirrors the ingest logic's own IsZip guard so the operator is told here
-                    // rather than receiving a silent null from the ingest call.
-                    ModelState.AddModelError("File", "The software package must be a .zip file.");
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    return View(input ?? new SoftwarePackageUploadViewModel());
-                }
-
-                SoftwarePackageIngestResultViewModel result;
-                using (Stream content = input.File.OpenReadStream())
-                {
-                    result = await _ingestContext.IngestSoftwarePackage(content, input.File.FileName, input);
-                }
-
-                if (result == null)
-                {
-                    // ROADMAP 15: the extension was already checked above, so by here the usual
-                    // cause is that the FILE is not really a zip. Say that rather than "not
-                    // ingested", which tells the operator nothing they can act on.
-                    StatusMessage = "The software package was not ingested. The file must be a "
-                        + "readable .zip archive containing at least one entry -- renaming another "
-                        + "file to .zip does not work.";
-                    return View(input);
-                }
-
-                StatusMessage = "Package ingested: " + (result.LocalSoftwarePackage?.Name ?? input.Name)
-                    + " " + (result.LocalSoftwarePackage?.Version ?? input.Version) + ".";
-                return RedirectToAction(nameof(PackageArchive), new { input = input.LocalSoftwarePackageType });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex.Message);
-                StatusMessage = ex.Message;
-                return BadRequest();
-            }
-        }
 
         #endregion
 
@@ -318,6 +250,18 @@ namespace Febris.UserNode.Portal.Controllers.Data
             // PackageArchive survived the same conditions only because it returns an empty list.
             if (output == null)
             {
+                // ROUTE OUT. A node's catalogue starts empty and packages arrive only through the
+                // feed, so rendering a blank page here would be a dead end on every fresh
+                // deployment for software that demonstrably exists. Send the operator to the
+                // public page for this component instead of describing it.
+                string offsite = _clientDownloads.DownloadUrlFor(input);
+                if (offsite != null)
+                {
+                    return Redirect(offsite);
+                }
+
+                // Link-out disabled (air-gapped). Keep the local empty state rather than inventing
+                // a destination the operator cannot reach.
                 StatusMessage = "No " + input.ToString() + " package has been added to this node yet.";
                 return View(new LocalSoftwarePackage());
             }
@@ -338,7 +282,17 @@ namespace Febris.UserNode.Portal.Controllers.Data
                 _logger.LogError(ex.StackTrace);
                 throw;
             }
-            // The view's Upload button carries the type so the form opens pre-selected (ROADMAP 16).
+            // Empty archive routes out for the same reason Download does. A node holding
+            // versions still gets the table, which is the whole point of this page.
+            if (output == null || output.Count == 0)
+            {
+                string offsite = _clientDownloads.DownloadUrlFor(input);
+                if (offsite != null)
+                {
+                    return Redirect(offsite);
+                }
+            }
+
             ViewBag.PackageType = input;
             return View(output);
         }
@@ -349,6 +303,16 @@ namespace Febris.UserNode.Portal.Controllers.Data
 
         public async Task<IActionResult> Documentation(LocalSoftwarePackageType input)
         {
+            // ROUTE OUT. The per-kind documentation views here were static copies that drifted
+            // from the real thing, and the project's own repositories are where the current
+            // instructions live. The public site links onward to each one, so this needs exactly
+            // one URL rather than five that have to be corrected together.
+            string offsite = _clientDownloads.DocumentationUrlFor(input);
+            if (offsite != null)
+            {
+                return Redirect(offsite);
+            }
+
             LocalSoftwarePackage output = new LocalSoftwarePackage();
             try
             {

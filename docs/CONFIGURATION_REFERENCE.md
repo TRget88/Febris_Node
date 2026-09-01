@@ -434,6 +434,40 @@ JWKS path can be exercised locally. Tokens from a previous run stop validating a
 ## Read, but with a caveat
 
 
+### `PackageFeed`
+
+| Key | Hosts | Status | Category | Default when absent | Read at |
+|---|---|---|---|---|---|
+| `PackageFeed:Url` | portal | LIVE | operator-choice | empty, so no automatic sync runs at all | `enduser/FebrisEndUserPortal/BackgroundTasks/PackageFeedSyncService.cs` |
+| `PackageFeed:Channel` | portal | LIVE | operator-choice | `stable` | same |
+| `PackageFeed:IntervalHours` | portal | LIVE | operator-choice | 24. values below 1 are raised to 1 | same |
+
+- **`PackageFeed:Url`**: HTTPS manifest the node syncs its software catalogue from, on a schedule. **Empty by default**, which leaves the service idle: it logs that it is idle at boot and reaches out to nothing. That is the correct posture for an air-gapped node and for any operator who prefers to run syncs by hand from the portal, which still works unchanged.
+
+  This carries more weight than a convenience setting. The manual package-upload path was removed on 2026-08-31, so a feed is now the **only** way packages reach a node's catalogue, and a node holding nothing cannot serve devices. The Mobile Server fetches the Companion **from the node** over the device API, so headsets cannot be updated until the catalogue holds it.
+
+  The sync itself is unchanged and still enforces its own gates: absolute https only, a 4 MiB manifest ceiling, a 512 MiB artifact ceiling, sha256 verified before anything is ingested, and a held package whose checksum changed is refused rather than overwritten.
+
+- **`PackageFeed:Channel`**: entries on other channels are filtered out and reported as such.
+
+- **`PackageFeed:IntervalHours`**: a feed changes only when a release ships, so this is a safety net rather than a poll. Anything below one hour is raised to one hour and a warning is logged. The first run is delayed two minutes after boot so it does not race startup migrations and seeding.
+
+  A scheduled run is never a dry run. A scheduled dry run would report and change nothing forever, which is a silent no-op. The portal form keeps its dry-run option for an operator who wants to look before committing.
+
+### `ClientDownloads`
+
+| Key | Hosts | Status | Category | Default when absent | Read at |
+|---|---|---|---|---|---|
+| `ClientDownloads:BaseUrl` | portal | LIVE | operator-choice | `https://www.febr.is`. an absent section keeps that default, so link-out works on a node nobody configured | `shared/FebrisSharedServices/ClientDownloadOptions.cs` |
+
+- **`ClientDownloads:BaseUrl`**: Where the Software Repository pages send an operator when this node holds **no local copy** of a client package. A node's catalogue starts empty and only fills through a manual portal upload or a feed sync, and nothing obliges a self-host operator to do either, so before this those pages were a permanent dead end on every fresh deployment for software that does exist.
+
+  **Local package always wins.** This is consulted only when nothing is held, so an operator who uploads their own build keeps serving it and never sees an external link. **Blank it to disable link-out entirely**: an air-gapped node then shows the plain empty state and renders no external URL at all, which is the supported air-gap posture. A LAN mirror is the other option, since any `http(s)` root serving the same page works, including one under a subdirectory.
+
+  A value that is not an absolute `http` or `https` URL is rejected and treated as disabled, deliberately, so a typo cannot become a relative link resolving against the node's own host and sending an operator to a 404 on their own portal.
+
+  **Rendering a link is not a network call.** The node never requests these URLs and sends nothing anywhere. Only the operator's browser travels, and only if they click, so the node's offline-first posture is unchanged. The per-kind anchors this appends (`#pc`, `#mobile-server`, `#mobile-companion`, `#sdk-csharp`, `#sdk-cpp`) are a contract with the landing site generator and are pinned by `ClientDownloadOptionsTests`.
+
 ### `GeoDataUrls`
 
 | Key | Hosts | Status | Category | Default when absent | Read at |

@@ -1,6 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2026 Febris
-// SPDX-License-Identifier: AGPL-3.0-only
-using AspNetCoreRateLimit;
+﻿using AspNetCoreRateLimit;
 using Febris.UserNode.Portal.IdentityPolicy;
 using Febris.ModelLibrary.Models.UserModels;
 using Febris.UserNode.Portal.BackgroundTasks;
@@ -267,6 +265,24 @@ namespace Febris.UserNode.Portal
                 Configuration.GetSection(IdentityPolicyOptions.SectionName).Get<IdentityPolicyOptions>()
                 ?? new IdentityPolicyOptions();
             services.Configure<IdentityPolicyOptions>(Configuration.GetSection(IdentityPolicyOptions.SectionName));
+
+            // Where the Software Repository pages send an operator when this node holds no local
+            // copy of a client package. A node's catalogue starts empty and only fills by manual
+            // upload or a feed sync, neither of which anything obliges a self-host operator to do,
+            // so those pages were a dead end on every fresh deployment. Defaults resolve to the
+            // project's public download page; blanking "ClientDownloads:BaseUrl" turns link-out
+            // off entirely for an air-gapped site. A missing section keeps the default, matching
+            // how every other options section here behaves.
+            services.Configure<ClientDownloadOptions>(Configuration.GetSection(ClientDownloadOptions.SectionName));
+
+            // Scheduled package-feed sync. With the manual upload path gone, a feed is the only way
+            // the software catalogue can fill, and nothing triggered it: an operator had to remember
+            // to run one by hand. This service does it on an interval. It needs no credential and
+            // opens no inbound route, so the ROADMAP 16 ruling that deleted the NodeAdmin token
+            // stands. Blank PackageFeed:Url leaves it idle, which is the air-gapped default.
+            services.Configure<BackgroundTasks.PackageFeedOptions>(
+                Configuration.GetSection(BackgroundTasks.PackageFeedOptions.SectionName));
+            services.AddHostedService<BackgroundTasks.PackageFeedSyncService>();
 
             // Registration policy is resolved DB-FIRST (node initialization design 2026-08-18).
             // A stored NodeRegistrationConfig row (the portal's Registration page) governs when

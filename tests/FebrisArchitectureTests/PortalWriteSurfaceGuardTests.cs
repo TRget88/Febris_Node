@@ -58,18 +58,11 @@ namespace Febris.ArchitectureTests
             string repoRoot = ProjectGraph.FindRepoRoot();
             string live = Live(Portal(repoRoot, "Controllers", "Data", "Remote", "LocalSoftwarePackageController.cs"));
 
-            string uploadPost = AttributeBlockAbove(live,
-                @"public\s+async\s+Task<IActionResult>\s+Upload\s*\(SoftwarePackageUploadViewModel");
-            Assert.Contains("[HttpPost]", uploadPost);
-            Assert.Contains("[ValidateAntiForgeryToken]", uploadPost);
-            Assert.Contains("[RequestSizeLimit(", uploadPost);
-            Assert.True(Regex.IsMatch(uploadPost, @"\[Authorize\(Roles\s*=\s*Febris\.Constants\.RoleConstants\.OrgAdmins\)\]"),
-                "the package Upload POST must carry its own OrgAdmins gate -- the class gate admits educators");
-
-            string uploadGet = AttributeBlockAbove(live,
-                @"public\s+IActionResult\s+Upload\s*\(LocalSoftwarePackageType\?");
-            Assert.True(Regex.IsMatch(uploadGet, @"\[Authorize\(Roles\s*=\s*Febris\.Constants\.RoleConstants\.OrgAdmins\)\]"),
-                "the package Upload FORM must carry the same OrgAdmins gate as its POST, or educators see a form whose submit is refused");
+            // 2026-08-31, owner ruling: the package Upload action and its view were REMOVED.
+            // Distribution routes operators to the public download page, and packages reach a
+            // node only through the verified feed, never a hand upload. The two Upload gate
+            // assertions that stood here went with it. FeedSync keeps its full stack below and
+            // matters MORE now, because it is the only remaining ingest path.
 
             string feedSyncPost = AttributeBlockAbove(live,
                 @"public\s+async\s+Task<IActionResult>\s+FeedSync\s*\(PackageFeedSyncRequestViewModel");
@@ -158,7 +151,6 @@ namespace Febris.ArchitectureTests
             foreach (string view in new[]
             {
                 Portal(repoRoot, "Views", "Module", "Create.cshtml"),
-                Portal(repoRoot, "Views", "LocalSoftwarePackage", "Upload.cshtml"),
             })
             {
                 string live = Regex.Replace(File.ReadAllText(view), @"@\*.*?\*@", " ", RegexOptions.Singleline);

@@ -7,21 +7,6 @@
 @using Febris.ModelLibrary.PartialViewModels
 @using Febris.SharedServices;
 
-@if (User.IsLocalAdmin())
-{
-    @*
-        ROADMAP 16: package ingest moved from the API (NodeAdmin-token curl) to the Portal, and the
-        button lives on the archive page rather than the navbar, matching the Cohort and Hardware
-        precedent of buttons on the index instead of nav entries. Admin-gated to match the Upload
-        action's own OrgAdmins gate, so nobody sees a button they cannot use.
-    *@
-    <div style="margin-bottom: 15px;">
-        <a asp-action="Upload" asp-route-input="@ViewBag.PackageType" class="btn btn-success"
-           title="Upload a new package of this kind, or replace an existing one by its UUID.">
-            <i class="fa fa-upload"></i> Upload a package
-        </a>
-    </div>
-}
 
 <div id="tablePartial">
     <table class="table">
@@ -79,6 +64,20 @@
                 }}
         </tbody>
     </table>
+
+    @*
+        Only reached when link-out is disabled (air-gapped). With it enabled the controller
+        redirects an empty archive to the public page, so there is no external link here.
+    *@
+    @if (!Model.Any())
+    {
+        <div class="well" style="text-align: center; padding: 20px;">
+            <p style="margin-bottom: 0;">
+                No versions of this package are held on this node yet. They appear here once the
+                node syncs them from a package feed.
+            </p>
+        </div>
+    }
 </div>
 @section scripts
 {

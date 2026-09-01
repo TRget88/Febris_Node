@@ -1,6 +1,7 @@
 ﻿@model Febris.ModelLibrary.Models.DataModels.LocalSoftwarePackage
 @using Febris.ModelLibrary.PartialViewModels;
 @using Febris.EnumLibrary;
+@using Febris.SharedServices;
 
 <div class="col-sm-12" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
     <div class="row" align="center" style="word-wrap: break-word; font-weight: bold; padding-top: 10px;">
@@ -86,11 +87,27 @@
             </div>
         </div>
         <div class="col-sm-6" align="center" ; style="border-radius: 20px; padding:10px; align-items: center;">
-            @if (Model.LocalSoftwarePackageType != LocalSoftwarePackageType.AndroidMobileCompanion&& Model.LocalSoftwarePackageType != LocalSoftwarePackageType.None)
+            @*
+                Reached in two situations only.
+
+                1. A package IS held locally: serve our own bytes. The Companion is excluded as it
+                   always was, since the Mobile Server delivers it to the headset, not a browser.
+                2. Nothing held AND link-out is disabled (air-gapped): a plain notice. When
+                   link-out is enabled the controller has already redirected to the public page,
+                   so this view never renders an external link of its own.
+            *@
+            @if (Model.Id != 0 && Model.LocalSoftwarePackageType != LocalSoftwarePackageType.AndroidMobileCompanion && Model.LocalSoftwarePackageType != LocalSoftwarePackageType.None)
             {
                 @await Html.PartialAsync("Buttons/GenericButtons/LocalSoftwarePackage/_DownloadButtonGroupPartial", new IndividualUUIDButtonPartial { Id = Model.UUID })
             }
-            @*@await Html.PartialAsync("Buttons/GenericButtons/LocalSoftwarePackage/_DownloadButtonGroupPartial", new IndividualUUIDButtonPartial { Id = Model.UUID })*@
+            else if (Model.Id == 0)
+            {
+                <p>
+                    This node holds no copy of this software, and off-site downloads are turned off
+                    for this deployment. It will appear here once the node syncs it from a package
+                    feed.
+                </p>
+            }
         </div>
     </div>
 </div>
