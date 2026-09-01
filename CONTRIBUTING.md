@@ -176,7 +176,7 @@ independence is the point of the project.
 ## Reporting a security issue
 
 **Do not open a public issue or a pull request for a security bug.** Use this repository's
-private advisory channel: **Security -> Advisories -> [Report a vulnerability](https://github.com/TRget88/Febris_Node/security/advisories/new)**.
+private advisory channel: **Security -> Advisories -> [Report a vulnerability](https://github.com/Febris-XR/Febris_Node/security/advisories/new)**.
 That channel stays private between you and the maintainer until a fix is published. See
 [`SECURITY.md`](SECURITY.md) for what to include.
 

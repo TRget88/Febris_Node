@@ -218,5 +218,5 @@ by their own licences and by the licences of the packages inside them.
 ---
 
 If you find an error or an omission in this file, please open an issue at
-`https://github.com/TRget88/Febris_Node`. Suspected *security* problems go through
+`https://github.com/Febris-XR/Febris_Node`. Suspected *security* problems go through
 [`SECURITY.md`](SECURITY.md) instead.

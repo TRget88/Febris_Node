@@ -5,7 +5,7 @@
 Please report suspected vulnerabilities **privately**. Do not open a public issue for a
 security bug.
 
-Use this repository's **[Report a vulnerability](https://github.com/TRget88/Febris_Node/security/advisories/new)**
+Use this repository's **[Report a vulnerability](https://github.com/Febris-XR/Febris_Node/security/advisories/new)**
 tab (Security -> Advisories -> Report a vulnerability). That channel is private between you
 and the maintainers until a fix is published. It is the only reporting channel for this
 project -- there is no security mailing address.

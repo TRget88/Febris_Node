@@ -148,7 +148,7 @@ openssl and bash are needed for the compose path. The .NET 8 SDK is for building
 outside containers.
 
 ```sh
-git clone https://github.com/TRget88/Febris_Node.git febris-node && cd febris-node
+git clone https://github.com/Febris-XR/Febris_Node.git febris-node && cd febris-node
 ./selfhost/generate-env.sh          # writes .env with fresh secrets, chmod 600
 docker compose up -d --build        # first build takes a few minutes
 ```
