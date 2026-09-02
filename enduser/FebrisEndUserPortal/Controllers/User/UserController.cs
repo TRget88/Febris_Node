@@ -131,6 +131,12 @@ namespace Febris.UserNode.Portal.Controllers.User
 
         public async Task<IActionResult> StudentIndex()
         {
+            // Carries the learner role to the shared Add action, so an operator who starts
+            // from this list does not have to re-pick the role the list already implies.
+            // All four user lists funnel into ONE User/Create, which had no idea which
+            // list launched it. The Comprehensive Index deliberately sets nothing,
+            // because it has no single role to carry.
+            ViewBag.AddUserRole = InstitutionUserAccountType.User;
             return View();
         }
         // GET: LocalApplicationUser/IndexPartial
@@ -182,6 +188,12 @@ namespace Febris.UserNode.Portal.Controllers.User
 
         public async Task<IActionResult> EducatorIndex()
         {
+            // Carries the educator role to the shared Add action, so an operator who starts
+            // from this list does not have to re-pick the role the list already implies.
+            // All four user lists funnel into ONE User/Create, which had no idea which
+            // list launched it. The Comprehensive Index deliberately sets nothing,
+            // because it has no single role to carry.
+            ViewBag.AddUserRole = InstitutionUserAccountType.Educator;
             return View();
         }
         // GET: LocalApplicationUser/IndexPartial
@@ -233,6 +245,12 @@ namespace Febris.UserNode.Portal.Controllers.User
 
         public async Task<IActionResult> AdminIndex()
         {
+            // Carries the admin role to the shared Add action, so an operator who starts
+            // from this list does not have to re-pick the role the list already implies.
+            // All four user lists funnel into ONE User/Create, which had no idea which
+            // list launched it. The Comprehensive Index deliberately sets nothing,
+            // because it has no single role to carry.
+            ViewBag.AddUserRole = InstitutionUserAccountType.Admin;
             return View();
         }
         // GET: LocalApplicationUser/IndexPartial
@@ -338,9 +356,21 @@ namespace Febris.UserNode.Portal.Controllers.User
 
         #region Create
         // GET: LocalApplicationUser/Create
-        public IActionResult Create()
+        public IActionResult Create(InstitutionUserAccountType? accountType)
         {
-            //LocalUserCreation vm = new LocalUserCreation();
+            // accountType arrives from whichever list the operator pressed Add on. A NULL
+            // model is still passed when it is absent, which is what the Comprehensive list
+            // sends and what every caller sent before this, so that path is unchanged.
+            //
+            // No rank check here on purpose. The view already computes the assignable set
+            // through RoleRankPolicy.CanAssign to build the dropdown, and it seeds the
+            // selection only if the requested role is in that set. Repeating the policy call
+            // here would be a second place to keep in sync. UserLogic.Create enforces
+            // CanAssign again on POST regardless, so this is UX only either way.
+            if (accountType.HasValue)
+            {
+                return View(new LocalUserCreation() { UserAccountType = accountType.Value });
+            }
             return View();
         }
 

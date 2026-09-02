@@ -18,6 +18,14 @@
         .Where(t => RoleRankPolicy.CanAssign(actorRoles, new string[0], t.ToString()))
         .Select(t => new SelectListItem(t.ToString(), ((int)t).ToString()))
         .ToList();
+
+    // Seed the dropdown only when the requested role is one this operator may actually grant.
+    // Without the guard, an Admin-rank operator standing on the Admin list would see Admin
+    // pre-selected while it is absent from assignableRoles, because RoleRankPolicy requires the
+    // actor to OUTRANK what they grant. Compared on the integer value, since that is what the
+    // SelectListItem carries.
+    var roleSeeded = Model != null
+        && assignableRoles.Any(i => i.Value == ((int)Model.UserAccountType).ToString());
 }
 
 <h2>Create</h2>
@@ -41,7 +49,17 @@
             <div class="form-group">
                 <label asp-for="UserAccountType" class="control-label"></label>
                 <select asp-for="UserAccountType" asp-items="assignableRoles" class="form-control">
-                    <option selected="selected" value=""></option>
+@*
+                        Emitted ONLY when nothing was seeded. This option carries selected, and in
+                        HTML the LAST selected option wins, so leaving it unconditional would beat
+                        the value asp-for sets and the pre-selection would silently do nothing.
+                        Views/User/Edit.cshtml has this same option commented out for the same
+                        reason, which is why Edit pre-selects today and Create did not.
+                    *@
+                    @if (!roleSeeded)
+                    {
+                        <option selected="selected" value=""></option>
+                    }
                 </select>
                 <span asp-validation-for="UserAccountType" class="text-danger"></span>
             </div>

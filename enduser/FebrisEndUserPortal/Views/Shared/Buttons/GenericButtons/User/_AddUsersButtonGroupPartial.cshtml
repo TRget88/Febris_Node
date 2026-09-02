@@ -1,4 +1,4 @@
-@*
+﻿@*
     The ways to add people to this node, presented together (2026-08-21).
 
     MODEL: true to offer bulk import, false to leave it out.
@@ -30,7 +30,9 @@
 <div class="row" style="margin-bottom: 15px;">
     <div class="col-md-12">
         <div class="btn-group" role="group" aria-label="Add users">
-            <a asp-controller="User" asp-action="Create" class="btn btn-success"
+            @* asp-route-accountType carries the role the surrounding list implies. It renders as
+               nothing when ViewBag.AddUserRole is unset, which is the Comprehensive list. *@
+            <a asp-controller="User" asp-action="Create" asp-route-accountType="@ViewBag.AddUserRole" class="btn btn-success"
                title="Create one account now. They are emailed a link to set their own password.">
                 <i class="fa fa-user-plus"></i> Add a user
             </a>
