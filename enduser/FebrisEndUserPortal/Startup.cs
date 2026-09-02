@@ -323,6 +323,23 @@ namespace Febris.UserNode.Portal
             services.AddScoped<IAnalyticsRetentionReaper, AnalyticsRetentionReaper>();
             services.AddHostedService<Febris.UserNode.Portal.BackgroundTasks.AnalyticsRetentionService>();
 
+            // PackageFeedSyncService was written, documented and never registered, so it had no
+            // effect whatsoever. Its options were never bound either, meaning even an operator who
+            // set PackageFeed:Url got nothing: no sync, and not even the "idle" line the service
+            // logs to explain itself. The consequence is the one its own config comment predicts.
+            // The manual upload path was removed, so a feed is the ONLY automatic way packages
+            // reach a node, the Mobile Server fetches the Companion FROM the node, and a node with
+            // an empty catalogue cannot serve headsets. Measured 2026-09-02, LocalSoftwarePackage
+            // and PackageArtifact both held 0 rows and the Mobile Server got a 404 from
+            // /api/CompanionApp/getlatestversion on every launch.
+            //
+            // Binding the options section is what makes the shipped blank Url meaningful. With no
+            // Url the service still starts, logs that it is idle, and returns, so this does not
+            // make a node reach out to anything it was not configured to trust.
+            services.Configure<Febris.UserNode.Portal.BackgroundTasks.PackageFeedOptions>(
+                Configuration.GetSection("PackageFeed"));
+            services.AddHostedService<Febris.UserNode.Portal.BackgroundTasks.PackageFeedSyncService>();
+
             // Identity core policy (password/lockout/confirmed-email) is applied in a named,
             // [EnforcesGate]-annotated method so the coverage ratchet (IdentityGateCoverageTests) can
             // prove each knob is honored. Do not inline these copies back into a lambda -- attributes
