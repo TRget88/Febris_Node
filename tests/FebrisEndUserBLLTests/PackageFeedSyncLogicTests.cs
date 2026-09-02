@@ -372,6 +372,53 @@ namespace Febris.UserNode.LogicLayer.Tests
             context.PackageArtifact.Single().Sha256.Should().Be(originalSha);
         }
 
+        /// <summary>
+        /// The counterpart to the test above, and the case that was missing when a node could only
+        /// ever ingest a package once.
+        ///
+        /// <para>
+        /// CLIENT_RELEASE_GUIDE.md line 241 instructs publishers to KEEP a row's uuid and change the
+        /// version and artifact, which is exactly the shape the guard above refuses. With no version
+        /// comparison the two rules contradicted, so a node took companion 0.2.0 and then refused
+        /// 0.2.1 and every release after it, permanently, with no operator-visible cause beyond a
+        /// REFUSED line. The version is what separates a new release from a swapped payload.
+        /// </para>
+        /// </summary>
+        [Fact]
+        public async Task SameUuidAtANewVersion_IsIngested_AndReplacesTheStoredArtifact()
+        {
+            using DataDbContext context = BuildContext(nameof(SameUuidAtANewVersion_IsIngested_AndReplacesTheStoredArtifact));
+            byte[] original = ZipBytes("release-0-2-0");
+            Guid uuid = Guid.NewGuid();
+
+            await BuildSync(context, new FakeFeed(
+                Manifest(Entry(uuid, original)),
+                new Dictionary<string, byte[]>() { { ArtifactUrl, original } })).SyncFromFeed(Request());
+
+            string originalSha = context.PackageArtifact.Single().Sha256;
+
+            // Same uuid, MOVED version. A normal release, not tampering.
+            byte[] next = ZipBytes("release-0-2-1");
+            FakeFeed updated = new FakeFeed(
+                Manifest(Entry(uuid, next, version: "0.2.1", versionCode: 201)),
+                new Dictionary<string, byte[]>() { { ArtifactUrl, next } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, updated).SyncFromFeed(Request());
+
+            result.Refused.Should().Be(0);
+            result.Ingested.Should().Be(1);
+
+            // Upsert on the uuid, so the catalog moves forward rather than gaining a second row.
+            LocalSoftwarePackage row = context.LocalSoftwarePackage.Single();
+            row.UUID.Should().Be(uuid);
+            row.Version.Should().Be("0.2.1");
+
+            PackageArtifact artifact = context.PackageArtifact.Single();
+            artifact.Sha256.Should().Be(Sha256Hex(next));
+            artifact.Sha256.Should().NotBe(originalSha);
+            (await _storage.ExistsAsync(artifact.StorageKey)).Should().BeTrue();
+        }
+
         [Fact]
         public async Task Entries_AreIngestedAscending_SoTheNewestReleaseWinsTheTimestampOrdering()
         {

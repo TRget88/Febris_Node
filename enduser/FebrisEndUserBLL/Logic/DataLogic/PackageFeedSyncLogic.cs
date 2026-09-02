@@ -258,12 +258,28 @@ namespace Febris.UserNode.LogicLayer.Logic.DataLogic
                     return item;
                 }
 
-                item.Outcome = PackageFeedSyncOutcome.Refused;
-                item.Detail = "REFUSED: uuid " + entry.Uuid + " is already held with checksum " +
-                              storedArtifact.Sha256 + " but the feed now advertises " +
-                              entry.Artifact.Sha256 + ". A release identity must never change its " +
-                              "bytes. Not overwriting.";
-                return item;
+                // A NEW RELEASE legitimately changes the bytes, and this could not tell that from a
+                // republished release with SWAPPED bytes, so it refused both. Meanwhile the release
+                // guide instructs publishers to keep the uuid and change the artifact
+                // (CLIENT_RELEASE_GUIDE.md line 241, "Keep each row's existing uuid unchanged"), so
+                // the two were in direct contradiction. A node ingested each package exactly once
+                // and then refused every later release of it forever. Measured 2026-09-02, a bench
+                // node held companion 0.2.0 with no path to 0.2.1 short of deleting the row by hand.
+                //
+                // The manifest carries the version precisely to tell the two cases apart. A moved
+                // version is an update, and falls through below to download, verify and upsert onto
+                // the same uuid. An UNCHANGED version whose bytes moved is exactly the tampering
+                // case this guard was written for, and is still refused.
+                if (string.Equals(existing.Version, entry.Version, StringComparison.OrdinalIgnoreCase))
+                {
+                    item.Outcome = PackageFeedSyncOutcome.Refused;
+                    item.Detail = "REFUSED: uuid " + entry.Uuid + " is already held at version " +
+                                  existing.Version + " with checksum " + storedArtifact.Sha256 +
+                                  " but the feed advertises that SAME version with checksum " +
+                                  entry.Artifact.Sha256 + ". A published release must never change " +
+                                  "its bytes. Not overwriting.";
+                    return item;
+                }
             }
 
             if (request?.DryRun == true)
