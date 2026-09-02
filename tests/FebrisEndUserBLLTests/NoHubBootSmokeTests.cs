@@ -165,7 +165,6 @@ namespace Febris.UserNode.LogicLayer.Tests
             // PassedBackConfig dereference. They must all construct hub-less now.
             scope.ServiceProvider.GetRequiredService<IInstitutionLogic>().Should().NotBeNull();
             scope.ServiceProvider.GetRequiredService<IInstitutionSettingsLogic>().Should().NotBeNull();
-            scope.ServiceProvider.GetRequiredService<ICurriculumLogic>().Should().NotBeNull();
             // IMarketplaceListingLogic was asserted here until the marketplace teardown
             // (owner ruling 2026-08-01). The type no longer exists in the node at all, so the
             // strongest remaining statement is that nothing re-registers it -- see
@@ -173,7 +172,9 @@ namespace Febris.UserNode.LogicLayer.Tests
             // IMicrocredentialLogic was asserted here until the microcredential removal
             // (2026-08-18). Same shape as the marketplace note above: the type no longer exists in
             // the node, so there is nothing left to resolve.
-            scope.ServiceProvider.GetRequiredService<IModuleLinkedCurriculumLogic>().Should().NotBeNull();
+            // ICurriculumLogic and IModuleLinkedCurriculumLogic were asserted here until the
+            // curriculum removal (owner ruling 2026-09-02). Same shape as the two notes above.
+            // Neither type exists in the node any more, so there is nothing left to resolve.
 
             // ROADMAP 16: the whole ingest chain now lives on the Portal (package upload, module
             // upload, feed sync), so the Portal graph must construct it hub-less. The feed-sync

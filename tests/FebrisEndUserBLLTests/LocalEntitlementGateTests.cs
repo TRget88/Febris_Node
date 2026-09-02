@@ -80,7 +80,6 @@ namespace Febris.UserNode.LogicLayer.Tests
                 new Mock<IHardwareLinkedCohortQueries>().Object,
                 new Mock<PrimaryLogicLayer.Logic.XApiLogic.IStatementLogic>().Object,
                 new Mock<ICohortMemberQueries>().Object,
-                new Mock<ITestUserQueries>().Object,
                 new Mock<Logic.AnalyticsLogic.IModuleUsageAnalyticsLogic>().Object,
                 // Video-ownership recorder. A mock rather than null: LauncherLogic guards the call,
                 // but supplying it keeps this construction honest about the greedy ctor's shape,

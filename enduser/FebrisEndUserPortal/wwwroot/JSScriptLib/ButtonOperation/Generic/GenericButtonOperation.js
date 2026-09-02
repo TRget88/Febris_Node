@@ -26,10 +26,6 @@ function ButtonAction(sender) {
             route = "/CohortMember/DetailsModal?id=";
             LoadModal(route, item)
             break;
-        case "CurriculumDetails":
-            route = "/Curriculum/DetailsModal?id=";
-            LoadModal(route, item)
-            break;
         case "DeploymentTypeDetails":
             route = "/DeploymentType/DetailsModal?id=";
             LoadModal(route, item)
@@ -154,10 +150,6 @@ function ButtonAction(sender) {
             LoadModal(route, item);
             break;
         //User
-        case "TestUserDetails":
-            route = "/TestUser/DetailsModal?id=";
-            LoadModal(route, item)
-            break;
         case "UserDetails":
             route = "/User/DetailsModal?id=";
             LoadModal(route, item)

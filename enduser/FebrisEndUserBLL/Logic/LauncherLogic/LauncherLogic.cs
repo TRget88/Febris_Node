@@ -81,7 +81,6 @@ namespace Febris.UserNode.LogicLayer.Logic.LauncherLogic
 
         private readonly IHardwareLinkedCohortQueries _hardwareLinkedCohortContext;
         private readonly ICohortMemberQueries _cohortMemberContext;
-        private readonly ITestUserQueries _testUserContext;
         private readonly IModuleUsageAnalyticsLogic _moduleUsageAnalyticscontext;
         // SCBA-B3 port (node hygiene D): null on the legacy self-newing path, where
         // ScopedBackgroundWork's legacy fallback preserves the pre-fix behavior.
@@ -109,7 +108,6 @@ namespace Febris.UserNode.LogicLayer.Logic.LauncherLogic
             IHardwareLinkedCohortQueries hardwareLinkedCohortContext,
             IStatementLogic statementContext,
             ICohortMemberQueries cohortMemberContext,
-            ITestUserQueries testUserContext,
             IModuleUsageAnalyticsLogic moduleUsageAnalyticscontext,
             // Records which actor a freshly minted recording name belongs to. This is the ONLY
             // point where that is knowable: the upload that follows carries a device token and
@@ -143,7 +141,6 @@ namespace Febris.UserNode.LogicLayer.Logic.LauncherLogic
             _statementContext = statementContext;
             _recordingContext = recordingContext;
             _cohortMemberContext = cohortMemberContext;
-            _testUserContext = testUserContext;
             //_license = (License)_httpContextAccessor.HttpContext.Items["License"] ?? null;
             _license = LicenseClaimsPrincipalExtension.GetLicense(_httpContextAccessor).Result;
             _hardware = (Hardware)_httpContextAccessor.HttpContext.Items["Hardware"] ?? null;
@@ -178,7 +175,6 @@ namespace Febris.UserNode.LogicLayer.Logic.LauncherLogic
             _hardwareLinkedCohortContext = new HardwareLinkedCohortQueries();
             _statementContext = new StatementLogic(_httpContextAccessor);
             _cohortMemberContext = new CohortMemberQueries();
-            _testUserContext = new TestUserQueries();
             //_license = (License)_httpContextAccessor.HttpContext.Items["License"] ?? null;
             _license = LicenseClaimsPrincipalExtension.GetLicense(_httpContextAccessor).Result;
             _hardware = (Hardware)_httpContextAccessor.HttpContext.Items["Hardware"] ?? null;
@@ -261,25 +257,14 @@ namespace Febris.UserNode.LogicLayer.Logic.LauncherLogic
                 List<CohortMember> memberList = await _cohortMemberContext.Get(cohortList);//.Get();//.Select(i => i.Cohort).ToList();
                 List<Guid> userIdList = memberList.Select(i => i.UserId).ToList();
                 List<LocalApplicationUser> applicationUserList = await _applicationUserContext.Get(userIdList);
-                List<TestUser> testUserList = await _testUserContext.Get();//.Select(i => i.TestUser).ToList();
-
+                // TEST USERS REMOVED. _testUserContext.Get() took no argument, so every device
+                // that authenticated received the ENTIRE TestUser table, while real users are
+                // narrowed hardware to cohort to member to user on the three lines above. TestUser
+                // carries no link to hardware or cohort to scope it by, so it could not be made per
+                // device without new schema. Removed rather than left broadcasting to every device
+                // on every node. The rows stay in the database and HardwareUserViewModel keeps
+                // IsTestUser, which every client now sends as false.
                 List<HardwareUserViewModel> userList = new List<HardwareUserViewModel>();
-                foreach (var i in testUserList)
-                {
-                    HardwareUserViewModel temp = new HardwareUserViewModel()
-                    {
-                        IsTestUser = true,
-                        UserId = i.UUID,
-                        FirstName = i.FirstName,
-                        LastName = i.LastName,
-                        IdentificationNumber = i.IdentificationNumber,
-                        EmailAddress = i.EmailAddress,
-                        //PhoneNumber = i.PhoneNumber,
-                        ActorId = i.ActorId,
-                        PicturePath = i.PhotoOfProfessional
-                    };
-                    userList.Add(temp);
-                }
 
                 foreach (var i in applicationUserList)
                 {

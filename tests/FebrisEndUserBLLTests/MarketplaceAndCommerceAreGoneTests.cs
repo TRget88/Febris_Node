@@ -30,7 +30,7 @@ namespace Febris.UserNode.LogicLayer.Tests
     public class MarketplaceAndCommerceAreGoneTests
     {
         private static Assembly LogicLayer => typeof(Febris.UserNode.LogicLayer.Logic.DataLogic.ICohortLogic).Assembly;
-        private static Assembly DataAccessLayer => typeof(Febris.UserNode.DataAccessLayer.Queries.DataQueries.ICohortLinkedCurriculumQueries).Assembly;
+        private static Assembly DataAccessLayer => typeof(Febris.UserNode.DataAccessLayer.Queries.DataQueries.IHardwareLinkedModuleQueries).Assembly;
         private static Assembly Portal => typeof(Febris.UserNode.Portal.Startup).Assembly;
 
         public static TheoryData<string> BannedTypeNames => new TheoryData<string>

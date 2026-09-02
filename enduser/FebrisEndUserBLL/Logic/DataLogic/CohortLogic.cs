@@ -41,7 +41,6 @@ namespace Febris.UserNode.LogicLayer.Logic.DataLogic
         /// reversible and is still the ordinary way to retire a cohort.
         /// </summary>
         Task<bool> Delete(long id);
-        Task<CohortAccessListViewModel> GetCohortAccessList(long id);
     }
 
 
@@ -49,7 +48,6 @@ namespace Febris.UserNode.LogicLayer.Logic.DataLogic
     {
         private readonly ICohortQueries _context;
         private readonly ICohortMemberQueries _memberContext;
-        private readonly ICohortLinkedCurriculumQueries _curriculumDataContext;
         private readonly ILocationLinkedCohortQueries _locationDataContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ClaimsPrincipal User;
@@ -62,7 +60,6 @@ namespace Febris.UserNode.LogicLayer.Logic.DataLogic
             User = _httpContextAccessor.HttpContext.User;
             _context = new CohortQueries();
             _memberContext = new CohortMemberQueries();
-            _curriculumDataContext = new CohortLinkedCurriculumQueries();
             _locationDataContext = new LocationLinkedCohortQueries();
         }
         // DI refactor
@@ -70,7 +67,6 @@ namespace Febris.UserNode.LogicLayer.Logic.DataLogic
             IHttpContextAccessor httpContextAccessor,
             ICohortQueries context,
             ICohortMemberQueries memberContext,
-            ICohortLinkedCurriculumQueries curriculumDataContext,
             ILocationLinkedCohortQueries locationDataContext
             )
         {
@@ -78,7 +74,6 @@ namespace Febris.UserNode.LogicLayer.Logic.DataLogic
             User = _httpContextAccessor?.HttpContext?.User;
             _context = context;
             _memberContext = memberContext;
-            _curriculumDataContext = curriculumDataContext;
             _locationDataContext = locationDataContext;
         }
 
@@ -376,56 +371,6 @@ namespace Febris.UserNode.LogicLayer.Logic.DataLogic
         // Cohort.LockMembers, which nothing in the product read as a gate -- see the note in
         // CohortController where the action lived. The column stays in the database.
 
-        public async Task<CohortAccessListViewModel> GetCohortAccessList(long id)
-        {
-            try
-            {
-                // Access is curriculum-derived and entirely node-local. The cohort is linked to
-                // curricula (CohortLinkedCurriculum) and every member inherits that access, so
-                // Seats is the member count rather than a per-user purchase tally. The old
-                // implementation asked the hub what the cohort's members had BOUGHT, which
-                // returned nothing on a self-hosted node.
-                Cohort cohort = await _context.Get(id);
-                List<CohortMember> memberList = await _memberContext.Get(cohort);
-                int seats = memberList != null ? memberList.Count : 0;
-
-                List<CohortLinkedCurriculum> linkedCurriculumList =
-                    await _curriculumDataContext.GetListByCohort(cohort);
-
-                CohortAccessListViewModel output = new CohortAccessListViewModel()
-                {
-                    AccessList = new List<CohortAccessEntryViewModel>()
-                };
-
-                foreach (CohortLinkedCurriculum item in linkedCurriculumList)
-                {
-                    // A cohort can carry the same curriculum through more than one link row;
-                    // collapse to one entry so the list reflects distinct access, not link rows.
-                    if (item.Curriculum == null
-                        || output.AccessList.Any(i => i.Curriculum.Id == item.Curriculum.Id))
-                    {
-                        continue;
-                    }
-
-                    output.AccessList.Add(new CohortAccessEntryViewModel()
-                    {
-                        Seats = seats,
-                        Curriculum = item.Curriculum
-                    });
-                }
-
-                output.AccessList = output.AccessList
-                    .OrderBy(i => i.Curriculum.Name)
-                    .ToList();
-
-                return output;
-            }
-            catch (Exception ex)
-            {
-                Febris.SharedServices.FebrisLog.Error(ex);
-                throw;
-            }            
-        }
     }
 
 

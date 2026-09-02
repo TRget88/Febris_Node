@@ -275,15 +275,6 @@ namespace Febris.UserNode.Portal
             // how every other options section here behaves.
             services.Configure<ClientDownloadOptions>(Configuration.GetSection(ClientDownloadOptions.SectionName));
 
-            // Scheduled package-feed sync. With the manual upload path gone, a feed is the only way
-            // the software catalogue can fill, and nothing triggered it: an operator had to remember
-            // to run one by hand. This service does it on an interval. It needs no credential and
-            // opens no inbound route, so the ROADMAP 16 ruling that deleted the NodeAdmin token
-            // stands. Blank PackageFeed:Url leaves it idle, which is the air-gapped default.
-            services.Configure<BackgroundTasks.PackageFeedOptions>(
-                Configuration.GetSection(BackgroundTasks.PackageFeedOptions.SectionName));
-            services.AddHostedService<BackgroundTasks.PackageFeedSyncService>();
-
             // Registration policy is resolved DB-FIRST (node initialization design 2026-08-18).
             // A stored NodeRegistrationConfig row (the portal's Registration page) governs when
             // present; otherwise the configured "Identity:Registration" section governs unchanged,
@@ -572,7 +563,6 @@ namespace Febris.UserNode.Portal
             // (owner ruling 2026-08-01). Both were hub-backed behind a closed federation gate, so
             // they rendered permanently blank pages rather than failing. The LOCAL MessageBoard is
             // node-owned and stays.
-            services.AddScoped<ICurriculumLogic, CurriculumLogic>();
             services.AddScoped<IHardwareLinkedModuleLogic, HardwareLinkedModuleLogic>();
             //services.AddScoped<IInvoiceLogic, InvoiceLogic>();
             services.AddScoped<IInstitutionLogic, InstitutionLogic>();
@@ -583,7 +573,6 @@ namespace Febris.UserNode.Portal
             services.AddScoped<IModuleLinkedObjectLogic, ModuleLinkedObjectLogic>();
             //services.AddScoped<IPurchaseLogic, PurchaseLogic>();
             services.AddScoped<IXRHardwareModelLogic, XRHardwareModelLogic>();
-            services.AddScoped<IModuleLinkedCurriculumLogic, ModuleLinkedCurriculumLogic>();
             // Category / Industry / Focus / Tag registrations removed: marketplace-scoped taxonomy
             // (owner ruling 2026-08-01). ITagLogic was registered TWICE -- here and again in the
             // xAPI region -- so the second silently won. The MODELS remain in
@@ -592,7 +581,6 @@ namespace Febris.UserNode.Portal
             // with the marketplace. It sat inside that region, so removing the region as a block
             // would have killed TestUser DI silently -- a runtime resolution failure on first
             // request, not a compile error.
-            services.AddScoped<ITestUserLogic, TestUserLogic>();
 
             #endregion
 

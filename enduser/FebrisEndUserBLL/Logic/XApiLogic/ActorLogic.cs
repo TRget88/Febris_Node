@@ -18,7 +18,6 @@ namespace Febris.PrimaryLogicLayer.Logic.XApiLogic
 {
     public interface IActorLogic
     {
-        Task<Actor> Create(TestUser newUser);
         Task<Actor> Create(LocalApplicationUser newUser);
         Task<List<Actor>> Get();
         Task<Actor> Get(long? id);
@@ -275,28 +274,6 @@ namespace Febris.PrimaryLogicLayer.Logic.XApiLogic
                 throw;
             }
 
-            return output;
-        }
-        public async Task<Actor> Create(TestUser newUser)
-        {
-            Actor output = new Actor();
-            try
-            {
-                string mbox = Sha1Handler.TextToHash(newUser.EmailAddress);
-                output = new Actor()
-                {
-                    Name = newUser.UserName,
-                    //Mbox = new Uri(mbox),
-                    Mbox_sha1sum = mbox,
-                    ObjectType = "Agent"
-                };
-                output = await _dataContext.Create(output);
-            }
-            catch (Exception ex)
-            {
-                Febris.SharedServices.FebrisLog.Error(ex);
-                throw;
-            }
             return output;
         }
 
