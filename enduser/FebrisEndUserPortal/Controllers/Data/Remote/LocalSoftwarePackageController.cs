@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -206,7 +206,7 @@ namespace Febris.UserNode.Portal.Controllers.Data
                 Stream output = await _context.DownloadPackage(package.UUID);
                 //string path = StaticDetails.LocalSoftwarePackage+package.UUID.ToString()+".zip";
                 //return File(output, GetMimeTypes(), package.Name + ".zip");
-                return File(output, "applicaiton/zip", package.Name+".zip");
+                return File(output, "application/zip", package.Name+".zip");
                 //return File(output, GetMimeTypes()[ext], Path.GetFileName(path));
                 //return new File.Create(output,)
             }
@@ -224,7 +224,7 @@ namespace Febris.UserNode.Portal.Controllers.Data
             return new Dictionary<string, string>
             {            
                 //{".zip", "application/octet-stream"},
-                {".zip", "applicaiton/zip"}
+                {".zip", "application/zip"}
             };
         }
         #endregion
