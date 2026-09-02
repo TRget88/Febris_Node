@@ -453,6 +453,27 @@ namespace Febris.UserNode.LogicLayer.Logic.AuthorizationLogic
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
+                // NOISE (2026-09-02). Shape-gate the bearer value BEFORE validation. The mobile
+                // client sends an Authorization header with an EMPTY bearer token on its very
+                // first call by design. InitalizationRequest.MakeGetRequest defaults the token to
+                // string.Empty, takes the 401, re-authenticates and retries, so ValidateToken threw
+                // SecurityTokenMalformedException IDX12741 straight into the catch below, which
+                // logged a full stack trace at ERROR on a flow that then succeeds.
+                //
+                // CanReadToken applies the same segment-count and format gate that ValidateToken
+                // applies first, so it cannot classify a token differently. Returning here leaves
+                // the Hardware context item unset exactly as the catch did, and the authorize
+                // attribute reads only that item, so the 401 is unchanged. This changes the log
+                // level and nothing else. A well-formed JWS or JWE that fails signature, key or
+                // expiry still reaches ValidateToken, still throws, and is still logged at ERROR.
+                if (!tokenHandler.CanReadToken(token))
+                {
+                    Serilog.Log.Debug(
+                        "JwtHardwareMiddleware: bearer value is not a well-formed JWS or JWE, "
+                        + "skipping validation and attaching nothing");
+                    return;
+                }
+
                 // HIGH-2 (2026-05-24): use the centralized provider's cached
                 // signing key. Falls back to the legacy config read when the
                 // provider isn't available.

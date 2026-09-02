@@ -84,6 +84,11 @@ namespace Febris.UserNode.Api
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Application startup Failed");
+                // Signal a non-zero exit, matching the Portal. Without this, Main returns normally
+                // after a fatal startup failure and the process reports SUCCESS. Measured on
+                // 2026-09-02: a Production boot that died on the JWT placeholder guard still exited
+                // 0, so any script, CI step or health gate reading the exit status saw a clean run.
+                System.Environment.ExitCode = 1;
             }
             finally
             {

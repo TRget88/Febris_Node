@@ -557,11 +557,26 @@ namespace Febris.UserNode.Api
 
             Log.Information("Authorization Complete");
 
-            #region Static Files
-            app.UseStaticFiles();
-            #endregion
-
-            Log.Information("Static Files access (this may need to move up) Config Complete");
+            // Static file serving REMOVED 2026-09-02. This host has no web root and never had
+            // one. No wwwroot exists anywhere in the API project tree, the csproj declares no
+            // static content, and the static web assets manifest is empty in the Debug and
+            // Release outputs alike, so no Razor class library composes anything into a web root
+            // either. With the directory absent the middleware held a provider that could never
+            // yield a file, so it matched nothing and always called next(), while logging
+            // WebRootPathNotFound at Warning once per boot.
+            //
+            // Measured on two Development boots from different content roots. It was one of only
+            // two warnings the entire 2026-09-02 startup produced. The registration sat outside
+            // the single env.IsDevelopment() branch above, so a non-Development host is expected
+            // to have written it to the file sink too. That part is inferred, not observed.
+            //
+            // Behaviour preserving. Swagger UI is registered far above, upstream of UseRouting,
+            // and serves its own embedded assets, so it never reached this call. The two file
+            // downloads this host serves are MVC FileStreamResults written by their actions.
+            //
+            // Deliberately NOT solved by creating an empty wwwroot, which would silence the
+            // warning while leaving an anonymous file-serving surface ahead of the terminal 401
+            // on a host that only speaks JSON.
 
             #region cross origin                  
             app.UseCors(x =>

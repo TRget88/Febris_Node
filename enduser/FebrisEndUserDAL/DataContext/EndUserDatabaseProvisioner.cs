@@ -99,8 +99,19 @@ namespace Febris.UserNode.DataAccessLayer.DataContext
             {
                 // Never let provisioning crash host startup. Surface it and continue; the failing DB
                 // will error on first real use, which is the pre-fix behavior (no regression).
-                Console.Error.WriteLine(
-                    "[EndUserDatabaseProvisioner] provisioning '" + connectionKey + "' failed: " + ex.Message);
+                // Through FebrisLog, not Console.Error. The hosts assign Log.Logger in
+                // Program.Main well before this runs (API Program.cs assigns at 59 and calls
+                // ProvisionEndUserDatabases at 80), so the logger is live here. stderr reaches
+                // only the container's ephemeral stream, which the documented
+                // "docker compose up -d --build" upgrade discards, so a misconfigured host lost
+                // every provisioning failure from the one log operators are told to keep. This
+                // is not hypothetical. A Production boot on 2026-09-02 emitted four of these,
+                // one per connection string, entirely to stderr while the Serilog file sink
+                // recorded nothing about them. Passing ex rather than ex.Message also keeps the
+                // stack trace, and matches every other logging call site in this project.
+                Febris.SharedServices.FebrisLog.Error(
+                    ex,
+                    "[EndUserDatabaseProvisioner] provisioning '" + connectionKey + "' failed.");
             }
         }
     }
