@@ -579,5 +579,124 @@ namespace Febris.UserNode.LogicLayer.Tests
             context.LocalSoftwarePackage.Should().BeEmpty();
             context.PackageArtifact.Should().BeEmpty();
         }
+
+        #region contains[] payload verification
+
+        /// <summary>
+        /// SHA-256 of the bytes ZipBytes puts INSIDE the archive, which is what contains[] records.
+        /// Deliberately not the archive's own hash, since the whole point of these cases is that the
+        /// two are different things.
+        /// </summary>
+        private static string InnerSha(string content)
+        {
+            return Sha256Hex(System.Text.Encoding.UTF8.GetBytes(content));
+        }
+
+        private static PackageFeedEntry WithContains(PackageFeedEntry entry, string fileName, string sha256)
+        {
+            entry.Contains = new List<PackageFeedContent>()
+            {
+                new PackageFeedContent() { FileName = fileName, Sha256 = sha256 }
+            };
+            return entry;
+        }
+
+        [Fact]
+        public async Task DeclaredPayloadThatMatches_IsIngested()
+        {
+            using DataDbContext context = BuildContext(nameof(DeclaredPayloadThatMatches_IsIngested));
+            byte[] payload = ZipBytes("companion-zip-payload");
+            PackageFeedEntry entry = WithContains(
+                Entry(Guid.NewGuid(), payload), "payload.bin", InnerSha("companion-zip-payload"));
+            FakeFeed feed = new FakeFeed(
+                Manifest(entry), new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Ingested.Should().Be(1, "a correctly declared payload must still ingest");
+            result.Refused.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task DeclaredPayloadWithTheWrongHash_IsRefused_AndNothingReachesTheCatalog()
+        {
+            using DataDbContext context = BuildContext(nameof(DeclaredPayloadWithTheWrongHash_IsRefused_AndNothingReachesTheCatalog));
+            byte[] payload = ZipBytes("companion-zip-payload");
+
+            // The ARCHIVE hash is correct, so the wrapper check passes and only the payload check can
+            // catch this. That is the whole gap being closed: a sound envelope around wrong contents.
+            PackageFeedEntry entry = WithContains(
+                Entry(Guid.NewGuid(), payload), "payload.bin", InnerSha("something-else-entirely"));
+            FakeFeed feed = new FakeFeed(
+                Manifest(entry), new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Refused.Should().Be(1);
+            result.Ingested.Should().Be(0);
+            result.Items.Single().Detail.Should().Contain("Payload checksum mismatch");
+
+            context.LocalSoftwarePackage.Should().BeEmpty();
+            context.PackageArtifact.Should().BeEmpty();
+            Directory.GetFiles(_storageRoot, "*", SearchOption.AllDirectories).Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task DeclaredPayloadThatIsNotInTheArchive_IsRefused()
+        {
+            using DataDbContext context = BuildContext(nameof(DeclaredPayloadThatIsNotInTheArchive_IsRefused));
+            byte[] payload = ZipBytes("companion-zip-payload");
+
+            // Matched as an exact PATH, so a base name for a nested file does not resolve. This is the
+            // shape the published C++ SDK row had before its paths were corrected.
+            PackageFeedEntry entry = WithContains(
+                Entry(Guid.NewGuid(), payload), "nested/payload.bin", InnerSha("companion-zip-payload"));
+            FakeFeed feed = new FakeFeed(
+                Manifest(entry), new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Refused.Should().Be(1);
+            result.Ingested.Should().Be(0);
+            result.Items.Single().Detail.Should().Contain("no such path is present");
+            context.LocalSoftwarePackage.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task DeclaredPayloadWithAnUnusableDigest_IsRefused()
+        {
+            using DataDbContext context = BuildContext(nameof(DeclaredPayloadWithAnUnusableDigest_IsRefused));
+            byte[] payload = ZipBytes("companion-zip-payload");
+            PackageFeedEntry entry = WithContains(Entry(Guid.NewGuid(), payload), "payload.bin", "NOT-A-HASH");
+            FakeFeed feed = new FakeFeed(
+                Manifest(entry), new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Refused.Should().Be(1);
+            result.Ingested.Should().Be(0);
+            result.Items.Single().Detail.Should().Contain("without a lowercase hex sha256");
+        }
+
+        [Fact]
+        public async Task AnEntryDeclaringNoContents_IsStillIngested()
+        {
+            // Most rows declare nothing, and an absent declaration means nothing was promised rather
+            // than something was broken. If this ever fails, the new check has become mandatory and
+            // every existing feed row would stop ingesting.
+            using DataDbContext context = BuildContext(nameof(AnEntryDeclaringNoContents_IsStillIngested));
+            byte[] payload = ZipBytes("companion-zip-payload");
+            FakeFeed feed = new FakeFeed(
+                Manifest(Entry(Guid.NewGuid(), payload)),
+                new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Ingested.Should().Be(1);
+            result.Refused.Should().Be(0);
+        }
+
+        #endregion
+
     }
 }

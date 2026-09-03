@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -343,6 +344,21 @@ namespace Febris.UserNode.LogicLayer.Logic.DataLogic
                     return item;
                 }
 
+                // The wrapper is now proven. Prove the PAYLOAD before anything is committed.
+                //
+                // The feed's contains[] records the sha256 of each file INSIDE the zip, and until now
+                // nothing on this side read it. The node verified the envelope and took the contents on
+                // trust, which is the weaker half of the promise the feed makes. The landing page shows
+                // one of these digests to every visitor and the release workflow re-derives all of them
+                // from the published bytes, so the node was the only consumer ignoring them.
+                string contentFailure = VerifyDeclaredContents(tempPath, entry);
+                if (contentFailure != null)
+                {
+                    item.Outcome = PackageFeedSyncOutcome.Refused;
+                    item.Detail = contentFailure + " Nothing was ingested.";
+                    return item;
+                }
+
                 SoftwarePackageUploadViewModel metadata = new SoftwarePackageUploadViewModel()
                 {
                     UUID = entry.Uuid,
@@ -477,6 +493,104 @@ namespace Febris.UserNode.LogicLayer.Logic.DataLogic
                 return parsed;
             }
             return default;
+        }
+
+        /// <summary>
+        /// Verifies every file the feed declares inside the archive against its recorded digest.
+        /// Returns null when the payload is sound, or a human-readable reason to refuse.
+        /// </summary>
+        /// <remarks>
+        /// A row with no contains[] is not a failure. Most rows do not declare inner files, and an
+        /// absent declaration means nothing was promised rather than something was broken.
+        ///
+        /// FileName is matched as the exact PATH within the archive, not a base name, which is what
+        /// the schema requires. An archive nesting its payload under a directory must record that
+        /// directory, and a C++ SDK row that recorded base names for a nested zip is exactly why the
+        /// schema now says so.
+        /// </remarks>
+        private static string VerifyDeclaredContents(string archivePath, PackageFeedEntry entry)
+        {
+            if (entry.Contains == null || entry.Contains.Count == 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                using (ZipArchive archive = ZipFile.OpenRead(archivePath))
+                {
+                    foreach (PackageFeedContent declared in entry.Contains)
+                    {
+                        if (declared == null || string.IsNullOrWhiteSpace(declared.FileName))
+                        {
+                            return "The feed declares a contains[] entry with no fileName, so the payload cannot be verified.";
+                        }
+
+                        if (!IsSha256(declared.Sha256))
+                        {
+                            return "The feed declares '" + declared.FileName +
+                                   "' without a lowercase hex sha256, so the payload cannot be verified.";
+                        }
+
+                        ZipArchiveEntry found = archive.GetEntry(declared.FileName);
+                        if (found == null)
+                        {
+                            return "The feed declares '" + declared.FileName +
+                                   "' inside the archive, but no such path is present.";
+                        }
+
+                        string actual = HashEntry(found);
+                        if (actual == null)
+                        {
+                            return "The declared file '" + declared.FileName + "' exceeds the " +
+                                   MaxArtifactBytes.ToString(CultureInfo.InvariantCulture) +
+                                   " byte ceiling when decompressed. Refusing.";
+                        }
+
+                        if (!string.Equals(actual, declared.Sha256, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return "Payload checksum mismatch: the feed advertised " + declared.Sha256 +
+                                   " for '" + declared.FileName + "' and the archive holds " + actual + ".";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Includes the archive being unreadable at all. The wrapper hash matched, so this is a
+                // well-formed download of something that is not the archive the feed describes.
+                return "The archive could not be read to verify its declared contents (" +
+                       ex.GetType().Name + ").";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// SHA-256 of one archive entry, counting decompressed bytes so a declared file cannot expand
+        /// past the artifact ceiling. Returns null if it does.
+        /// </summary>
+        private static string HashEntry(ZipArchiveEntry found)
+        {
+            byte[] buffer = new byte[81920];
+            long total = 0;
+
+            using (Stream inner = found.Open())
+            using (SHA256 sha = SHA256.Create())
+            {
+                int read;
+                while ((read = inner.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    total += read;
+                    if (total > MaxArtifactBytes)
+                    {
+                        return null;
+                    }
+                    sha.TransformBlock(buffer, 0, read, null, 0);
+                }
+                sha.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                return BitConverter.ToString(sha.Hash).Replace("-", string.Empty).ToLowerInvariant();
+            }
         }
 
         private static bool IsSha256(string value)
