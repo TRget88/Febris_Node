@@ -53,7 +53,7 @@ namespace Febris.UserNode.Portal.Data
                 using IServiceScope scope = services.CreateScope();
                 DataDbContext db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
 
-                bool already = await db.Curriculum.AnyAsync(c => c.Description.Contains(SampleMarker));
+                bool already = await db.Module.AnyAsync(m => m.Description.Contains(SampleMarker));
                 if (already)
                 {
                     Log.Information("DevSampleData: sample rows already present, skipping.");
@@ -61,15 +61,6 @@ namespace Febris.UserNode.Portal.Data
                 }
 
                 DateTime now = DateTime.UtcNow;
-
-                // ---- Curricula -------------------------------------------------------------
-                List<Curriculum> curricula = new List<Curriculum>
-                {
-                    NewCurriculum("Fire Safety Fundamentals", "1.0", "Evacuation, extinguisher classes and alarm response.", now),
-                    NewCurriculum("Confined Space Entry",     "2.1", "Atmospheric testing, permits and rescue planning.",   now),
-                    NewCurriculum("Working at Height",        "1.3", "Harness inspection, anchor points and ladder use.",   now),
-                };
-                db.Curriculum.AddRange(curricula);
 
                 // ---- Modules ---------------------------------------------------------------
                 List<Module> modules = new List<Module>
@@ -102,22 +93,10 @@ namespace Febris.UserNode.Portal.Data
 
                 await db.SaveChangesAsync();
 
-                // ---- Cohort to curriculum links -------------------------------------------
-                // Written directly because nothing in the application can write them. See the class
-                // note. Done after SaveChanges so the generated UUIDs are populated.
-                db.CohortLinkedCurriculum.AddRange(new List<CohortLinkedCurriculum>
-                {
-                    NewLink(cohorts[0], curricula[0], now),
-                    NewLink(cohorts[0], curricula[2], now),
-                    NewLink(cohorts[1], curricula[1], now),
-                });
-
-                await db.SaveChangesAsync();
-
                 Log.Information(
-                    "DevSampleData: seeded {Curricula} curricula, {Modules} modules, {Cohorts} cohorts, " +
-                    "3 devices and 3 cohort-curriculum links. All marked {Marker}.",
-                    curricula.Count, modules.Count, cohorts.Count, SampleMarker);
+                    "DevSampleData: seeded {Modules} modules, {Cohorts} cohorts and 3 devices. " +
+                    "All marked {Marker}.",
+                    modules.Count, cohorts.Count, SampleMarker);
             }
             catch (Exception ex)
             {
@@ -131,20 +110,6 @@ namespace Febris.UserNode.Portal.Data
         }
 
 #if DEBUG
-        private static Curriculum NewCurriculum(string name, string version, string description, DateTime now)
-        {
-            return new Curriculum
-            {
-                UUID = Guid.NewGuid(),
-                Name = name,
-                Version = version,
-                Description = description + " " + SampleMarker,
-                Obsolete = false,
-                TimeStamp = now,
-                LastUpdateTimeStamp = now,
-            };
-        }
-
         private static Module NewModule(string name, string version, string description, DateTime now)
         {
             return new Module
@@ -183,20 +148,6 @@ namespace Febris.UserNode.Portal.Data
                 HardwareKind = HardwareKind.MobileServer,
                 HardwareCondition = HardwareCondition.Active,
                 IsLockedOut = false,
-                TimeStamp = now,
-                LastUpdateTimeStamp = now,
-            };
-        }
-
-        private static CohortLinkedCurriculum NewLink(Cohort cohort, Curriculum curriculum, DateTime now)
-        {
-            return new CohortLinkedCurriculum
-            {
-                UUID = Guid.NewGuid(),
-                Cohort = cohort,
-                CohortUUID = cohort.UUID,
-                Curriculum = curriculum,
-                CurriculumUUID = curriculum.UUID,
                 TimeStamp = now,
                 LastUpdateTimeStamp = now,
             };

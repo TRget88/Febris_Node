@@ -372,6 +372,53 @@ namespace Febris.UserNode.LogicLayer.Tests
             context.PackageArtifact.Single().Sha256.Should().Be(originalSha);
         }
 
+        /// <summary>
+        /// The counterpart to the test above, and the case that was missing when a node could only
+        /// ever ingest a package once.
+        ///
+        /// <para>
+        /// CLIENT_RELEASE_GUIDE.md line 241 instructs publishers to KEEP a row's uuid and change the
+        /// version and artifact, which is exactly the shape the guard above refuses. With no version
+        /// comparison the two rules contradicted, so a node took companion 0.2.0 and then refused
+        /// 0.2.1 and every release after it, permanently, with no operator-visible cause beyond a
+        /// REFUSED line. The version is what separates a new release from a swapped payload.
+        /// </para>
+        /// </summary>
+        [Fact]
+        public async Task SameUuidAtANewVersion_IsIngested_AndReplacesTheStoredArtifact()
+        {
+            using DataDbContext context = BuildContext(nameof(SameUuidAtANewVersion_IsIngested_AndReplacesTheStoredArtifact));
+            byte[] original = ZipBytes("release-0-2-0");
+            Guid uuid = Guid.NewGuid();
+
+            await BuildSync(context, new FakeFeed(
+                Manifest(Entry(uuid, original)),
+                new Dictionary<string, byte[]>() { { ArtifactUrl, original } })).SyncFromFeed(Request());
+
+            string originalSha = context.PackageArtifact.Single().Sha256;
+
+            // Same uuid, MOVED version. A normal release, not tampering.
+            byte[] next = ZipBytes("release-0-2-1");
+            FakeFeed updated = new FakeFeed(
+                Manifest(Entry(uuid, next, version: "0.2.1", versionCode: 201)),
+                new Dictionary<string, byte[]>() { { ArtifactUrl, next } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, updated).SyncFromFeed(Request());
+
+            result.Refused.Should().Be(0);
+            result.Ingested.Should().Be(1);
+
+            // Upsert on the uuid, so the catalog moves forward rather than gaining a second row.
+            LocalSoftwarePackage row = context.LocalSoftwarePackage.Single();
+            row.UUID.Should().Be(uuid);
+            row.Version.Should().Be("0.2.1");
+
+            PackageArtifact artifact = context.PackageArtifact.Single();
+            artifact.Sha256.Should().Be(Sha256Hex(next));
+            artifact.Sha256.Should().NotBe(originalSha);
+            (await _storage.ExistsAsync(artifact.StorageKey)).Should().BeTrue();
+        }
+
         [Fact]
         public async Task Entries_AreIngestedAscending_SoTheNewestReleaseWinsTheTimestampOrdering()
         {
@@ -532,5 +579,124 @@ namespace Febris.UserNode.LogicLayer.Tests
             context.LocalSoftwarePackage.Should().BeEmpty();
             context.PackageArtifact.Should().BeEmpty();
         }
+
+        #region contains[] payload verification
+
+        /// <summary>
+        /// SHA-256 of the bytes ZipBytes puts INSIDE the archive, which is what contains[] records.
+        /// Deliberately not the archive's own hash, since the whole point of these cases is that the
+        /// two are different things.
+        /// </summary>
+        private static string InnerSha(string content)
+        {
+            return Sha256Hex(System.Text.Encoding.UTF8.GetBytes(content));
+        }
+
+        private static PackageFeedEntry WithContains(PackageFeedEntry entry, string fileName, string sha256)
+        {
+            entry.Contains = new List<PackageFeedContent>()
+            {
+                new PackageFeedContent() { FileName = fileName, Sha256 = sha256 }
+            };
+            return entry;
+        }
+
+        [Fact]
+        public async Task DeclaredPayloadThatMatches_IsIngested()
+        {
+            using DataDbContext context = BuildContext(nameof(DeclaredPayloadThatMatches_IsIngested));
+            byte[] payload = ZipBytes("companion-zip-payload");
+            PackageFeedEntry entry = WithContains(
+                Entry(Guid.NewGuid(), payload), "payload.bin", InnerSha("companion-zip-payload"));
+            FakeFeed feed = new FakeFeed(
+                Manifest(entry), new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Ingested.Should().Be(1, "a correctly declared payload must still ingest");
+            result.Refused.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task DeclaredPayloadWithTheWrongHash_IsRefused_AndNothingReachesTheCatalog()
+        {
+            using DataDbContext context = BuildContext(nameof(DeclaredPayloadWithTheWrongHash_IsRefused_AndNothingReachesTheCatalog));
+            byte[] payload = ZipBytes("companion-zip-payload");
+
+            // The ARCHIVE hash is correct, so the wrapper check passes and only the payload check can
+            // catch this. That is the whole gap being closed: a sound envelope around wrong contents.
+            PackageFeedEntry entry = WithContains(
+                Entry(Guid.NewGuid(), payload), "payload.bin", InnerSha("something-else-entirely"));
+            FakeFeed feed = new FakeFeed(
+                Manifest(entry), new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Refused.Should().Be(1);
+            result.Ingested.Should().Be(0);
+            result.Items.Single().Detail.Should().Contain("Payload checksum mismatch");
+
+            context.LocalSoftwarePackage.Should().BeEmpty();
+            context.PackageArtifact.Should().BeEmpty();
+            Directory.GetFiles(_storageRoot, "*", SearchOption.AllDirectories).Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task DeclaredPayloadThatIsNotInTheArchive_IsRefused()
+        {
+            using DataDbContext context = BuildContext(nameof(DeclaredPayloadThatIsNotInTheArchive_IsRefused));
+            byte[] payload = ZipBytes("companion-zip-payload");
+
+            // Matched as an exact PATH, so a base name for a nested file does not resolve. This is the
+            // shape the published C++ SDK row had before its paths were corrected.
+            PackageFeedEntry entry = WithContains(
+                Entry(Guid.NewGuid(), payload), "nested/payload.bin", InnerSha("companion-zip-payload"));
+            FakeFeed feed = new FakeFeed(
+                Manifest(entry), new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Refused.Should().Be(1);
+            result.Ingested.Should().Be(0);
+            result.Items.Single().Detail.Should().Contain("no such path is present");
+            context.LocalSoftwarePackage.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task DeclaredPayloadWithAnUnusableDigest_IsRefused()
+        {
+            using DataDbContext context = BuildContext(nameof(DeclaredPayloadWithAnUnusableDigest_IsRefused));
+            byte[] payload = ZipBytes("companion-zip-payload");
+            PackageFeedEntry entry = WithContains(Entry(Guid.NewGuid(), payload), "payload.bin", "NOT-A-HASH");
+            FakeFeed feed = new FakeFeed(
+                Manifest(entry), new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Refused.Should().Be(1);
+            result.Ingested.Should().Be(0);
+            result.Items.Single().Detail.Should().Contain("without a lowercase hex sha256");
+        }
+
+        [Fact]
+        public async Task AnEntryDeclaringNoContents_IsStillIngested()
+        {
+            // Most rows declare nothing, and an absent declaration means nothing was promised rather
+            // than something was broken. If this ever fails, the new check has become mandatory and
+            // every existing feed row would stop ingesting.
+            using DataDbContext context = BuildContext(nameof(AnEntryDeclaringNoContents_IsStillIngested));
+            byte[] payload = ZipBytes("companion-zip-payload");
+            FakeFeed feed = new FakeFeed(
+                Manifest(Entry(Guid.NewGuid(), payload)),
+                new Dictionary<string, byte[]>() { { ArtifactUrl, payload } });
+
+            PackageFeedSyncResultViewModel result = await BuildSync(context, feed).SyncFromFeed(Request());
+
+            result.Ingested.Should().Be(1);
+            result.Refused.Should().Be(0);
+        }
+
+        #endregion
+
     }
 }

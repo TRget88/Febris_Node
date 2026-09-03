@@ -95,7 +95,7 @@ namespace Febris.UserNode.Api.Controllers
             return new Dictionary<string, string>
             {            
                 //{".zip", "application/octet-stream"},
-                {".zip", "applicaiton/zip"}
+                {".zip", "application/zip"}
             };
         }
     }

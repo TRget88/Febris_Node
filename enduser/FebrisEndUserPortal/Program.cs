@@ -63,6 +63,44 @@ namespace Febris.UserNode.Portal
                     .CreateLogger(),
                 configData);
 
+            // STARTUP PRECONDITION. ConfigurationPlaceholderValidator already exists and this
+            // host already calls it, but from Startup.Configure, which the generic host does not
+            // invoke until host.Run(). SeedAllDataAsync runs BEFORE host.Run(), so the seed
+            // reaches Npgsql first and the guard never executes.
+            //
+            // Measured on 2026-09-02. A Production boot with no injected environment emitted four
+            // provisioning failures and then died inside Identity role seeding, every message
+            // reading "Format of the initialization string does not conform to specification
+            // starting at index 0", which names neither the offending key nor the file it came
+            // from. One misconfiguration produced roughly ten messages across two streams and not
+            // one of them was actionable.
+            //
+            // The gate is on the KEY, not the environment. UserDBConnection is what SeedRolesAsync
+            // opens, and an unsubstituted value there is fatal in every environment including
+            // Development. Every other unresolved placeholder stays a warning everywhere, so a
+            // node that boots today without SMTP keeps booting.
+            List<string> unresolvedKeys = ConfigurationPlaceholderValidator.FindUnresolvedPlaceholders(configData);
+            if (unresolvedKeys.Count > 0)
+            {
+                Log.Warning(
+                    "Configuration keys still hold the literal placeholder that appsettings.json "
+                    + "ships, so no deploy-time value was injected for them: {Placeholders}. Supply "
+                    + "them through the environment, or copy appsettings.json to "
+                    + "appsettings.Development.json and substitute them for local work.",
+                    string.Join(", ", unresolvedKeys));
+
+                if (unresolvedKeys.Contains("ConnectionStrings:UserDBConnection"))
+                {
+                    Log.Fatal(
+                        "ConnectionStrings:UserDBConnection is an unsubstituted placeholder. This "
+                        + "host cannot seed Identity roles or serve a page without it, so startup "
+                        + "is aborted here rather than failing deep inside the database driver.");
+                    Log.CloseAndFlush();
+                    System.Environment.ExitCode = 1;
+                    return;
+                }
+            }
+
             StaticDetails.PassedBackConfig = configData;
 
             //initalize folders (host-scoped: EndUser deployments never create central/adminportal dirs)

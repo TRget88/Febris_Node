@@ -70,7 +70,6 @@ namespace Febris.UserNode.LogicLayer.Tests
                 AdminAccessor(),
                 new CohortQueries(context),
                 new Mock<ICohortMemberQueries>(MockBehavior.Strict).Object,
-                new Mock<ICohortLinkedCurriculumQueries>(MockBehavior.Strict).Object,
                 new Mock<ILocationLinkedCohortQueries>(MockBehavior.Strict).Object);
         }
 

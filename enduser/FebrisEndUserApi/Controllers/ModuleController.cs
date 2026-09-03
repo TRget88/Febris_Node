@@ -125,9 +125,26 @@ namespace Febris.UserNode.Api.Controllers
                 //linkList = await _linkedContext.GetByHardware(hardware.Id);
                 //output = linkList.Select(i => i.Module).ToList();
 
+                // A catalog row can exist with no artifact behind it. DevSampleData seeds four
+                // such modules, and a node whose storage was cleared has them for every module.
+                // Download then throws FileNotFoundException from inside the storage layer, and
+                // rethrowing turned that into a 500 whose body carried the FULL SERVER PATH of the
+                // missing file. Observed on the bench 2026-09-02 against module 159ed81b.
+                //
+                // Answer NotFound instead, which is what CompanionAppController.Get already does
+                // for the same situation, with its own throw commented out.
+                if (module == null)
+                {
+                    return NotFound();
+                }
+
                 ///Check that link exists and return a file stream (Stream, not
                 ///FileStream -- store-ingested packages come from IStorageProvider)
                 Stream fileStream = await _linkedContext.Download(hardware, module);
+                if (fileStream == null)
+                {
+                    return NotFound();
+                }
 
                 ///Need to put in extension************************************
                 return File(fileStream, GetMimeTypes()[".zip"], module.UUID.ToString() + ".zip");
@@ -135,8 +152,10 @@ namespace Febris.UserNode.Api.Controllers
             }
             catch (Exception ex)
             {
+                // Logged in full server-side, answered as NotFound to the device. The previous
+                // rethrow leaked the storage path to an unauthenticated-looking 500 body.
                 _logger.LogError(ex.StackTrace);
-                throw;
+                return NotFound();
             }
         }
 
@@ -150,7 +169,7 @@ namespace Febris.UserNode.Api.Controllers
             return new Dictionary<string, string>
             {            
                 //{".zip", "application/octet-stream"},
-                {".zip", "applicaiton/zip"}
+                {".zip", "application/zip"}
             };
         }
     }

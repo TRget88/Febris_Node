@@ -124,46 +124,40 @@ namespace Febris.ArchitectureTests
         }
 
         [Fact]
-        public void The_TestUser_facade_is_reachable_end_to_end()
+        public void The_TestUser_portal_surface_stays_removed()
         {
-            // TestUser is a facade for generating and testing xAPI records, NOT a real user and
-            // never attached to ApplicationUser. Its logic is a documented KEEPER
-            // (NODE_REMOTE_TEARDOWN_PLAN.md:22, :101) and LauncherLogic sets IsTestUser in live
-            // code, yet its whole UI sat commented out -- which is how an audit sweep came to read
-            // it as dead scaffolding and nearly deleted it.
+            // INVERTED 2026-09-02 on owner instruction. This assertion used to require the TestUser
+            // facade to be reachable end to end, because an earlier audit read its commented-out UI
+            // as dead scaffolding and nearly deleted it. The owner has since ruled the opposite way
+            // and removed the surface deliberately, so the rule now guards the removal instead of
+            // the feature. The reason for keeping a rule at all is unchanged. Nothing in the unit
+            // suites notices this surface appearing or disappearing, because no test constructs it.
             //
-            // Nothing in the unit suites can notice a controller being commented out again, because
-            // no test constructs it. Hence a source rule over the whole chain.
+            // What was NOT removed, so do not read this as TestUser being gone from the product.
+            // The TestUser model in shared/ is still used by central and developer, the database
+            // table and its rows are untouched, and HardwareUserViewModel still carries IsTestUser
+            // on the wire with every client sending false. Restoring the feature is a re-wire.
             string repoRoot = ProjectGraph.FindRepoRoot();
 
-            string controller = File.ReadAllText(Path.Combine(repoRoot,
-                "enduser", "FebrisEndUserPortal", "Controllers", "Data", "Local", "TestUserController.cs"));
+            Assert.False(File.Exists(Path.Combine(repoRoot,
+                "enduser", "FebrisEndUserPortal", "Controllers", "Data", "Local", "TestUserController.cs")),
+                "The node TestUser controller was removed deliberately. Restoring it needs the navbar "
+                + "entry and the ITestUserLogic registration back too, or it is unreachable surface.");
 
-            // Live, not commented. The class line must not be preceded by a comment marker.
-            Assert.Matches(@"(?m)^\s*public class TestUserController\s*:\s*Controller", controller);
-            foreach (string action in new[] { "Index", "IndexPartial", "DetailsModal" })
-            {
-                Assert.Contains("public async Task<IActionResult> " + action + "(", controller);
-            }
+            Assert.False(Directory.Exists(Path.Combine(repoRoot,
+                "enduser", "FebrisEndUserPortal", "Views", "TestUser")),
+                "TestUser views outlive their controller only as dead files.");
 
-            // Registered, and deliberately OUTSIDE the marketplace region that the teardown deletes.
             string startup = File.ReadAllText(Path.Combine(repoRoot,
                 "enduser", "FebrisEndUserPortal", "Startup.cs"));
-            Assert.Matches(@"(?m)^\s*services\.AddScoped<ITestUserLogic, TestUserLogic>\(\);", startup);
+            Assert.DoesNotMatch(@"(?m)^\s*services\.AddScoped<ITestUserLogic, TestUserLogic>\(\);", startup);
 
-            // Reachable: a live navbar link, with Razor comments stripped so a commented-out entry
-            // does not count. That distinction is the entire reason this was mis-read.
+            // Razor comments stripped, so a commented-out entry does not count either way. That
+            // distinction is what made this area get mis-read in the first place.
             string layout = File.ReadAllText(Path.Combine(repoRoot,
                 "enduser", "FebrisEndUserPortal", "Views", "Shared", "_Layout.cshtml"));
             string liveLayout = Regex.Replace(layout, @"@\*.*?\*@", string.Empty, RegexOptions.Singleline);
-            Assert.Contains("asp-controller=\"TestUser\"", liveLayout);
-
-            // And the button route the views actually use resolves in the GENERIC dispatcher,
-            // which is why no TestUser-specific script is needed or wanted.
-            string generic = File.ReadAllText(Path.Combine(repoRoot,
-                "enduser", "FebrisEndUserPortal", "wwwroot", "JSScriptLib", "ButtonOperation",
-                "Generic", "GenericButtonOperation.js"));
-            Assert.Contains("TestUserDetails", generic);
+            Assert.DoesNotContain("asp-controller=\"TestUser\"", liveLayout);
         }
     }
 }

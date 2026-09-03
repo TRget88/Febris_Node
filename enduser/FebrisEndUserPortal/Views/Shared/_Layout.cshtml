@@ -216,23 +216,6 @@
                                                     </ul>
                                                 </li>
 
-                                                @*Test Users*@
-                                                @* RESTORED 2026-08-18. TestUser is a facade for generating and testing xAPI
-                                                   records, not a real user, and its controller, logic and queries are all live
-                                                   again. It was unreachable only because this block was commented out, which is
-                                                   also what made an audit sweep read it as dead surface.
-
-                                                   The "Test Actor Index" sub-item stays commented: ActorController.TestIndex
-                                                   and TestIndexPartial are still commented out, so linking it would produce a
-                                                   dead nav entry. Restore that link with that action, not before. *@
-                                                <li>
-                                                    <a>Test Users<span class="fa fa-chevron-down"></span></a>
-                                                    <ul class="nav child_menu">
-                                                        <li class="sub_menu">
-                                                            <a asp-area="" asp-controller="TestUser" asp-action="Index">User Index</a>
-                                                        </li>
-                                                    </ul>
-                                                </li>
 
                                                 @*Cohort*@
                                                 <li>
@@ -326,17 +309,6 @@
                             <div class="menu_section">
                                 <h3>Content</h3>
                                 <ul class="nav side-menu">
-                                    <li>
-                                        <a><i class="fa fa-book"></i>Curriculum <span class="fa fa-chevron-down"></span></a>
-                                        <ul class="nav child_menu">
-                                            <li>
-                                                <a asp-area="" asp-controller="Curriculum" asp-action="Index">Index</a>
-                                            </li>
-                                            <li>
-                                                <a asp-area="" asp-controller="Curriculum" asp-action="Create">New</a>
-                                            </li>
-                                        </ul>
-                                    </li>
                                     <li>
                                         <a><i class="fa fa-cube"></i>Modules <span class="fa fa-chevron-down"></span></a>
                                         <ul class="nav child_menu">

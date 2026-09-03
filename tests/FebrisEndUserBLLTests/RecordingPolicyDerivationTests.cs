@@ -109,7 +109,6 @@ namespace Febris.UserNode.LogicLayer.Tests
                 new HardwareLinkedCohortQueries(context),
                 new Mock<PrimaryLogicLayer.Logic.XApiLogic.IStatementLogic>().Object,
                 new CohortMemberQueries(context),
-                new Mock<ITestUserQueries>().Object,
                 new Mock<Logic.AnalyticsLogic.IModuleUsageAnalyticsLogic>().Object,
                 new Mock<Logic.DataLogic.IRecordingLogic>().Object,
                 null);

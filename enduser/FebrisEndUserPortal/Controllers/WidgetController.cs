@@ -167,26 +167,6 @@ namespace Febris.UserNode.Portal.Controllers
                             //break;
 
                         }
-                    case "curriculum":
-                        {
-                            Curriculum curriculum = new Curriculum();
-                            if (islongValue)
-                            {
-                                curriculum = new Curriculum()
-                                {
-                                    Id = longModelId
-                                };
-                            }
-                            else
-                            {
-                                curriculum = new Curriculum()
-                                {
-                                    UUID = guidModelId
-                                };
-                            }
-                            return RedirectToAction("Load" + variableName, modelName, curriculum);
-                            //break;
-                        }
                     case "cohort":
                         {
 
@@ -436,25 +416,6 @@ namespace Febris.UserNode.Portal.Controllers
                     #endregion
                     #region User
                     ///User
-                    case "testuser":
-                        {
-                            TestUser item = new TestUser();
-                            if (islongValue)
-                            {
-                                item = new TestUser()
-                                {
-                                    Id = longModelId
-                                };
-                            }
-                            else
-                            {
-                                item = new TestUser()
-                                {
-                                    UUID = guidModelId
-                                };
-                            }
-                            return RedirectToAction("Load" + variableName, modelName, item);
-                        }
                     ///User 
                     //case "userdata":
                     //    {
@@ -1086,31 +1047,6 @@ namespace Febris.UserNode.Portal.Controllers
                 return PartialView(StaticDetails.DefaultLogo);
             }
         }
-        public async Task<IActionResult> ImageLoader(string path)
-        {
-            try
-            {
-                string extension = Path.GetExtension(path);// need to remove the .
-                extension = extension.Replace(".", string.Empty);
-                string imageType = "image/" + extension;
-                // Audit C-08: Path.Combine DISCARDS the base when the second argument is rooted, so
-                // this raw query value gave SUBSTITUTION, not traversal -- any file the process
-                // could read. Contain it to the intended root. Deliberately NOT Path.GetFileName:
-                // logos are legitimately stored multi-segment (Logos\{uuid}{ext}).
-                if (!MediaPathGuard.TryResolve(StaticDetails.ImageFileSystemPath, path, out string safePath))
-                {
-                    return NotFound();
-                }
-                byte[] image = await _fileHandler.GetImage(safePath);//.Result;
-                return File(image, imageType);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "WidgetController.ImageLoader: suppressed exception");
-                //probably need to put something else here.
-                return PartialView(StaticDetails.DefaultLogo);
-            }
-        }
         public async Task<IActionResult> LoadProfilePicture(string path)
         {
             try
@@ -1118,7 +1054,10 @@ namespace Febris.UserNode.Portal.Controllers
                 string extension = Path.GetExtension(path);
                 extension = extension.Replace(".", string.Empty);
                 string imageType = "image/" + extension;
-                // Audit C-08 -- see ImageLoader above for the mechanism.
+                // Audit C-08. Path.Combine DISCARDS the base when the second argument is rooted, so a
+                // raw query value gives SUBSTITUTION rather than traversal. MediaPathGuard
+                // contains it to the intended root. The fuller note lived on ImageLoader,
+                // which was removed with the TestUser modal that was its only caller.
                 if (!MediaPathGuard.TryResolve(StaticDetails.ProfessionalFileSystemPath, path, out string safePath))
                 {
                     return NotFound();

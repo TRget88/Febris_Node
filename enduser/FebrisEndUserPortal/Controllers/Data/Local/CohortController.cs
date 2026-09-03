@@ -322,32 +322,6 @@ namespace Febris.UserNode.Portal.Controllers.Data
             return PartialView("ManageMemberIndexPartial", output);
         }
 
-        public async Task<IActionResult> LoadCurriculumAccessListing(long Id)
-        {
-            if (Id == null || Id == 0)
-            {
-
-                StatusMessage = "not a valid choice";
-                return Ok();
-            }
-
-            //variables
-            //Cohort output = new Cohort;
-            CohortAccessListViewModel output = default;
-            try
-            {
-
-                output = await _context.GetCohortAccessList(Id);//.GetByCohort(Id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex.Message);
-                StatusMessage = ex.Message;
-                return BadRequest();
-            }
-            //return PartialView(output);
-            return PartialView("CurriculumAccessListing", output);
-        }
         #endregion
 
         #region Miss        
